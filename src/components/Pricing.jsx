@@ -1,4 +1,4 @@
-﻿import Container from "./Container";
+import Container from "./Container";
 import PricingPlanCards from "./PricingPlanCards";
 
 export default function Pricing() {

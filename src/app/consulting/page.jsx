@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 
 const kakaoUrl =
-   "https://bizmessage.kakao.com/chat/zsV_ZBgjlxHvdZXDeswofgf8qH_smEtv_c_acLTkgmU/09Go7TlJhhqUwLFv_SaZWm7v9RvH_wUH9OrSPfz_gss";
+   "http://pf.kakao.com/_hPdjX/chat";
 
 export const metadata = {
    title: "컨설팅 - Flowmerce",

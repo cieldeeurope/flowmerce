@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import Container from "./Container";
 import ArrowLink from "./ArrowLink";
 
@@ -32,10 +32,13 @@ export default function Hero() {
                </div>
 
                <h1 className="mx-auto mt-7 max-w-4xl text-4xl font-semibold leading-[1.18] sm:text-5xl sm:leading-[1.16] md:text-6xl md:leading-[1.14]">
-                  상품 운영은 플로우머스에 맡기고, 판매에만 집중하세요
+                  상품은 플로우머스에 맡기고, 판매에만 집중하세요
                </h1>
                <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-zinc-600 sm:text-lg sm:leading-9">
-                  모든 주요 호스팅사에 맞춘 상품 자동화를 제공하고, 명품 사이트 수집부터 마진 설정, 단어 치환, SEO 최적화까지 원하는 방식으로 적용할 수 있습니다. 반복되는 상품 운영은 플로우머스가 처리하고 고객님은 판매와 성장에 집중하면 됩니다.
+                  모든 주요 호스팅사에 맞춘 상품 자동화를 제공하고, 명품 사이트 수집부터
+                  마진 설정, 단어 치환, SEO 최적화까지 원하는 방식으로 적용할 수 있습니다.
+                  반복되는 상품 운영은 플로우머스가 처리하고 고객님은 판매와 성장에 집중하면
+                  됩니다.
                </p>
 
                <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">

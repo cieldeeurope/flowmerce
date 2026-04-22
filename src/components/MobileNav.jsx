@@ -1,4 +1,5 @@
 "use client";
+
 import { Fragment } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import clsx from "clsx";
@@ -123,7 +124,7 @@ export default function MobileNav() {
                   ) : (
                      <>
                         <MobileNavLink href="/login">로그인</MobileNavLink>
-                        <MobileNavLink href="/signup">무료 시작하기</MobileNavLink>
+                        <MobileNavLink href="/signup">회원가입</MobileNavLink>
                      </>
                   )}
                </Popover.Panel>

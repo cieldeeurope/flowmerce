@@ -4,7 +4,7 @@ import { InstagramIcon } from "./icons/SocialLinkIcons";
 
 export default function Contacts() {
    const kakaoUrl =
-      "https://bizmessage.kakao.com/chat/zsV_ZBgjlxHvdZXDeswofgf8qH_smEtv_c_acLTkgmU/09Go7TlJhhqUwLFv_SaZWm7v9RvH_wUH9OrSPfz_gss";
+      "http://pf.kakao.com/_hPdjX/chat";
    const socialLinks = [
       { name: "Kakao chat", href: kakaoUrl, image: "/icons/kakaotalk.jpg" },
       { name: "Consulting chat", href: kakaoUrl, icon: InstagramIcon },
@@ -36,10 +36,10 @@ export default function Contacts() {
                      <div>
                         <p className="text-sm text-zinc-600">이메일</p>
                         <a
-                           href="mailto:contact@flowmerce.com"
+                           href="mailto:contact@flowmerce.co.kr"
                            className="mt-2 block font-medium"
                         >
-                           contact@flowmerce.com
+                           contact@flowmerce.co.kr
                         </a>
                      </div>
                   </div>

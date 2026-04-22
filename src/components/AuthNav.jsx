@@ -4,7 +4,17 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getSession, signOut } from "@/lib/auth";
-import NavLink from "./NavLink";
+
+function AuthLink({ href, children }) {
+   return (
+      <Link
+         href={href}
+         className="text-[12px] font-medium text-zinc-500 transition hover:text-zinc-900"
+      >
+         {children}
+      </Link>
+   );
+}
 
 export default function AuthNav() {
    const router = useRouter();
@@ -34,34 +44,23 @@ export default function AuthNav() {
 
    if (session) {
       return (
-         <>
-            {session.role === "admin" && (
-               <div className="hidden sm:block">
-                  <NavLink href="/admin">관리자</NavLink>
-               </div>
-            )}
+         <div className="flex items-center gap-4">
+            {session.role === "admin" && <AuthLink href="/admin">관리자</AuthLink>}
             <button
                type="button"
                onClick={handleLogout}
-               className="hidden text-sm font-medium text-zinc-600 transition hover:text-zinc-950 sm:block"
+               className="text-[12px] font-medium text-zinc-500 transition hover:text-zinc-900"
             >
                로그아웃
             </button>
-         </>
+         </div>
       );
    }
 
    return (
-      <>
-         <div className="hidden sm:block">
-            <NavLink href="/login">로그인</NavLink>
-         </div>
-         <Link
-            href="/signup"
-            className="inline-flex rounded-md border border-emerald-700 bg-emerald-600 px-3.5 py-2 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700"
-         >
-            무료 시작하기
-         </Link>
-      </>
+      <div className="flex items-center gap-4">
+         <AuthLink href="/login">로그인</AuthLink>
+         <AuthLink href="/signup">회원가입</AuthLink>
+      </div>
    );
 }

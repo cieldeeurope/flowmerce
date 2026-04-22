@@ -1,9 +1,11 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Link from "next/link";
-import logo from "@/images/logo.svg";
 import Container from "./Container";
 
 export default function Footer() {
+   const kakaoUrl =
+      "http://pf.kakao.com/_hPdjX/chat";
+
    const links = [
       { href: "/", label: "홈" },
       { href: "/guide", label: "핵심 가이드" },
@@ -18,10 +20,16 @@ export default function Footer() {
    return (
       <footer className="border-t border-zinc-200 bg-zinc-50 py-12">
          <Container>
-            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
                <div>
-                  <Link href="/" className="inline-flex">
-                     <Image src={logo} alt="Flowmerce" width={160} />
+                  <Link href="/" className="inline-flex" aria-label="플로우머스 홈">
+                     <Image
+                        src="/brand/flowmerce-logo-text.png"
+                        alt="Flowmerce"
+                        width={300}
+                        height={120}
+                        className="h-auto w-[170px] sm:w-[210px] xl:w-[250px]"
+                     />
                   </Link>
                   <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-600">
                      명품 구매대행 셀러를 위한 상품 수집, 등록, 재고관리 자동화 솔루션
@@ -34,7 +42,7 @@ export default function Footer() {
                         <li key={link.href}>
                            <Link
                               href={link.href}
-                              className="block text-sm font-medium text-zinc-600 hover:text-zinc-950"
+                              className="block text-sm font-medium text-zinc-700 transition hover:text-zinc-950"
                            >
                               {link.label}
                            </Link>
@@ -44,27 +52,28 @@ export default function Footer() {
 
                   <div className="mt-7 space-y-2 text-sm leading-6 text-zinc-600">
                      <p>
-                        플로우머스 | 소재지 : 인천광역시 서구 고산후로95번길 24, 4층 401호 (당하동, 그린프라자)
+                        플로우머스 | 소재지 : 인천광역시 서구 고산후로95번길 24, 4층 401호
+                        (당하동, 그린프라자)
                      </p>
                      <p>사업자등록번호 : 433-27-02243</p>
                      <p>
                         카카오 플러스톡 :{" "}
                         <a
-                           href="kakao.com"
+                           href={kakaoUrl}
                            target="_blank"
                            rel="noopener noreferrer"
-                           className="font-medium text-emerald-700 hover:text-emerald-800"
+                           className="font-medium text-emerald-700 transition hover:text-emerald-800"
                         >
-                           http://kakao.com
+                           문의 바로가기
                         </a>
                      </p>
                      <p>
                         전자우편 :{" "}
                         <a
-                           href="mailto:contact@flowmerce.com"
-                           className="font-medium text-emerald-700 hover:text-emerald-800"
+                           href="mailto:contact@flowmerce.co.kr"
+                           className="font-medium text-emerald-700 transition hover:text-emerald-800"
                         >
-                           contact@flowmerce.com
+                           contact@flowmerce.co.kr
                         </a>
                      </p>
                   </div>

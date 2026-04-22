@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+   font-feature-settings:
+      "ss01" on,
+      "cv01" on,
+      "cv11" on;
+}

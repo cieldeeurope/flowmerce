@@ -1,35 +1,36 @@
 import "./globals.css";
-import localFont from "next/font/local";
-
-const inter = localFont({
-   src: [
-      {
-         path: "../../public/fonts/Inter.var.woff2",
-         weight: "100 900",
-         style: "normal",
-      },
-      {
-         path: "../../public/fonts/Inter-italic.var.woff2",
-         weight: "100 900",
-         style: "italic",
-      },
-   ],
-   variable: "--font-inter",
-   display: "swap",
-});
 
 export const metadata = {
-   title: "Flowmerce - 쇼핑몰 상품 등록 자동화",
+   title: "플로우머스 | 명품 구매대행 자동화 솔루션",
    description:
-      "명품 크롤링, 마진 설정, 단어 치환, SEO 상품명 최적화, 재고관리까지 지원하는 쇼핑몰 상품 등록 자동화 서비스입니다.",
+      "명품 쇼핑몰 상품 등록 자동화, 구매대행 자동화, 마진 설정, 단어 치환, SEO 상품명 최적화와 재고관리까지 지원하는 플로우머스 솔루션 소개 사이트입니다.",
+   icons: {
+      icon: [
+         { url: "/favicon.ico", sizes: "any" },
+         { url: "/icon.png", type: "image/png", sizes: "768x768" },
+      ],
+      shortcut: "/favicon.ico",
+      apple: "/icon.png",
+   },
 };
 
 export default function RootLayout({ children }) {
    return (
       <html
          lang="ko"
-         className={`h-full min-h-screen scroll-smooth bg-white text-base text-zinc-950 antialiased ${inter.variable}`}
+         className="h-full min-h-screen scroll-smooth bg-white text-base text-zinc-950 antialiased"
       >
+         <head>
+            <link
+               rel="preconnect"
+               href="https://cdn.jsdelivr.net"
+               crossOrigin="anonymous"
+            />
+            <link
+               rel="stylesheet"
+               href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+            />
+         </head>
          <body className="flex h-full flex-col">{children}</body>
       </html>
    );
