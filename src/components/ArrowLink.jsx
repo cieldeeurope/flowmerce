@@ -5,7 +5,7 @@ export default function ArrowLink({ href, text }) {
    return (
       <Link
          href={href}
-         className="inline-flex items-center gap-x-1.5 text-sm font-medium hover:text-zinc-600"
+         className="inline-flex items-center gap-x-1.5 text-sm font-medium transition-opacity hover:opacity-75"
       >
          {text} <ArrowRightIcon className="h-4 w-4" />
       </Link>
