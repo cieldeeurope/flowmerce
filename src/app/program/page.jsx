@@ -331,24 +331,26 @@ function HostingMockup() {
 }
 
 function MarginSettingsMockup() {
+   const fields = [
+      ["최소 금액", "최소 금액 입력"],
+      ["최대 금액", "최대 금액 입력"],
+      ["최소 마진", "최소 마진 입력"],
+      ["마진 값 (%)", "마진 값 입력"],
+      ["환율", "환율 입력"],
+   ];
+
    return (
       <div className="relative">
          <ProgramWindow mode="margin" />
-         <div className="absolute left-1/2 top-1/2 w-[min(92%,560px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-zinc-300 bg-white p-5 shadow-2xl">
+         <div className="absolute left-1/2 top-1/2 w-[min(92%,520px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-zinc-300 bg-white p-5 shadow-2xl">
             <div className="mb-5 flex h-7 items-center gap-2 text-sm font-semibold text-zinc-800">
                <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-emerald-100" />
                마진 설정
             </div>
-            <div className="flex h-36 items-center justify-center rounded border-2 border-cyan-500 bg-white text-xs text-zinc-400">
-               현재 설정중인 마진
-            </div>
+            <p className="mb-3 text-sm text-zinc-700">현재 설정중인 마진</p>
+            <div className="h-40 rounded border-2 border-cyan-500 bg-white" />
             <div className="mt-5 grid gap-3 text-sm">
-               {[
-                  ["최소 금액", "최소 금액 입력"],
-                  ["최대 금액", "최대 금액 입력"],
-                  ["최소 마진", "최소 마진 입력"],
-                  ["마진 값 (%)", "마진 값 입력"],
-               ].map(([label, placeholder]) => (
+               {fields.map(([label, placeholder]) => (
                   <div
                      key={label}
                      className="grid grid-cols-[90px_1fr] items-center gap-3"
@@ -365,10 +367,21 @@ function MarginSettingsMockup() {
                      사이트 선택
                   </div>
                </div>
+               <div className="grid grid-cols-[90px_1fr] items-center gap-3">
+                  <span className="text-zinc-700">호스팅</span>
+                  <div className="h-8 rounded border border-zinc-300 bg-zinc-100 px-3 leading-8 text-zinc-700">
+                     - 선택 -
+                  </div>
+               </div>
             </div>
-            <button className="mx-auto mt-5 block rounded border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-sm text-zinc-800">
-               저장
-            </button>
+            <div className="mt-5 flex justify-center gap-2">
+               <button className="rounded border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-sm text-zinc-800">
+                  저장
+               </button>
+               <button className="rounded border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-sm text-zinc-800">
+                  삭제
+               </button>
+            </div>
          </div>
       </div>
    );
@@ -378,14 +391,12 @@ function ReplacementSettingsMockup() {
    return (
       <div className="relative">
          <ProgramWindow mode="replacement" />
-         <div className="absolute left-1/2 top-1/2 w-[min(92%,520px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-zinc-300 bg-white p-5 shadow-2xl">
+         <div className="absolute left-1/2 top-1/2 w-[min(92%,500px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-zinc-300 bg-white p-5 shadow-2xl">
             <div className="mb-5 flex h-7 items-center gap-2 text-sm font-semibold text-zinc-800">
                <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-emerald-100" />
                단어 치환 설정
             </div>
-            <div className="flex h-48 items-center justify-center rounded border-2 border-cyan-500 bg-white text-xs text-zinc-400">
-               저장된 치환 단어 목록
-            </div>
+            <div className="h-52 rounded border-2 border-cyan-500 bg-white" />
             <div className="mt-5 grid gap-3 text-sm">
                <div className="grid grid-cols-[100px_1fr] items-center gap-3">
                   <span className="text-zinc-700">치환할 단어</span>
@@ -400,9 +411,14 @@ function ReplacementSettingsMockup() {
                   </div>
                </div>
             </div>
-            <button className="mx-auto mt-5 block rounded border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-sm text-zinc-800">
-               저장
-            </button>
+            <div className="mt-5 flex justify-center gap-2">
+               <button className="rounded border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-sm text-zinc-800">
+                  저장
+               </button>
+               <button className="rounded border border-zinc-300 bg-zinc-100 px-4 py-1.5 text-sm text-zinc-800">
+                  삭제
+               </button>
+            </div>
          </div>
       </div>
    );
@@ -577,36 +593,19 @@ function MarginFeatureSection() {
          description: "해당 금액 범위에 있는 상품에 적용할 퍼센트 마진입니다.",
       },
       {
-         label: "사이트 선택",
+         label: "환율",
          description:
-            "구독한 사이트들이 나열되며, 하나의 사이트에도 여러 마진식을 설정할 수 있습니다.",
-      },
-   ];
-
-   const examples = [
-      {
-         range: "1원 ~ 1,000,000원",
-         product: "1,000,000원 상품",
-         formula: "10% + 100,000원",
-         result: "1,200,000원",
+            "기준 환율을 직접 입력해 사용할 수 있습니다. 예를 들어 1700처럼 현재 운영 기준에 맞는 값을 넣어 설정합니다.",
       },
       {
-         range: "1,000,001원 ~ 2,000,000원",
-         product: "2,000,000원 상품",
-         formula: "10% + 50,000원",
-         result: "2,250,000원",
+         label: "사이트",
+         description:
+            "마진식을 적용할 사이트를 선택하는 항목입니다. 구독한 사이트들이 나열되며, 하나의 사이트에도 여러 마진식을 설정할 수 있습니다.",
       },
       {
-         range: "1원 ~ 1,000,000원",
-         product: "1,000,000원 상품",
-         formula: "-5% + 0원",
-         result: "950,000원",
-      },
-      {
-         range: "1,000,001원 ~ 2,000,000원",
-         product: "2,000,000원 상품",
-         formula: "-1% + 0원",
-         result: "1,980,000원",
+         label: "호스팅",
+         description:
+            "마진식을 적용할 호스팅을 선택하면 됩니다. 동일한 사이트라도 어떤 호스팅에 적용할지 구분해서 운영할 수 있습니다.",
       },
    ];
 
@@ -621,9 +620,9 @@ function MarginFeatureSection() {
                   금액대별로 원하는 마진식을 직접 설정합니다
                </h2>
                <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-zinc-600">
-                  프로그램에서 마진설정 버튼을 클릭하면 마진 설정창이 열립니다. 사이트별,
-                  금액대별로 여러 마진식을 만들 수 있어 브랜드와 상품 가격대에 맞춘
-                  판매가 운영이 가능합니다.
+                  프로그램에서 마진설정 버튼을 클릭하면 현재 사용 중인 마진 설정창이 열립니다.
+                  금액대별 마진식은 물론 환율, 사이트, 호스팅까지 함께 선택해 운영할 수 있어
+                  실제 사용 환경에 맞춘 판매가 설정이 가능합니다.
                </p>
             </div>
 
@@ -631,19 +630,19 @@ function MarginFeatureSection() {
                <MarginSettingsMockup />
             </div>
 
-            <div className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-               <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+            <div className="mt-10 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+               <div className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
                   <h3 className="text-2xl font-semibold text-zinc-950">
                      마진 설정창 정의
                   </h3>
-                  <div className="mt-5 space-y-3">
+                  <div className="mt-4 space-y-2.5">
                      {definitions.map((item) => (
                         <div
                            key={item.label}
-                           className="grid gap-2 rounded-lg border border-zinc-100 bg-zinc-50 p-4 sm:grid-cols-[120px_1fr]"
+                           className="grid gap-1.5 rounded-lg border border-zinc-100 bg-zinc-50 p-3 sm:grid-cols-[104px_1fr]"
                         >
                            <p className="font-semibold text-zinc-950">{item.label}</p>
-                           <p className="text-sm leading-7 text-zinc-600">
+                           <p className="text-sm leading-6 text-zinc-600">
                               {item.description}
                            </p>
                         </div>
@@ -651,47 +650,108 @@ function MarginFeatureSection() {
                   </div>
                </div>
 
-               <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
-                  <div className="border-b border-zinc-200 bg-zinc-50 px-5 py-4">
+               <div className="space-y-6">
+                  <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
                      <h3 className="text-2xl font-semibold text-zinc-950">
-                        금액대별 마진 예시
+                        설정 흐름 안내
                      </h3>
-                     <p className="mt-2 text-sm leading-6 text-zinc-600">
-                        하나의 사이트에도 여러 마진식을 붙일 수 있어 가격대별 전략을
-                        다르게 가져갈 수 있습니다.
-                     </p>
+                     <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-600">
+                        <p>
+                           먼저 최소 금액, 최대 금액, 최소 마진, 마진 값(%)을 입력한 뒤
+                           환율 항목에 기준 값을 넣어 사용합니다.
+                        </p>
+                        <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
+                           환율은 예를 들어 <span className="font-semibold">1700</span>처럼
+                           현재 운영 기준 값을 넣으면 됩니다.
+                        </p>
+                        <p>
+                           그 다음 마진식을 적용할 사이트를 선택하고, 이어서 적용할 호스팅을
+                           선택하면 해당 환경에 맞는 마진 설정을 저장할 수 있습니다.
+                        </p>
+                     </div>
                   </div>
-                  <div className="overflow-x-auto">
-                     <table className="w-full min-w-[640px] text-left text-sm">
-                        <thead className="text-zinc-500">
-                           <tr>
-                              <th className="px-5 py-4 font-semibold">적용 범위</th>
-                              <th className="px-5 py-4 font-semibold">상품 원가</th>
-                              <th className="px-5 py-4 font-semibold">마진식</th>
-                              <th className="px-5 py-4 font-semibold">등록 판매가</th>
-                           </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-100">
-                           {examples.map((example) => (
-                              <tr key={example.range}>
-                                 <td className="px-5 py-4 font-semibold text-zinc-950">
-                                    {example.range}
-                                 </td>
-                                 <td className="px-5 py-4 text-zinc-700">
-                                    {example.product}
-                                 </td>
-                                 <td className="px-5 py-4 text-zinc-700">
-                                    {example.formula}
-                                 </td>
-                                 <td className="px-5 py-4 font-semibold text-emerald-700">
-                                    {example.result}
-                                 </td>
-                              </tr>
-                           ))}
-                        </tbody>
-                     </table>
+
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 shadow-sm">
+                     <h3 className="text-2xl font-semibold text-zinc-950">
+                        저장과 삭제
+                     </h3>
+                     <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-600">
+                        <p>
+                           입력이 끝나면 저장 버튼을 눌러 마진식을 추가하면 되고, 같은 방식으로
+                           여러 마진식을 계속 쌓아둘 수 있습니다.
+                        </p>
+                        <p>
+                           삭제가 필요할 때는 현재 설정중인 마진 목록에서 원하는 마진식을
+                           선택한 뒤 삭제 버튼을 누르면 됩니다.
+                        </p>
+                     </div>
                   </div>
                </div>
+            </div>
+         </div>
+      </section>
+   );
+}
+
+function UploadedProductShowcaseSection() {
+   const examples = [
+      {
+         title: "실제 고도몰 등록 결과",
+         description:
+            "수집예약 요청 이후 실제 고도몰 관리자 화면에서 상품이 등록된 모습입니다. 상품명, 이미지, 가격, 노출 상태까지 한 번에 확인할 수 있습니다.",
+         image: "/program/product-upload-godomall.png",
+         alt: "실제 고도몰에 상품이 등록된 관리자 화면",
+      },
+      {
+         title: "실제 스마트스토어 등록 결과",
+         description:
+            "같은 흐름으로 스마트스토어에도 상품이 정상 등록된 모습입니다. 판매 상태와 재고 수량, 전시 상태까지 함께 운영할 수 있습니다.",
+         image: "/program/product-upload-smartstore.png",
+         alt: "실제 스마트스토어에 상품이 등록된 관리자 화면",
+      },
+   ];
+
+   return (
+      <section className="py-16 md:py-24">
+         <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
+            <div className="mx-auto max-w-4xl text-center">
+               <span className="inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+                  실제 등록 결과
+               </span>
+               <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
+                  수집예약 이후에는 실제 쇼핑몰 관리자에 상품이 등록됩니다
+               </h2>
+               <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-zinc-600">
+                  카테고리 매핑 이후 수집예약만 요청하면 실제 호스팅 관리자 화면에서 상품이 등록된 결과를 확인할 수 있습니다. 아래 이미지는 고도몰과 스마트스토어에 실제로 상품이 등록된 예시입니다.
+               </p>
+            </div>
+
+            <div className="mx-auto mt-10 max-w-7xl space-y-8">
+               {examples.map((example) => (
+                  <article
+                     key={example.title}
+                     className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm"
+                  >
+                     <div className="border-b border-zinc-200 bg-zinc-50 px-6 py-5">
+                        <h3 className="text-2xl font-semibold text-zinc-950">
+                           {example.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-7 text-zinc-600">
+                           {example.description}
+                        </p>
+                     </div>
+                     <div className="bg-white p-2 sm:p-3">
+                        <Image
+                           src={example.image}
+                           alt={example.alt}
+                           width={1600}
+                           height={900}
+                           sizes="(min-width: 1536px) 1320px, (min-width: 1280px) 1180px, (min-width: 1024px) 92vw, 100vw"
+                           className="h-auto w-full rounded-lg border border-zinc-200"
+                        />
+                     </div>
+                  </article>
+               ))}
             </div>
          </div>
       </section>
@@ -721,7 +781,8 @@ function WordReplacementFeatureSection() {
                <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-zinc-600">
                   단어치환 버튼을 누르면 치환할 단어와 치환된 단어를 저장할 수 있습니다.
                   등록 개수 제한 없이 원하는 표현을 계속 추가할 수 있어 상품명과 상세
-                  문구를 쇼핑몰 톤에 맞게 다듬을 수 있습니다.
+                  문구를 쇼핑몰 톤에 맞게 다듬을 수 있습니다. 삭제가 필요할 때는 현재
+                  저장된 데이터 목록에서 원하는 항목을 누른 뒤 삭제 버튼을 누르면 됩니다.
                </p>
             </div>
 
@@ -990,6 +1051,8 @@ export default function ProgramPage() {
                   </div>
                </div>
             </section>
+
+            <UploadedProductShowcaseSection />
 
             <MarginFeatureSection />
 
