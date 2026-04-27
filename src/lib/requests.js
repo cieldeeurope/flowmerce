@@ -13,12 +13,18 @@ export function getRequests() {
 }
 
 export function addRequest(payload, session) {
+   const authorKey =
+      session.loginId || session.customId || session.email || crypto.randomUUID();
+
    const request = {
       id: crypto.randomUUID(),
       title: "요청서 작성드립니다.",
       ...payload,
-      authorEmail: session.email,
-      authorName: session.name,
+      authorKey,
+      authorLoginId: session.loginId || "",
+      authorCustomId: session.customId || "",
+      authorEmail: payload.email || session.email || "",
+      authorName: payload.name || session.name,
       createdAt: new Date().toISOString(),
    };
    const requests = [request, ...getRequests()];
@@ -40,8 +46,9 @@ export function getVisibleRequests(session) {
    }
 
    return [...requests].sort((a, b) => {
-      const aIsMine = a.authorEmail === session.email;
-      const bIsMine = b.authorEmail === session.email;
+      const sessionKey = session.loginId || session.customId || session.email;
+      const aIsMine = (a.authorKey || a.authorEmail) === sessionKey;
+      const bIsMine = (b.authorKey || b.authorEmail) === sessionKey;
 
       if (aIsMine === bIsMine) {
          return 0;
@@ -56,5 +63,10 @@ export function canReadRequestDetail(request, session) {
       return false;
    }
 
-   return session.role === "admin" || request.authorEmail === session.email;
+   const sessionKey = session.loginId || session.customId || session.email;
+
+   return (
+      session.role === "admin" ||
+      (request.authorKey || request.authorEmail) === sessionKey
+   );
 }

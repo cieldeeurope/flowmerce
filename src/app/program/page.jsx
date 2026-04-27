@@ -189,7 +189,7 @@ function ProgramWindow({ mode = "hosting" }) {
             <BrandToolbar />
 
             <div className="mt-8 flex flex-wrap items-center gap-2">
-               {["저장", "불러오기", "필터링", "수집", "예약조회"].map((item) => (
+               {["저장", "불러오기", "필터링", "수집"].map((item) => (
                   <ProgramButton key={item}>{item}</ProgramButton>
                ))}
                <span className="relative">
@@ -198,8 +198,6 @@ function ProgramWindow({ mode = "hosting" }) {
                      <span className="pointer-events-none absolute -inset-3 rounded-full border-4 border-red-500" />
                   )}
                </span>
-               <ProgramButton>로그인</ProgramButton>
-               <ProgramButton>사이트맵 생성</ProgramButton>
             </div>
 
             <div className="mt-7 grid gap-4 md:grid-cols-5">
@@ -365,12 +363,6 @@ function MarginSettingsMockup() {
                   <span className="text-zinc-700">사이트</span>
                   <div className="h-8 rounded border border-zinc-300 bg-zinc-100 px-3 leading-8 text-zinc-700">
                      사이트 선택
-                  </div>
-               </div>
-               <div className="grid grid-cols-[90px_1fr] items-center gap-3">
-                  <span className="text-zinc-700">호스팅</span>
-                  <div className="h-8 rounded border border-zinc-300 bg-zinc-100 px-3 leading-8 text-zinc-700">
-                     - 선택 -
                   </div>
                </div>
             </div>
@@ -602,11 +594,6 @@ function MarginFeatureSection() {
          description:
             "마진식을 적용할 사이트를 선택하는 항목입니다. 구독한 사이트들이 나열되며, 하나의 사이트에도 여러 마진식을 설정할 수 있습니다.",
       },
-      {
-         label: "호스팅",
-         description:
-            "마진식을 적용할 호스팅을 선택하면 됩니다. 동일한 사이트라도 어떤 호스팅에 적용할지 구분해서 운영할 수 있습니다.",
-      },
    ];
 
    return (
@@ -621,7 +608,7 @@ function MarginFeatureSection() {
                </h2>
                <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-zinc-600">
                   프로그램에서 마진설정 버튼을 클릭하면 현재 사용 중인 마진 설정창이 열립니다.
-                  금액대별 마진식은 물론 환율, 사이트, 호스팅까지 함께 선택해 운영할 수 있어
+                  금액대별 마진식은 물론 환율과 사이트를 함께 선택해 운영할 수 있어
                   실제 사용 환경에 맞춘 판매가 설정이 가능합니다.
                </p>
             </div>
@@ -665,8 +652,7 @@ function MarginFeatureSection() {
                            현재 운영 기준 값을 넣으면 됩니다.
                         </p>
                         <p>
-                           그 다음 마진식을 적용할 사이트를 선택하고, 이어서 적용할 호스팅을
-                           선택하면 해당 환경에 맞는 마진 설정을 저장할 수 있습니다.
+                           그 다음 마진식을 적용할 사이트를 선택하면 해당 환경에 맞는 마진 설정을 저장할 수 있습니다.
                         </p>
                      </div>
                   </div>

@@ -78,7 +78,12 @@ export default function RequestForm() {
          },
          body: JSON.stringify({
             ...payload,
-            authorEmail: currentSession.email,
+            authorEmail: payload.email || currentSession.email || "",
+            authorKey:
+               currentSession.loginId ||
+               currentSession.customId ||
+               currentSession.email ||
+               "",
          }),
       });
 
@@ -328,7 +333,9 @@ export default function RequestForm() {
 
 function RequestCard({ request, session }) {
    const canReadDetail = canReadRequestDetail(request, session);
-   const isMine = session?.email === request.authorEmail;
+   const sessionKey = session?.loginId || session?.customId || session?.email;
+   const requestKey = request.authorKey || request.authorEmail;
+   const isMine = sessionKey && requestKey === sessionKey;
 
    return (
       <article className="rounded-lg border border-zinc-200 p-5">
@@ -361,7 +368,10 @@ function RequestCard({ request, session }) {
 
          {canReadDetail ? (
             <div className="mt-4 rounded-lg bg-zinc-50 p-4 text-sm text-zinc-600">
-               <p>작성자: {request.authorName} ({request.authorEmail})</p>
+               <p>
+                  작성자: {request.authorName}
+                  {request.authorEmail ? ` (${request.authorEmail})` : ""}
+               </p>
                <p className="mt-1">연락처: {request.phone}</p>
                <p className="mt-1">쇼핑몰 아이디: {request.mallId}</p>
                <p className="mt-1">쇼핑몰 패스워드: {request.mallPassword}</p>

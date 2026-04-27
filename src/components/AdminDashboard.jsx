@@ -101,9 +101,11 @@ export default function AdminDashboard() {
                         <tr key={request.id}>
                            <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
                               {request.authorName}
-                              <span className="block text-xs text-zinc-400">
-                                 {request.authorEmail}
-                              </span>
+                              {request.authorEmail && (
+                                 <span className="block text-xs text-zinc-400">
+                                    {request.authorEmail}
+                                 </span>
+                              )}
                            </td>
                            <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
                               {request.platform}

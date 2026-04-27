@@ -9,7 +9,7 @@ function AuthLink({ href, children }) {
    return (
       <Link
          href={href}
-         className="text-[12px] font-medium text-zinc-500 transition hover:text-zinc-900"
+         className="text-[13px] font-semibold text-zinc-500 transition hover:text-zinc-900"
       >
          {children}
       </Link>
@@ -49,7 +49,7 @@ export default function AuthNav() {
             <button
                type="button"
                onClick={handleLogout}
-               className="text-[12px] font-medium text-zinc-500 transition hover:text-zinc-900"
+               className="text-[13px] font-semibold text-zinc-500 transition hover:text-zinc-900"
             >
                로그아웃
             </button>
