@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import { createMetadata } from "@/lib/seo";
 
 const kakaoUrl =
-   "http://pf.kakao.com/_hPdjX/chat";
+   "https://pf.kakao.com/_hPdjX/chat";
 
 export const metadata = createMetadata({
    title: "컨설팅",

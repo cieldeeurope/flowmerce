@@ -3,7 +3,7 @@ import Link from "next/link";
 import Container from "./Container";
 
 export default function Footer() {
-   const kakaoUrl = "http://pf.kakao.com/_hPdjX/chat";
+const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
 
    const links = [
       { href: "/", label: "홈" },

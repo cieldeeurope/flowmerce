@@ -27,7 +27,7 @@ export default function Home() {
          name: "플로우머스",
          url: siteUrl,
          logo: `${siteUrl}/icon.png`,
-         sameAs: ["http://pf.kakao.com/_hPdjX/chat"],
+         sameAs: ["https://pf.kakao.com/_hPdjX/chat"],
       },
       {
          "@context": "https://schema.org",

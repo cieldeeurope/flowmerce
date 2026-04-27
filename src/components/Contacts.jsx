@@ -3,8 +3,8 @@ import Container from "./Container";
 import { InstagramIcon } from "./icons/SocialLinkIcons";
 
 export default function Contacts() {
-   const kakaoUrl =
-      "http://pf.kakao.com/_hPdjX/chat";
+const kakaoUrl =
+   "https://pf.kakao.com/_hPdjX/chat";
    const socialLinks = [
       { name: "Kakao chat", href: kakaoUrl, image: "/icons/kakaotalk.jpg" },
       { name: "Consulting chat", href: kakaoUrl, icon: InstagramIcon },
