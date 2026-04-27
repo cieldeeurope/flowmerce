@@ -3,12 +3,14 @@ import Link from "next/link";
 import Container from "@/components/Container";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata = {
-   title: "핵심 가이드 - Flowmerce",
+export const metadata = createMetadata({
+   title: "핵심 가이드",
    description:
-      "현지 명품 사이트 소싱, 구매대행 마진 구조, SEO 상품 등록 자동화가 왜 중요한지 실제 사례로 설명하는 플로우머스 핵심 가이드",
-};
+      "명품 구매대행 자동화가 실제 수익 구조로 이어지는 방식, 실제 운영 성과, 정산 사례를 안내하는 플로우머스 핵심 가이드입니다.",
+   path: "/guide",
+});
 
 export default function GuidePage() {
    const heroStats = [

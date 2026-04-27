@@ -8,11 +8,14 @@ import {
    coreSourcingSites,
    highEndSites,
 } from "@/lib/pricingData";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata = {
-   title: "가격 - Flowmerce",
-   description: "명품 쇼핑몰 상품 등록 자동화 가격과 지원 사이트 안내",
-};
+export const metadata = createMetadata({
+   title: "가격",
+   description:
+      "명품 쇼핑몰 상품 등록 자동화 요금제, 월 요청 처리량, 지원 사이트, 하이엔드 사이트 기준까지 안내합니다.",
+   path: "/pricing",
+});
 
 export default function PricingPage() {
    return (

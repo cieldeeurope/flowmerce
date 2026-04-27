@@ -1,15 +1,17 @@
 import Container from "@/components/Container";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { createMetadata } from "@/lib/seo";
 
 const kakaoUrl =
    "http://pf.kakao.com/_hPdjX/chat";
 
-export const metadata = {
-   title: "컨설팅 - Flowmerce",
+export const metadata = createMetadata({
+   title: "컨설팅",
    description:
-      "명품 판매 빅파워 경험을 바탕으로 구매대행 구조, 현지 거래처, 상세페이지, 플랫폼 운영 전략을 안내하는 일대일 컨설팅",
-};
+      "명품 구매대행 구조, 현지 거래처 연결, 병행수입 대비 운영 전략, 상세페이지와 판매 흐름까지 일대일로 안내하는 플로우머스 컨설팅입니다.",
+   path: "/consulting",
+});
 
 export default function ConsultingPage() {
    const topics = [

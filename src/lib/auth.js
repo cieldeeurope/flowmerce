@@ -3,6 +3,8 @@ const API_BASE_URL = (
    process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.flowmerce.co.kr"
 ).replace(/\/$/, "");
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
+const DEFAULT_PLAN = "none";
+
 const ADMIN_USER = {
    loginId: "admin",
    password: "admin1234",
@@ -10,6 +12,8 @@ const ADMIN_USER = {
    customId: "admin",
    email: "",
    role: "admin",
+   plan: DEFAULT_PLAN,
+   sites: [],
 };
 
 async function parseApiResponse(response) {
@@ -29,7 +33,16 @@ function buildSession(user) {
       loginId: user.loginId,
       customId: user.customId || "",
       role: user.role || "user",
+      plan: user.plan || DEFAULT_PLAN,
+      subscriptionStartAt: user.subscriptionStartAt || null,
+      subscriptionEndAt: user.subscriptionEndAt || null,
+      sites: Array.isArray(user.sites) ? user.sites : [],
    };
+}
+
+function saveSession(session) {
+   window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+   window.dispatchEvent(new Event("flowmerce-auth"));
 }
 
 export function getSession() {
@@ -93,7 +106,9 @@ export async function signUp({ name, loginId, password, customId, email }) {
    }
 
    if (!validatePassword(password)) {
-      throw new Error("비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다.");
+      throw new Error(
+         "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다.",
+      );
    }
 
    const response = await fetch(`${API_BASE_URL}/user/register`, {
@@ -131,8 +146,7 @@ export async function signIn({ loginId, password }) {
       password === ADMIN_USER.password
    ) {
       const session = buildSession(ADMIN_USER);
-      window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-      window.dispatchEvent(new Event("flowmerce-auth"));
+      saveSession(session);
       return session;
    }
 
@@ -159,12 +173,114 @@ export async function signIn({ loginId, password }) {
       name: data.name || data.customId || normalizedLoginId,
       email: data.email || "",
       role: data.role || "user",
+      plan: data.plan || DEFAULT_PLAN,
+      subscriptionStartAt: data.subscriptionStartAt || null,
+      subscriptionEndAt: data.subscriptionEndAt || null,
+      sites: Array.isArray(data.sites) ? data.sites : [],
    });
 
-   window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-   window.dispatchEvent(new Event("flowmerce-auth"));
+   saveSession(session);
 
    return session;
+}
+
+export async function changePassword({
+   loginId,
+   currentPassword,
+   newPassword,
+   newPasswordConfirm,
+}) {
+   const normalizedLoginId = loginId.trim();
+
+   if (!normalizedLoginId || !currentPassword || !newPassword || !newPasswordConfirm) {
+      throw new Error("기존 비밀번호와 새 비밀번호 정보를 모두 입력해주세요.");
+   }
+
+   if (newPassword !== newPasswordConfirm) {
+      throw new Error("새 비밀번호가 서로 일치하지 않습니다.");
+   }
+
+   if (!validatePassword(newPassword)) {
+      throw new Error(
+         "새 비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다.",
+      );
+   }
+
+   const response = await fetch(`${API_BASE_URL}/user/change-password`, {
+      method: "POST",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+         loginId: normalizedLoginId,
+         currentPassword,
+         newPassword,
+      }),
+   });
+
+   return parseApiResponse(response);
+}
+
+export async function fetchUserProfile(customId) {
+   const normalizedCustomId = customId.trim();
+
+   if (!normalizedCustomId) {
+      throw new Error("닉네임을 확인할 수 없습니다.");
+   }
+
+   const response = await fetch(
+      `${API_BASE_URL}/user/profile?customId=${encodeURIComponent(normalizedCustomId)}`,
+      {
+         cache: "no-store",
+      },
+   );
+
+   return parseApiResponse(response);
+}
+
+export async function saveUserSites({ customId, sites }) {
+   const normalizedCustomId = customId.trim();
+
+   if (!normalizedCustomId) {
+      throw new Error("닉네임을 확인할 수 없습니다.");
+   }
+
+   const response = await fetch(`${API_BASE_URL}/user/sites`, {
+      method: "POST",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+         customId: normalizedCustomId,
+         sites,
+      }),
+   });
+
+   return parseApiResponse(response);
+}
+
+export function updateSessionData(patch) {
+   if (typeof window === "undefined") {
+      return null;
+   }
+
+   const currentSession = getSession();
+
+   if (!currentSession) {
+      return null;
+   }
+
+   const nextSession = {
+      ...currentSession,
+      ...patch,
+   };
+
+   if (JSON.stringify(currentSession) === JSON.stringify(nextSession)) {
+      return currentSession;
+   }
+
+   saveSession(nextSession);
+   return nextSession;
 }
 
 export function signOut() {

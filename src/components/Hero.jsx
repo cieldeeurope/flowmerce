@@ -6,8 +6,8 @@ export default function Hero() {
    const categories = [
       "명품 쇼핑몰 자동화",
       "SEO 상품명·상세 최적화",
-      "마진/치환 자동화",
-      "자동 재고관리 기능",
+      "마진·단어 치환 자동화",
+      "재고관리 자동화",
    ];
 
    return (
@@ -33,20 +33,21 @@ export default function Hero() {
                <h1 className="mx-auto mt-7 max-w-4xl text-4xl font-semibold leading-[1.18] sm:text-5xl sm:leading-[1.16] md:text-6xl md:leading-[1.14]">
                   상품은 플로우머스에 맡기고
                   <br />
-                  판매에만 집중하세요
+                  판매와 운영에만 집중하세요
                </h1>
                <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-zinc-600 sm:text-lg sm:leading-9">
-                  모든 호스팅사에 맞춤 상품 자동화를 제공하고, 명품 사이트 수집부터 마진 설정,
-                  단어 치환, SEO 최적화까지 원하는 방식으로 적용할 수 있습니다. 반복되는 상품
-                  운영은 플로우머스가 처리하고 고객은 판매와 응대에만 집중하면 됩니다.
+                  모든 호스팅사에 맞춘 상품 자동화를 제공하고, 명품 사이트 수집부터
+                  마진 설정, 단어 치환, SEO 최적화까지 한 번에 운영할 수 있도록
+                  설계했습니다. 반복되는 등록과 재고 흐름은 플로우머스가 처리하고,
+                  고객님은 판매와 운영에만 집중하시면 됩니다.
                </p>
 
                <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
                   <Link
-                     href="/request"
+                     href="/pricing"
                      className="inline-flex rounded-lg border border-emerald-700 bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
                   >
-                     요청서 작성하기
+                     플랜 구독하기
                   </Link>
 
                   <ArrowLink href="/pricing" text="가격과 지원 사이트 보기" />
@@ -58,7 +59,7 @@ export default function Hero() {
                         실사용 매출 성과 확인
                      </dt>
                      <dd className="mt-2 text-lg font-semibold leading-7">
-                        실제 이용객 매출 성장 사례로 체계적인 데이터 기반
+                        실제 이용객 매출 성장 사례로 검증한 운영 데이터 기반
                      </dd>
                   </div>
                   <div className="rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
@@ -66,7 +67,7 @@ export default function Hero() {
                         최적화된 AI 기반 상품 콘텐츠
                      </dt>
                      <dd className="mt-2 text-lg font-semibold leading-7">
-                        SEO에 최적화된 상품명과 상세페이지
+                        SEO에 최적화된 상품명과 상세페이지 자동 반영
                      </dd>
                   </div>
                   <div className="rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">

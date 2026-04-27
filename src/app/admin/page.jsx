@@ -2,11 +2,12 @@ import AdminDashboard from "@/components/AdminDashboard";
 import Container from "@/components/Container";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { createNoIndexMetadata } from "@/lib/seo";
 
-export const metadata = {
-   title: "관리자 - Flowmerce",
-   description: "Flowmerce 요청서 관리자 화면",
-};
+export const metadata = createNoIndexMetadata({
+   title: "관리자",
+   description: "플로우머스 관리자 전용 페이지입니다.",
+});
 
 export default function AdminPage() {
    return (
@@ -22,7 +23,8 @@ export default function AdminPage() {
                      요청서 관리자 대시보드
                   </h1>
                   <p className="mt-5 text-lg text-zinc-600">
-                     관리자 계정은 전체 요청서를 확인하고, 일반 사용자는 본인이 작성한 요청서만 볼 수 있습니다.
+                     관리자 계정은 전체 요청서를 확인하고, 일반 사용자는 본인이
+                     작성한 요청서만 볼 수 있습니다.
                   </p>
                </div>
                <AdminDashboard />

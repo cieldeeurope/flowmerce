@@ -3,12 +3,14 @@ import Link from "next/link";
 import Container from "@/components/Container";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { createMetadata } from "@/lib/seo";
 
-export const metadata = {
-   title: "프로그램 소개 - Flowmerce",
+export const metadata = createMetadata({
+   title: "프로그램 소개",
    description:
-      "플로우머스 자동화 솔루션의 상품등록, 재고관리, 실시간 방문자 재고 업데이트 기능을 안내하는 페이지",
-};
+      "상품등록 및 재고관리 프로그램, 실시간 방문자 재고 업데이트, 마진 설정, 단어 치환 기능까지 플로우머스 프로그램 사용 흐름을 안내합니다.",
+   path: "/program",
+});
 
 const subscribedBrands = [
    "brand",

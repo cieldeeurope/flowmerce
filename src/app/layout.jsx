@@ -1,9 +1,66 @@
 import "./globals.css";
+import {
+   defaultDescription,
+   defaultKeywords,
+   defaultTitle,
+   siteName,
+   siteUrl,
+} from "@/lib/seo";
 
 export const metadata = {
-   title: "플로우머스 | 명품 구매대행 자동화 솔루션",
-   description:
-      "명품 쇼핑몰 상품 등록 자동화, 구매대행 자동화, 마진 설정, 단어 치환, SEO 상품명 최적화와 재고관리까지 지원하는 플로우머스 솔루션 소개 사이트입니다.",
+   metadataBase: new URL(siteUrl),
+   title: {
+      default: defaultTitle,
+      template: `%s | ${siteName}`,
+   },
+   description: defaultDescription,
+   applicationName: siteName,
+   authors: [{ name: siteName }],
+   creator: siteName,
+   publisher: siteName,
+   keywords: defaultKeywords,
+   category: "shopping",
+   alternates: {
+      canonical: "/",
+      types: {
+         "application/rss+xml": `${siteUrl}/rss.xml`,
+      },
+   },
+   openGraph: {
+      type: "website",
+      locale: "ko_KR",
+      url: "/",
+      siteName,
+      title: defaultTitle,
+      description: defaultDescription,
+      images: [
+         {
+            url: "/opengraph-image",
+            width: 1200,
+            height: 630,
+            alt: `${siteName} 대표 이미지`,
+         },
+      ],
+   },
+   twitter: {
+      card: "summary_large_image",
+      title: defaultTitle,
+      description: defaultDescription,
+      images: ["/twitter-image"],
+   },
+   robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+         index: true,
+         follow: true,
+         "max-image-preview": "large",
+         "max-snippet": -1,
+         "max-video-preview": -1,
+      },
+   },
+   themeColor: "#10b981",
+   manifest: "/manifest.webmanifest",
    icons: {
       icon: [
          { url: "/favicon.ico", sizes: "any" },
@@ -21,6 +78,14 @@ export default function RootLayout({ children }) {
          className="h-full min-h-screen scroll-smooth bg-white text-base text-zinc-950 antialiased"
       >
          <head>
+            <meta
+               name="google-site-verification"
+               content="w1ANMw07UIgoi8RnD092IT70psKloxmNMSpJQEFsH8Y"
+            />
+            <meta
+               name="naver-site-verification"
+               content="aff30bb4569645b6f75ec1c2922ebe54a12b8a94"
+            />
             <link
                rel="preconnect"
                href="https://cdn.jsdelivr.net"

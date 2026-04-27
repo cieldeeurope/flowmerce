@@ -7,7 +7,7 @@ import { plans } from "@/lib/pricingData";
 import { CheckIcon } from "./icons/CheckIcon";
 
 export default function PricingPlanCards({
-   ctaHref = "/request",
+   ctaHref = "/signup",
    compact = false,
 }) {
    const [billing, setBilling] = useState("monthly");

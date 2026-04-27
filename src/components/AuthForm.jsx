@@ -196,7 +196,7 @@ export default function AuthForm({ mode }) {
          }
 
          await signIn(loginForm);
-         router.push(searchParams.get("next") || "/request");
+         router.push(searchParams.get("next") || "/mypage");
       } catch (authError) {
          setError(authError.message);
       } finally {

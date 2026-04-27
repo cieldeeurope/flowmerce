@@ -3,8 +3,7 @@ import Link from "next/link";
 import Container from "./Container";
 
 export default function Footer() {
-   const kakaoUrl =
-      "http://pf.kakao.com/_hPdjX/chat";
+   const kakaoUrl = "http://pf.kakao.com/_hPdjX/chat";
 
    const links = [
       { href: "/", label: "홈" },
@@ -12,8 +11,7 @@ export default function Footer() {
       { href: "/program", label: "프로그램 소개" },
       { href: "/consulting", label: "컨설팅" },
       { href: "/pricing", label: "가격" },
-      { href: "/request", label: "요청서" },
-      { href: "/#faq", label: "자주묻는질문" },
+      { href: "/#faq", label: "자주 묻는 질문" },
       { href: "/#contact-us", label: "연락처" },
    ];
 
@@ -22,7 +20,7 @@ export default function Footer() {
          <Container>
             <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
                <div>
-                  <Link href="/" className="inline-flex" aria-label="플로우머스 홈">
+                  <Link href="/" className="inline-flex" aria-label="플로우머스">
                      <Image
                         src="/brand/flowmerce-logo-text.png"
                         alt="Flowmerce"
@@ -32,7 +30,7 @@ export default function Footer() {
                      />
                   </Link>
                   <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-600">
-                     명품 구매대행 셀러를 위한 상품 수집, 등록, 재고관리 자동화 솔루션
+                     명품 구매대행 운영을 위한 상품 수집, 등록, 재고관리 자동화 솔루션
                   </p>
                </div>
 
@@ -52,8 +50,8 @@ export default function Footer() {
 
                   <div className="mt-7 space-y-2 text-sm leading-6 text-zinc-600">
                      <p>
-                        플로우머스 | 소재지 : 인천광역시 서구 고산후로95번길 24, 4층 401호
-                        (당하동, 그린프라자)
+                        플로우머스 | 소재지 : 인천광역시 서구 고산후로95번길 24, 4층
+                        401호 (당하동, 그린프라자)
                      </p>
                      <p>사업자등록번호 : 433-27-02243</p>
                      <p>

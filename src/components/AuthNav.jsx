@@ -9,7 +9,7 @@ function AuthLink({ href, children }) {
    return (
       <Link
          href={href}
-         className="text-[13px] font-semibold text-zinc-500 transition hover:text-zinc-900"
+         className="text-sm font-semibold text-zinc-500 transition hover:text-zinc-900"
       >
          {children}
       </Link>
@@ -37,7 +37,7 @@ export default function AuthNav() {
    const handleLogout = () => {
       signOut();
 
-      if (pathname === "/request" || pathname === "/admin") {
+      if (pathname === "/admin") {
          router.push("/");
       }
    };
@@ -46,10 +46,11 @@ export default function AuthNav() {
       return (
          <div className="flex items-center gap-4">
             {session.role === "admin" && <AuthLink href="/admin">관리자</AuthLink>}
+            <AuthLink href="/mypage">마이페이지</AuthLink>
             <button
                type="button"
                onClick={handleLogout}
-               className="text-[13px] font-semibold text-zinc-500 transition hover:text-zinc-900"
+               className="text-sm font-semibold text-zinc-500 transition hover:text-zinc-900"
             >
                로그아웃
             </button>
