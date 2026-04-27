@@ -3,7 +3,7 @@ export const siteName = "플로우머스";
 export const defaultTitle = "플로우머스 | 쇼핑몰 자동화 솔루션";
 export const defaultDescription =
    "쇼핑몰 상품 등록 자동화, 명품 구매대행 자동화, SEO 상품명 최적화, 재고관리 자동화까지 지원하는 플로우머스.";
-export const defaultOgImage = "/opengraph-image";
+export const defaultOgImage = "/icon.png";
 
 export const defaultKeywords = [
    "플로우머스",

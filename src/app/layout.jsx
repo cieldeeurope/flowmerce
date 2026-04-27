@@ -35,9 +35,9 @@ export const metadata = {
       description: defaultDescription,
       images: [
          {
-            url: "/opengraph-image",
-            width: 1200,
-            height: 630,
+            url: "/icon.png",
+            width: 768,
+            height: 768,
             alt: `${siteName} 대표 이미지`,
          },
       ],
@@ -46,7 +46,7 @@ export const metadata = {
       card: "summary_large_image",
       title: defaultTitle,
       description: defaultDescription,
-      images: ["/twitter-image"],
+      images: ["/icon.png"],
    },
    robots: {
       index: true,
