@@ -95,6 +95,14 @@ const planLookup = {
    enterprise: plans.find((plan) => plan.name === "Enterprise"),
 };
 
+const requestLimitByPlan = {
+   none: null,
+   boutique: 100000,
+   basic: 5000,
+   pro: 50000,
+   enterprise: 200000,
+};
+
 function formatDate(value) {
    if (!value) {
       return "미정";
@@ -111,6 +119,29 @@ function formatDate(value) {
       month: "2-digit",
       day: "2-digit",
    }).format(parsedDate);
+}
+
+function formatNumber(value) {
+   if (value === null || value === undefined || value === "") {
+      return "미정";
+   }
+
+   const parsed = Number(value);
+
+   if (!Number.isFinite(parsed)) {
+      return "미정";
+   }
+
+   return new Intl.NumberFormat("ko-KR").format(parsed);
+}
+
+function parseNullableNumber(value) {
+   if (value === null || value === undefined || value === "") {
+      return null;
+   }
+
+   const parsed = Number(value);
+   return Number.isFinite(parsed) ? parsed : null;
 }
 
 function getUpgradePlanValues(currentPlan) {
@@ -364,6 +395,44 @@ export default function MyPagePanel() {
       };
    }, [router]);
 
+   const syncProfileState = (user) => {
+      setProfile(user);
+      updateSessionData({
+         plan: user.plan || "none",
+         subscriptionStartAt: user.subscriptionStartAt || null,
+         subscriptionEndAt: user.subscriptionEndAt || null,
+         sites: Array.isArray(user.sites) ? user.sites : [],
+         email: user.email || "",
+         name: user.name || user.customId || user.loginId,
+         customId: user.customId || "",
+         loginId: user.loginId || "",
+      });
+   };
+
+   const handleRefreshProfile = async () => {
+      if (!session?.customId || session.role === "admin") {
+         return;
+      }
+
+      setIsLoadingProfile(true);
+
+      try {
+         const result = await fetchUserProfile(session.customId);
+         const user = result.user || result;
+
+         if (!user) {
+            setProfile(null);
+            return;
+         }
+
+         syncProfileState(user);
+      } catch {
+         setProfile(null);
+      } finally {
+         setIsLoadingProfile(false);
+      }
+   };
+
    useEffect(() => {
       if (!session?.customId || session.role === "admin") {
          return;
@@ -382,17 +451,7 @@ export default function MyPagePanel() {
                return;
             }
 
-            setProfile(user);
-            updateSessionData({
-               plan: user.plan || "none",
-               subscriptionStartAt: user.subscriptionStartAt || null,
-               subscriptionEndAt: user.subscriptionEndAt || null,
-               sites: Array.isArray(user.sites) ? user.sites : [],
-               email: user.email || "",
-               name: user.name || user.customId || user.loginId,
-               customId: user.customId || "",
-               loginId: user.loginId || "",
-            });
+            syncProfileState(user);
          } catch {
             if (!cancelled) {
                setProfile(null);
@@ -420,6 +479,7 @@ export default function MyPagePanel() {
       : session;
 
    const currentPlan = (account?.plan || "none").toLowerCase();
+   const hasPaidPlan = currentPlan !== "none";
    const currentPlanMeta = planMeta[currentPlan] || planMeta.none;
    const currentSiteConfig = sitePlanConfig[currentPlan] || sitePlanConfig.none;
    const currentSites = Array.isArray(account?.sites) ? account.sites : [];
@@ -450,6 +510,64 @@ export default function MyPagePanel() {
          : modalMode === "add"
            ? additionalPlanOptions
            : [];
+   const requestUsageSource = account?.requestUsage || null;
+   const planRequestLimit = parseNullableNumber(
+      requestUsageSource?.planLimit ??
+         requestUsageSource?.limit ??
+         account?.planRequestLimit ??
+         requestLimitByPlan[currentPlan],
+   );
+   const currentRequestCount = parseNullableNumber(
+      requestUsageSource?.used ??
+         account?.requestUsedCount ??
+         account?.currentRequestCount,
+   );
+   const availableRequestCount = parseNullableNumber(
+      requestUsageSource?.remaining ??
+         account?.availableRequestCount ??
+         (planRequestLimit !== null && currentRequestCount !== null
+            ? Math.max(0, planRequestLimit - currentRequestCount)
+            : null),
+   );
+   const requestCycleStartAt =
+      requestUsageSource?.cycleStartAt || account?.requestCycleStartAt || null;
+   const requestCycleEndAt =
+      requestUsageSource?.cycleEndAt || account?.requestCycleEndAt || null;
+   const requestUsagePercent =
+      parseNullableNumber(requestUsageSource?.percent) ??
+      (planRequestLimit !== null &&
+      currentRequestCount !== null &&
+      planRequestLimit > 0
+         ? Math.max(
+              0,
+              Math.min(100, Math.round((currentRequestCount / planRequestLimit) * 100)),
+           )
+         : null);
+   const requestUsageBlocks =
+      requestUsagePercent === null ? 0 : Math.min(5, Math.ceil(requestUsagePercent / 20));
+   const requestUsageReady =
+      hasPaidPlan &&
+      (currentRequestCount !== null ||
+         availableRequestCount !== null ||
+         requestCycleStartAt ||
+         requestCycleEndAt ||
+         requestUsageSource);
+   const requestUsageStatus =
+      requestUsagePercent === null
+         ? "pending"
+         : availableRequestCount !== null && availableRequestCount <= 0
+           ? "exhausted"
+           : requestUsagePercent >= 80
+             ? "warning"
+             : "normal";
+   const requestUsageStatusLabel =
+      requestUsageStatus === "exhausted"
+         ? "요청 수 소진"
+         : requestUsageStatus === "warning"
+           ? "요청 수 거의 소진"
+           : requestUsageStatus === "normal"
+             ? "정상 이용 중"
+             : "연동 예정";
 
    const passwordGuide = useMemo(() => {
       if (!passwordForm.newPassword) {
@@ -475,6 +593,55 @@ export default function MyPagePanel() {
       currentSiteConfig.highEndEnabled &&
       draftHighEndSites.length < currentSiteConfig.highEndLimit;
    const draftSites = [...draftCoreSites, ...draftHighEndSites];
+   const hasSelectedSites =
+      currentPlan === "enterprise" ? true : currentSites.length > 0;
+   const approvalComplete = Boolean(account?.isApproved);
+   const normalizedSetupStatus = String(account?.setupStatus || "").toLowerCase();
+   const serviceReady =
+      Boolean(account?.serviceAvailable) ||
+      ["completed", "done", "active", "available"].includes(
+         normalizedSetupStatus,
+      ) ||
+      Boolean(account?.setupCompletedAt);
+   const setupInProgress =
+      Boolean(account?.setupInProgress) ||
+      normalizedSetupStatus === "in_progress" ||
+      normalizedSetupStatus === "progress" ||
+      normalizedSetupStatus === "setting" ||
+      normalizedSetupStatus === "setup" ||
+      (approvalComplete && hasPaidPlan && hasSelectedSites);
+   const setupStepStatus = serviceReady
+      ? "complete"
+      : setupInProgress
+        ? "current"
+        : "pending";
+   const onboardingSteps = [
+      { key: "signup", label: "회원가입 완료", status: "complete" },
+      {
+         key: "payment",
+         label: "플랜 결제 완료",
+         status: hasPaidPlan ? "complete" : "pending",
+      },
+      {
+         key: "sites",
+         label: "사이트 선택 완료",
+         status: hasSelectedSites ? "complete" : "pending",
+      },
+      {
+         key: "approval",
+         label: "관리자 승인 완료",
+         status: approvalComplete ? "complete" : "pending",
+      },
+      { key: "setup", label: "세팅 진행", status: setupStepStatus },
+      {
+         key: "active",
+         label: "사용 가능",
+         status: serviceReady ? "complete" : "pending",
+      },
+   ];
+   const completedStepCount = onboardingSteps.filter(
+      (step) => step.status === "complete",
+   ).length;
 
    const handlePasswordFieldChange = (field, value) => {
       setPasswordForm((current) => ({
@@ -652,6 +819,84 @@ export default function MyPagePanel() {
                </p>
             </div>
 
+            <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
+               <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                     <p className="text-sm font-semibold text-emerald-600">
+                        STEP GUIDE
+                     </p>
+                     <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
+                        이용 진행 단계
+                     </h2>
+                     <p className="mt-2 text-sm leading-6 text-zinc-600">
+                        회원가입부터 세팅 완료까지 현재 진행 단계를 한눈에 확인할 수
+                        있습니다.
+                     </p>
+                  </div>
+                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
+                     {completedStepCount}/6 완료
+                  </span>
+               </div>
+
+               <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {onboardingSteps.map((step, index) => (
+                     <div
+                        key={step.key}
+                        className={clsx(
+                           "rounded-lg border p-4 transition",
+                           step.status === "complete"
+                              ? "border-emerald-200 bg-emerald-50"
+                              : step.status === "current"
+                                ? "border-amber-200 bg-amber-50"
+                                : "border-zinc-200 bg-zinc-50",
+                        )}
+                     >
+                        <div className="flex items-start justify-between gap-3">
+                           <span
+                              className={clsx(
+                                 "inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
+                                 step.status === "complete"
+                                    ? "bg-white text-emerald-700 ring-1 ring-emerald-200"
+                                    : step.status === "current"
+                                      ? "bg-white text-amber-700 ring-1 ring-amber-200"
+                                      : "bg-white text-zinc-500 ring-1 ring-zinc-200",
+                              )}
+                           >
+                              STEP {index + 1}
+                           </span>
+                           <span
+                              className={clsx(
+                                 "inline-flex items-center gap-1 text-xs font-semibold",
+                                 step.status === "complete"
+                                    ? "text-emerald-700"
+                                    : step.status === "current"
+                                      ? "text-amber-700"
+                                      : "text-zinc-500",
+                              )}
+                           >
+                              {step.status === "complete" && (
+                                 <CheckIcon className="h-4 w-4 text-emerald-600" />
+                              )}
+                              {step.status === "complete"
+                                 ? "완료"
+                                 : step.status === "current"
+                                   ? "진행중"
+                                   : "대기중"}
+                           </span>
+                        </div>
+                        <p className="mt-4 text-base font-semibold text-zinc-950">
+                           {step.label}
+                        </p>
+                     </div>
+                  ))}
+               </div>
+
+               <p className="mt-4 text-sm leading-6 text-zinc-500">
+                  플랜 결제와 사이트 선택이 완료되면 관리자 승인 및 세팅 진행 상태가
+                  순차적으로 갱신됩니다.
+               </p>
+            </section>
+
             <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
                <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
                   <div>
@@ -673,7 +918,8 @@ export default function MyPagePanel() {
                </section>
 
                <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
-                  <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                     <div className="flex flex-wrap items-center gap-3">
                      <h2 className="text-2xl font-semibold text-zinc-950">현재 플랜</h2>
                      <span
                         className={clsx(
@@ -683,6 +929,17 @@ export default function MyPagePanel() {
                      >
                         {currentPlanMeta.label}
                      </span>
+                     </div>
+                     {session?.customId && session.role !== "admin" && (
+                        <button
+                           type="button"
+                           onClick={handleRefreshProfile}
+                           disabled={isLoadingProfile}
+                           className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 shadow-sm transition hover:bg-zinc-50 hover:text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                           {isLoadingProfile ? "확인 중.." : "새로고침"}
+                        </button>
+                     )}
                   </div>
 
                   <p className="mt-3 text-sm leading-7 text-zinc-600">
@@ -710,6 +967,117 @@ export default function MyPagePanel() {
                            </div>
                         </div>
                      )}
+
+                  {currentPlan !== "none" && (
+                     <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                           <div>
+                              <p className="text-sm font-semibold text-zinc-950">
+                                 이번 회차 요청수
+                              </p>
+                              <p className="mt-2 text-sm leading-6 text-zinc-600">
+                                 상품 등록, 수정, 삭제는 모두 요청수 1회로 집계됩니다.
+                              </p>
+                           </div>
+                           <span
+                              className={clsx(
+                                 "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+                                 requestUsageStatus === "exhausted"
+                                    ? "border-red-200 bg-red-50 text-red-700"
+                                    : requestUsageStatus === "warning"
+                                      ? "border-amber-200 bg-amber-50 text-amber-700"
+                                      : requestUsageStatus === "normal"
+                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                        : "border-zinc-200 bg-white text-zinc-600",
+                              )}
+                           >
+                              {requestUsageStatusLabel}
+                           </span>
+                        </div>
+
+                        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                           <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 플랜 요청수
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-zinc-950">
+                                 {formatNumber(planRequestLimit)}
+                              </p>
+                           </div>
+                           <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 현재 요청수
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-zinc-950">
+                                 {formatNumber(currentRequestCount)}
+                              </p>
+                           </div>
+                           <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 가능 요청수
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-zinc-950">
+                                 {formatNumber(availableRequestCount)}
+                              </p>
+                           </div>
+                        </div>
+
+                        <div className="mt-5">
+                           <div className="flex items-center justify-between gap-4">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 사용량 진행도
+                              </p>
+                              <p className="text-sm font-semibold text-zinc-700">
+                                 {requestUsagePercent === null
+                                    ? "미정"
+                                    : `${requestUsagePercent}%`}
+                              </p>
+                           </div>
+                           <div className="mt-3 grid grid-cols-5 gap-2">
+                              {Array.from({ length: 5 }).map((_, index) => (
+                                 <span
+                                    key={`request-usage-${index}`}
+                                    className={clsx(
+                                       "h-3 rounded-full border",
+                                       index < requestUsageBlocks
+                                          ? requestUsageStatus === "exhausted"
+                                             ? "border-red-600 bg-red-500"
+                                             : requestUsageStatus === "warning"
+                                               ? "border-amber-500 bg-amber-400"
+                                               : "border-emerald-600 bg-emerald-500"
+                                          : "border-zinc-200 bg-white",
+                                    )}
+                                 />
+                              ))}
+                           </div>
+                        </div>
+
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                           <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 집계 시작일
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-zinc-950">
+                                 {formatDate(requestCycleStartAt)}
+                              </p>
+                           </div>
+                           <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 집계 종료일
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-zinc-950">
+                                 {formatDate(requestCycleEndAt)}
+                              </p>
+                           </div>
+                        </div>
+
+                        {!requestUsageReady && (
+                           <div className="mt-5 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+                              요청수와 집계 기간 정보는 백엔드 연동 후 자동으로 채워집니다.
+                           </div>
+                        )}
+                     </div>
+                  )}
 
                   <div className="mt-6 flex flex-wrap gap-3">
                      {currentPlan === "none" ? (
@@ -773,7 +1141,7 @@ export default function MyPagePanel() {
 
                {isLoadingProfile && (
                   <p className="mt-4 text-sm text-zinc-500">
-                     최신 구독 정보와 사이트 설정을 불러오는 중입니다...
+                     최신 플랜과 요청수 정보를 불러오는 중입니다...
                   </p>
                )}
 
@@ -1119,6 +1487,38 @@ export default function MyPagePanel() {
                      </button>
                   </div>
                </form>
+            </section>
+
+            <section className="rounded-lg border border-red-200 bg-red-50 p-6 shadow-sm sm:p-7">
+               <div className="max-w-2xl">
+                  <h2 className="text-2xl font-semibold text-zinc-950">
+                     회원 탈퇴 문의
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-zinc-700">
+                     회원 탈퇴는 문의 페이지의 <strong>계정 문의</strong>로 접수해주세요.
+                     로그인 아이디와 닉네임, 연락처, 탈퇴 희망 내용을 남겨주시면
+                     본인 확인 후 순차적으로 안내해드립니다.
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-red-700">
+                     비밀번호는 문의글에 적지 말아주세요. 문의 내용은 접수 기록으로
+                     보관되므로, 비밀번호 확인은 별도 본인 확인 절차로 진행합니다.
+                  </p>
+               </div>
+
+               <div className="mt-6">
+                  <Link
+                     href={{
+                        pathname: "/inquiry",
+                        query: {
+                           type: "계정 문의",
+                           template: "withdrawal",
+                        },
+                     }}
+                     className="inline-flex items-center justify-center rounded-lg border border-red-700 bg-red-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-red-700"
+                  >
+                     탈퇴 문의하러 가기
+                  </Link>
+               </div>
             </section>
          </div>
 

@@ -1,32 +1,60 @@
-﻿"use client";
+"use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { getSession } from "@/lib/auth";
-import {
-   addRequest,
-   canReadRequestDetail,
-   getVisibleRequests,
-} from "@/lib/requests";
+import { submitInquiry } from "@/lib/requests";
 
 const fieldClass =
    "block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600";
 
+const inquiryTypes = [
+   "플랜 문의",
+   "컨설팅 문의",
+   "기술 문의",
+   "사이트 문의",
+   "계정 문의",
+   "기타 문의",
+];
+
+const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
+
 export default function RequestForm() {
-   const router = useRouter();
-   const [session, setSession] = useState(null);
-   const [isWriting, setIsWriting] = useState(false);
-   const [requests, setRequests] = useState([]);
+   const searchParams = useSearchParams();
    const [status, setStatus] = useState("idle");
    const [message, setMessage] = useState("");
    const [phone, setPhone] = useState("");
 
-   useEffect(() => {
-      const currentSession = getSession();
+   const defaultType = useMemo(() => {
+      const requestedType = searchParams.get("type");
+      return inquiryTypes.includes(requestedType) ? requestedType : inquiryTypes[0];
+   }, [searchParams]);
 
-      setSession(currentSession);
-      setRequests(getVisibleRequests(currentSession));
-   }, []);
+   const withdrawalTemplate = useMemo(() => {
+      if (searchParams.get("template") !== "withdrawal") {
+         return "";
+      }
+
+      return `회원탈퇴를 희망합니다.
+
+- 로그인 아이디(loginId):
+- 닉네임(customId):
+- 연락처:
+- 본인 확인 가능한 시간대:
+- 추가 요청사항(선택):
+
+비밀번호는 적지 말아주세요. 접수 후 본인 확인 절차에 따라 순차 안내드립니다.`;
+   }, [searchParams]);
+
+   const contentPlaceholder = withdrawalTemplate
+      ? "기본 안내 문구를 확인한 뒤 필요한 내용만 추가로 작성해주세요."
+      : `기재하신 연락처로 유선 상담이 진행될 수 있으니 정확하게 작성해주세요.
+
+- 문의하실 내용
+- 관심 있는 플랜 또는 서비스
+- 사용 중인 쇼핑몰 또는 운영 상황
+- 연락 가능한 시간대`;
 
    const formatPhoneNumber = (value) => {
       const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -42,346 +70,167 @@ export default function RequestForm() {
       return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
    };
 
-   const handleStartWriting = () => {
-      const currentSession = getSession();
-
-      if (!currentSession) {
-         router.push("/signup?next=/request");
-         return;
-      }
-
-      setSession(currentSession);
-      setRequests(getVisibleRequests(currentSession));
-      setIsWriting(true);
-   };
-
    const handleSubmit = async (event) => {
       event.preventDefault();
-
-      const currentSession = getSession();
-
-      if (!currentSession) {
-         router.push("/signup?next=/request");
-         return;
-      }
-
       setStatus("loading");
       setMessage("");
 
-      const formData = new FormData(event.currentTarget);
+      const formElement = event.currentTarget;
+      const formData = new FormData(formElement);
       const payload = Object.fromEntries(formData.entries());
+      const session = getSession();
 
-      const response = await fetch("/api/request", {
-         method: "POST",
-         headers: {
-            "Content-Type": "application/json",
-         },
-         body: JSON.stringify({
-            ...payload,
-            authorEmail: payload.email || currentSession.email || "",
-            authorKey:
-               currentSession.loginId ||
-               currentSession.customId ||
-               currentSession.email ||
-               "",
-         }),
-      });
-
-      if (!response.ok) {
+      try {
+         await submitInquiry(payload, session);
+         formElement.reset();
+         setPhone("");
+         setStatus("success");
+         setMessage(
+            "문의가 정상적으로 접수되었습니다. 기재하신 연락처로 순차 안내드릴 예정입니다.",
+         );
+      } catch {
          setStatus("error");
-         setMessage("요청을 저장하지 못했습니다. 잠시 후 다시 시도해주세요.");
+         setMessage("문의를 접수하지 못했습니다. 잠시 후 다시 시도해주세요.");
          return;
       }
-
-      addRequest(payload, currentSession);
-      setRequests(getVisibleRequests(currentSession));
-      event.currentTarget.reset();
-      setPhone("");
-      setStatus("success");
-      setMessage("요청 완료");
    };
 
    return (
       <div className="space-y-7">
-         {!isWriting && (
-            <div className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
-               <h2 className="text-2xl font-semibold">요청서를 시작하세요</h2>
-               <p className="mt-3 text-sm leading-6 text-zinc-600">
-                  폼을 열기 전 로그인 상태를 확인합니다. 로그인하지 않았다면 회원가입 화면으로 이동합니다.
-               </p>
-               <button
-                  type="button"
-                  onClick={handleStartWriting}
-                  className="mt-7 inline-flex rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700"
+         <div className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
+            <h2 className="text-2xl font-semibold">문의하기</h2>
+            <p className="mt-3 text-sm leading-7 text-zinc-600">
+               문의는 대부분 담당자 유선 상담으로 진행됩니다. 연락 가능한 연락처를
+               정확하게 기재해주시면 순차적으로 안내드리고 있습니다.
+            </p>
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+               <a
+                  href={kakaoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
                >
-                  요청서 작성하기
-               </button>
-               <p className="mt-4 text-xs text-zinc-500">
-                  목록은 모두 볼 수 있고, 아이디와 패스워드 같은 상세 정보는 작성자와 관리자만 볼 수 있습니다.
-               </p>
+                  카카오톡으로 상담하기
+               </a>
+               <Link
+                  href="#inquiry-form"
+                  className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+               >
+                  문의글 작성하기
+               </Link>
             </div>
-         )}
+         </div>
 
-         {isWriting && session && (
-            <form
-               onSubmit={handleSubmit}
-               className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm"
-            >
-               <div className="grid gap-5 md:grid-cols-2">
-                  <div>
-                     <label
-                        htmlFor="name"
-                        className="text-sm font-medium text-zinc-600"
-                     >
-                        이름
-                     </label>
-                     <input
-                        id="name"
-                        name="name"
-                        type="text"
-                        defaultValue={session.name}
-                        className={`${fieldClass} mt-1.5`}
-                        required
-                     />
-                  </div>
-                  <div>
-                     <label
-                        htmlFor="email"
-                        className="text-sm font-medium text-zinc-600"
-                     >
-                        이메일
-                     </label>
-                     <input
-                        id="email"
-                        name="email"
-                        type="email"
-                        defaultValue={session.email}
-                        className={`${fieldClass} mt-1.5`}
-                        required
-                     />
-                  </div>
-               </div>
-
-               <div className="mt-5">
-                  <label
-                     htmlFor="platform"
-                     className="text-sm font-medium text-zinc-600"
-                  >
-                     플랫폼 선택
+         <form
+            id="inquiry-form"
+            onSubmit={handleSubmit}
+            className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm"
+         >
+            <div className="grid gap-5 md:grid-cols-2">
+               <div>
+                  <label htmlFor="type" className="text-sm font-medium text-zinc-600">
+                     문의 유형
                   </label>
                   <select
-                     id="platform"
-                     name="platform"
+                     id="type"
+                     name="type"
                      className={`${fieldClass} mt-1.5`}
+                     defaultValue={defaultType}
                      required
                   >
-                     <option value="카페24">카페24</option>
-                     <option value="고도몰">고도몰</option>
-                     <option value="스마트스토어">스마트스토어</option>
-                     <option value="메이크샵">메이크샵</option>
+                     {inquiryTypes.map((type) => (
+                        <option key={type} value={type}>
+                           {type}
+                        </option>
+                     ))}
                   </select>
                </div>
 
-               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <div>
-                     <label
-                        htmlFor="mallId"
-                        className="text-sm font-medium text-zinc-600"
-                     >
-                        아이디
-                     </label>
-                     <input
-                        id="mallId"
-                        name="mallId"
-                        type="text"
-                        placeholder="쇼핑몰 아이디"
-                        className={`${fieldClass} mt-1.5`}
-                        required
-                     />
-                  </div>
-                  <div>
-                     <label
-                        htmlFor="mallPassword"
-                        className="text-sm font-medium text-zinc-600"
-                     >
-                        패스워드
-                     </label>
-                     <input
-                        id="mallPassword"
-                        name="mallPassword"
-                        type="password"
-                        placeholder="쇼핑몰 패스워드"
-                        className={`${fieldClass} mt-1.5`}
-                        required
-                     />
-                  </div>
-               </div>
-
-               <div className="mt-5 grid gap-5 md:grid-cols-2">
-                  <div>
-                     <label
-                        htmlFor="plan"
-                        className="text-sm font-medium text-zinc-600"
-                     >
-                        결제플랜
-                     </label>
-                     <select
-                        id="plan"
-                        name="plan"
-                        className={`${fieldClass} mt-1.5`}
-                        required
-                     >
-                        <option value="베이직">베이직</option>
-                        <option value="프로">프로</option>
-                        <option value="엔터프라이즈">엔터프라이즈</option>
-                     </select>
-                  </div>
-                  <div>
-                     <label
-                        htmlFor="phone"
-                        className="text-sm font-medium text-zinc-600"
-                     >
-                        연락처
-                     </label>
-                     <input
-                        id="phone"
-                        name="phone"
-                        type="tel"
-                        inputMode="numeric"
-                        value={phone}
-                        onChange={(event) =>
-                           setPhone(formatPhoneNumber(event.target.value))
-                        }
-                        placeholder="010-1234-5678"
-                        className={`${fieldClass} mt-1.5`}
-                        maxLength={13}
-                        required
-                     />
-                  </div>
-               </div>
-
-               <div className="mt-5">
-                  <label
-                     htmlFor="content"
-                     className="text-sm font-medium text-zinc-600"
-                  >
-                     문의 내용
+               <div>
+                  <label htmlFor="name" className="text-sm font-medium text-zinc-600">
+                     이름
                   </label>
-                  <textarea
-                     id="content"
-                     name="content"
-                     rows={7}
-                     placeholder={`쇼핑몰 아이디:
-쇼핑몰 패스워드:
-추가 요청사항(선택):`}
+                  <input
+                     id="name"
+                     name="name"
+                     type="text"
                      className={`${fieldClass} mt-1.5`}
+                     placeholder="이름을 입력해주세요"
+                     required
+                  />
+               </div>
+            </div>
+
+            <div className="mt-5 grid gap-5 md:grid-cols-2">
+               <div>
+                  <label htmlFor="phone" className="text-sm font-medium text-zinc-600">
+                     연락처
+                  </label>
+                  <input
+                     id="phone"
+                     name="phone"
+                     type="tel"
+                     inputMode="numeric"
+                     value={phone}
+                     onChange={(event) =>
+                        setPhone(formatPhoneNumber(event.target.value))
+                     }
+                     className={`${fieldClass} mt-1.5`}
+                     placeholder="010-1234-5678"
+                     maxLength={13}
                      required
                   />
                </div>
 
-               {message && (
-                  <p
-                     className={`mt-5 rounded-lg px-4 py-3 text-sm font-medium ${
-                        status === "success"
-                           ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
-                           : "border border-red-200 bg-red-50 text-red-700"
-                     }`}
-                  >
-                     {message}
-                  </p>
-               )}
+               <div>
+                  <label htmlFor="email" className="text-sm font-medium text-zinc-600">
+                     이메일 <span className="text-zinc-400">(선택)</span>
+                  </label>
+                  <input
+                     id="email"
+                     name="email"
+                     type="email"
+                     className={`${fieldClass} mt-1.5`}
+                     placeholder="you@example.com"
+                  />
+               </div>
+            </div>
 
-               <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="mt-7 inline-flex rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            <div className="mt-5">
+               <label htmlFor="content" className="text-sm font-medium text-zinc-600">
+                  문의 내용
+               </label>
+               <textarea
+                  id="content"
+                  name="content"
+                  rows={8}
+                  className={`${fieldClass} mt-1.5`}
+                  defaultValue={withdrawalTemplate || undefined}
+                  placeholder={contentPlaceholder}
+                  required
+               />
+            </div>
+
+            {message && (
+               <p
+                  className={`mt-5 rounded-lg px-4 py-3 text-sm font-medium ${
+                     status === "success"
+                        ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border border-red-200 bg-red-50 text-red-700"
+                  }`}
                >
-                  {status === "loading" ? "전송 중" : "문의하기"}
-               </button>
-            </form>
-         )}
-
-         {requests.length > 0 && (
-            <div className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
-               <div className="flex items-center justify-between gap-4">
-                  <div>
-                     <h2 className="text-xl font-semibold">요청서 목록</h2>
-                     <p className="mt-1 text-sm text-zinc-600">
-                        로그인하면 내 요청서가 먼저 보이고, 상세 정보는 작성자와 관리자만 확인할 수 있습니다.
-                     </p>
-                  </div>
-                  {session?.role === "admin" && (
-                     <span className="rounded border border-emerald-700 bg-emerald-600 px-2 py-1.5 text-xs font-semibold text-white shadow-sm">
-                        관리자
-                     </span>
-                  )}
-               </div>
-               <div className="mt-5 space-y-4">
-                  {requests.map((request) => (
-                     <RequestCard
-                        key={request.id}
-                        request={request}
-                        session={session}
-                     />
-                  ))}
-               </div>
-            </div>
-         )}
-      </div>
-   );
-}
-
-function RequestCard({ request, session }) {
-   const canReadDetail = canReadRequestDetail(request, session);
-   const sessionKey = session?.loginId || session?.customId || session?.email;
-   const requestKey = request.authorKey || request.authorEmail;
-   const isMine = sessionKey && requestKey === sessionKey;
-
-   return (
-      <article className="rounded-lg border border-zinc-200 p-5">
-         <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-               <p className="font-medium text-zinc-950">
-                  {request.title || "요청서 작성드립니다."}
+                  {message}
                </p>
-               <p className="mt-1 text-xs text-zinc-500">
-                  {new Date(request.createdAt).toLocaleString("ko-KR")}
-               </p>
-            </div>
-            {isMine && (
-               <span className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
-                  내 문의
-               </span>
             )}
-         </div>
 
-         <dl className="mt-4 grid gap-3 text-sm md:grid-cols-2">
-            <div>
-               <dt className="text-xs font-medium text-zinc-500">플랜</dt>
-               <dd className="mt-1 text-zinc-950">{request.plan || "베이직"}</dd>
-            </div>
-            <div>
-               <dt className="text-xs font-medium text-zinc-500">호스팅</dt>
-               <dd className="mt-1 text-zinc-950">{request.platform}</dd>
-            </div>
-         </dl>
-
-         {canReadDetail ? (
-            <div className="mt-4 rounded-lg bg-zinc-50 p-4 text-sm text-zinc-600">
-               <p>
-                  작성자: {request.authorName}
-                  {request.authorEmail ? ` (${request.authorEmail})` : ""}
-               </p>
-               <p className="mt-1">연락처: {request.phone}</p>
-               <p className="mt-1">쇼핑몰 아이디: {request.mallId}</p>
-               <p className="mt-1">쇼핑몰 패스워드: {request.mallPassword}</p>
-               <p className="mt-3 whitespace-pre-line">{request.content}</p>
-            </div>
-         ) : (
-            <p className="mt-4 text-xs text-zinc-500">
-               상세 내용은 작성자와 관리자만 확인할 수 있습니다.
-            </p>
-         )}
-      </article>
+            <button
+               type="submit"
+               disabled={status === "loading"}
+               className="mt-7 inline-flex rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+               {status === "loading" ? "접수 중..." : "문의 등록하기"}
+            </button>
+         </form>
+      </div>
    );
 }

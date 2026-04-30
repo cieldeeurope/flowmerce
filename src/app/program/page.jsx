@@ -337,6 +337,7 @@ function MarginSettingsMockup() {
       ["최소 마진", "최소 마진 입력"],
       ["마진 값 (%)", "마진 값 입력"],
       ["환율", "환율 입력"],
+      ["거래처 할인율 (%)", "거래처 할인율 입력"],
    ];
 
    return (
@@ -353,7 +354,7 @@ function MarginSettingsMockup() {
                {fields.map(([label, placeholder]) => (
                   <div
                      key={label}
-                     className="grid grid-cols-[90px_1fr] items-center gap-3"
+                     className="grid grid-cols-[112px_1fr] items-center gap-3"
                   >
                      <span className="text-zinc-700">{label}</span>
                      <div className="h-8 rounded border border-zinc-300 bg-zinc-50 px-3 leading-8 text-zinc-400">
@@ -361,7 +362,7 @@ function MarginSettingsMockup() {
                      </div>
                   </div>
                ))}
-               <div className="grid grid-cols-[90px_1fr] items-center gap-3">
+               <div className="grid grid-cols-[112px_1fr] items-center gap-3">
                   <span className="text-zinc-700">사이트</span>
                   <div className="h-8 rounded border border-zinc-300 bg-zinc-100 px-3 leading-8 text-zinc-700">
                      사이트 선택
@@ -570,31 +571,36 @@ function VisitorStockUpdateSection() {
 function MarginFeatureSection() {
    const definitions = [
       {
-         label: "최소금액",
+         label: "최소 금액",
          description: "이 마진식을 적용할 상품 가격의 시작 금액입니다.",
       },
       {
-         label: "최대금액",
+         label: "최대 금액",
          description: "이 마진식을 적용할 상품 가격의 마지막 금액입니다.",
       },
       {
          label: "최소 마진",
          description:
-            "마진값을 붙인 최종가격에 추가로 더하거나 빼는 고정 금액입니다.",
+            "마진값을 적용한 최종 가격에 추가하거나 빼는 고정 금액입니다.",
       },
       {
-         label: "마진값(%)",
-         description: "해당 금액 범위에 있는 상품에 적용할 퍼센트 마진입니다.",
+         label: "마진 값 (%)",
+         description: "해당 금액 구간에 적용할 기본 마진율입니다.",
       },
       {
-         label: "환율",
+         label: "환율 (유로)",
          description:
-            "기준 환율을 직접 입력해 사용할 수 있습니다. 예를 들어 1700처럼 현재 운영 기준에 맞는 값을 넣어 설정합니다.",
+            "기준 환율을 직접 입력해 사용합니다. 예를 들어 1700처럼 현재 운영 기준에 맞는 값을 넣어 설정합니다.",
+      },
+      {
+         label: "거래처 할인율",
+         description:
+            "거래처가 브랜드별로 제공하는 공급가 할인율입니다. 예를 들어 3% 또는 5%처럼 입력하면 실제 매입 원가가 더 낮아져, 같은 마진율을 유지하면서도 판매가 경쟁력을 높이는 데 도움이 됩니다.",
       },
       {
          label: "사이트",
          description:
-            "마진식을 적용할 사이트를 선택하는 항목입니다. 구독한 사이트들이 나열되며, 하나의 사이트에도 여러 마진식을 설정할 수 있습니다.",
+            "마진식을 적용할 사이트를 선택하는 항목입니다. 구독한 사이트별로 각각 다른 마진식을 설정할 수 있습니다.",
       },
    ];
 
@@ -610,8 +616,7 @@ function MarginFeatureSection() {
                </h2>
                <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-zinc-600">
                   프로그램에서 마진설정 버튼을 클릭하면 현재 사용 중인 마진 설정창이 열립니다.
-                  금액대별 마진식은 물론 환율과 사이트를 함께 선택해 운영할 수 있어
-                  실제 사용 환경에 맞춘 판매가 설정이 가능합니다.
+                  금액대별 마진율은 물론 환율과 거래처 할인율까지 함께 반영해 실제 운영 환경에 맞는 판매가를 세밀하게 설정할 수 있습니다.
                </p>
             </div>
 
@@ -646,15 +651,17 @@ function MarginFeatureSection() {
                      </h3>
                      <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-600">
                         <p>
-                           먼저 최소 금액, 최대 금액, 최소 마진, 마진 값(%)을 입력한 뒤
-                           환율 항목에 기준 값을 넣어 사용합니다.
+                           먼저 최소 금액, 최대 금액, 최소 마진, 마진 값(%)을 입력하고 환율 값을 넣어 사용합니다.
                         </p>
                         <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
-                           환율은 예를 들어 <span className="font-semibold">1700</span>처럼
-                           현재 운영 기준 값을 넣으면 됩니다.
+                           환율은 예를 들어 <span className="font-semibold">1700</span>처럼 현재 운영 기준에 맞는 값을 입력하면 됩니다.
+                           거래처 할인율은 브랜드별 공급가 할인율을 넣는 항목으로, 예를 들어 <span className="font-semibold">3</span> 또는 <span className="font-semibold">5</span>처럼 입력해 실제 매입 원가를 더 정확하게 반영할 수 있습니다.
                         </p>
                         <p>
-                           그 다음 마진식을 적용할 사이트를 선택하면 해당 환경에 맞는 마진 설정을 저장할 수 있습니다.
+                           거래처 할인율이 반영되면 같은 마진율을 유지하더라도 판매가를 더 경쟁력 있게 설정할 수 있어, 가격 메리트와 노출 경쟁력 확보에 도움이 됩니다.
+                        </p>
+                        <p>
+                           그 다음 마진식을 적용할 사이트를 선택하면 해당 사이트 운영 기준에 맞는 마진 설정을 저장할 수 있습니다.
                         </p>
                      </div>
                   </div>
@@ -665,12 +672,10 @@ function MarginFeatureSection() {
                      </h3>
                      <div className="mt-5 space-y-4 text-sm leading-7 text-zinc-600">
                         <p>
-                           입력이 끝나면 저장 버튼을 눌러 마진식을 추가하면 되고, 같은 방식으로
-                           여러 마진식을 계속 쌓아둘 수 있습니다.
+                           입력이 끝나면 저장 버튼을 눌러 마진식을 추가하고, 같은 방식으로 여러 마진식을 이어서 설정할 수 있습니다.
                         </p>
                         <p>
-                           삭제가 필요할 때는 현재 설정중인 마진 목록에서 원하는 마진식을
-                           선택한 뒤 삭제 버튼을 누르면 됩니다.
+                           삭제가 필요할 때는 현재 설정중인 마진 목록에서 원하는 마진식을 선택한 뒤 삭제 버튼을 누르면 됩니다.
                         </p>
                      </div>
                   </div>
@@ -749,7 +754,7 @@ function UploadedProductShowcaseSection() {
 function WordReplacementFeatureSection() {
    const examples = [
       ["스니커즈", "운동화"],
-      ["토트백", "토트 백"],
+      ["Gucci", "구찌"],
       ["재킷", "자켓"],
    ];
 
@@ -1024,10 +1029,10 @@ export default function ProgramPage() {
                      </p>
                      <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
                         <Link
-                           href="/request"
+                           href="/inquiry"
                            className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
                         >
-                           요청서 작성하기
+                           문의 남기기
                         </Link>
                         <Link
                            href="/consulting"

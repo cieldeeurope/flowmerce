@@ -64,7 +64,7 @@ export default function MobileNav() {
    const handleLogout = () => {
       signOut();
 
-      if (pathname === "/admin") {
+      if (pathname === "/admin" || pathname === "/admin-flowmerce") {
          router.push("/");
       }
    };
@@ -104,14 +104,12 @@ export default function MobileNav() {
                   <MobileNavLink href="/program">프로그램 소개</MobileNavLink>
                   <MobileNavLink href="/consulting">컨설팅</MobileNavLink>
                   <MobileNavLink href="/pricing">가격</MobileNavLink>
+                  <MobileNavLink href="/inquiry">문의</MobileNavLink>
                   <MobileNavLink href="/#faq">자주묻는질문</MobileNavLink>
                   <MobileNavLink href="/#contact-us">연락처</MobileNavLink>
                   <hr className="my-2 border-zinc-200" />
                   {session ? (
                      <>
-                        {session.role === "admin" && (
-                           <MobileNavLink href="/admin">관리자</MobileNavLink>
-                        )}
                         <MobileNavLink href="/mypage">마이페이지</MobileNavLink>
                         <Popover.Button
                            type="button"

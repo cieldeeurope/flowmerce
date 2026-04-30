@@ -69,7 +69,7 @@ export default function AuthForm({ mode }) {
          return "";
       }
 
-      return "회원가입이 완료되었습니다. 관리자 승인 후 로그인할 수 있습니다.";
+      return "회원가입이 완료되었습니다. 지금 바로 로그인해서 마이페이지에서 진행 상태를 확인할 수 있습니다.";
    }, [searchParams]);
 
    const passwordGuide = useMemo(() => {
@@ -81,7 +81,7 @@ export default function AuthForm({ mode }) {
          return "사용 가능한 비밀번호 형식입니다.";
       }
 
-      return "영문, 숫자, 특수문자를 포함한 8자리 이상으로 입력해주세요.";
+      return "영문, 숫자, 특수문자를 포함해 8자리 이상으로 입력해주세요.";
    }, [isSignup, signupForm.password]);
 
    const handleSignupChange = (field, value) => {
@@ -211,8 +211,8 @@ export default function AuthForm({ mode }) {
          </h1>
          <p className="mt-2 text-zinc-600">
             {isSignup
-               ? "요청서 작성 전에 계정을 먼저 만들어주세요."
-               : "계정으로 로그인하면 요청서를 작성할 수 있습니다."}
+               ? "문의는 회원가입 없이도 가능합니다. 플랜 구독, 마이페이지 이용, 프로그램 사용 관리는 가입 후 진행할 수 있습니다."
+               : "로그인하면 마이페이지에서 플랜, 사이트, 비밀번호를 편하게 관리할 수 있습니다."}
          </p>
 
          {registeredMessage && !isSignup && (
@@ -226,10 +226,7 @@ export default function AuthForm({ mode }) {
                {isSignup && (
                   <>
                      <div>
-                        <label
-                           htmlFor="name"
-                           className="text-sm font-medium text-zinc-600"
-                        >
+                        <label htmlFor="name" className="text-sm font-medium text-zinc-600">
                            이름
                         </label>
                         <div className="mt-1.5">
@@ -249,10 +246,7 @@ export default function AuthForm({ mode }) {
                      </div>
 
                      <div>
-                        <label
-                           htmlFor="loginId"
-                           className="text-sm font-medium text-zinc-600"
-                        >
+                        <label htmlFor="loginId" className="text-sm font-medium text-zinc-600">
                            아이디
                         </label>
                         <div className="mt-1.5 flex gap-2">
@@ -264,10 +258,7 @@ export default function AuthForm({ mode }) {
                               className={inputClass}
                               value={signupForm.loginId}
                               onChange={(event) =>
-                                 handleSignupChange(
-                                    "loginId",
-                                    event.target.value,
-                                 )
+                                 handleSignupChange("loginId", event.target.value)
                               }
                               required
                            />
@@ -277,9 +268,7 @@ export default function AuthForm({ mode }) {
                               className={checkButtonClass}
                               disabled={idCheck.status === "checking"}
                            >
-                              {idCheck.status === "checking"
-                                 ? "확인중"
-                                 : "중복체크"}
+                              {idCheck.status === "checking" ? "확인중" : "중복체크"}
                            </button>
                         </div>
                         <FieldFeedback
@@ -298,10 +287,7 @@ export default function AuthForm({ mode }) {
 
                {!isSignup && (
                   <div>
-                     <label
-                        htmlFor="loginId"
-                        className="text-sm font-medium text-zinc-600"
-                     >
+                     <label htmlFor="loginId" className="text-sm font-medium text-zinc-600">
                         아이디
                      </label>
                      <div className="mt-1.5">
@@ -325,10 +311,7 @@ export default function AuthForm({ mode }) {
                )}
 
                <div>
-                  <label
-                     htmlFor="password"
-                     className="text-sm font-medium text-zinc-600"
-                  >
+                  <label htmlFor="password" className="text-sm font-medium text-zinc-600">
                      비밀번호
                   </label>
                   <div className="mt-1.5">
@@ -367,10 +350,7 @@ export default function AuthForm({ mode }) {
                {isSignup && (
                   <>
                      <div>
-                        <label
-                           htmlFor="customId"
-                           className="text-sm font-medium text-zinc-600"
-                        >
+                        <label htmlFor="customId" className="text-sm font-medium text-zinc-600">
                            닉네임
                         </label>
                         <div className="mt-1.5 flex gap-2">
@@ -382,10 +362,7 @@ export default function AuthForm({ mode }) {
                               className={inputClass}
                               value={signupForm.customId}
                               onChange={(event) =>
-                                 handleSignupChange(
-                                    "customId",
-                                    event.target.value,
-                                 )
+                                 handleSignupChange("customId", event.target.value)
                               }
                               required
                            />
@@ -395,9 +372,7 @@ export default function AuthForm({ mode }) {
                               className={checkButtonClass}
                               disabled={nicknameCheck.status === "checking"}
                            >
-                              {nicknameCheck.status === "checking"
-                                 ? "확인중"
-                                 : "중복체크"}
+                              {nicknameCheck.status === "checking" ? "확인중" : "중복체크"}
                            </button>
                         </div>
                         <FieldFeedback
@@ -413,10 +388,7 @@ export default function AuthForm({ mode }) {
                      </div>
 
                      <div>
-                        <label
-                           htmlFor="email"
-                           className="text-sm font-medium text-zinc-600"
-                        >
+                        <label htmlFor="email" className="text-sm font-medium text-zinc-600">
                            이메일 <span className="text-zinc-400">(선택)</span>
                         </label>
                         <div className="mt-1.5">
@@ -442,6 +414,14 @@ export default function AuthForm({ mode }) {
                   </p>
                )}
 
+               {!isSignup && (
+                  <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-6 text-zinc-600">
+                     비밀번호를 잊으셨다면 문의 페이지 또는 카카오톡 채널로 문의해주세요.
+                     기존 비밀번호 확인은 불가능하며, 본인 확인 후 임시 비밀번호 재설정을
+                     도와드립니다.
+                  </p>
+               )}
+
                <div className="pt-3.5">
                   <button
                      type="submit"
@@ -450,8 +430,8 @@ export default function AuthForm({ mode }) {
                   >
                      {submitting
                         ? isSignup
-                           ? "가입 중"
-                           : "로그인 중"
+                           ? "가입 중..."
+                           : "로그인 중..."
                         : isSignup
                           ? "회원가입"
                           : "로그인"}

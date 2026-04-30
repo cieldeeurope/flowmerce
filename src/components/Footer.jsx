@@ -3,9 +3,9 @@ import Link from "next/link";
 import Container from "./Container";
 
 export default function Footer() {
-const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
+   const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
 
-   const links = [
+   const primaryLinks = [
       { href: "/", label: "홈" },
       { href: "/guide", label: "핵심 가이드" },
       { href: "/program", label: "프로그램 소개" },
@@ -13,6 +13,13 @@ const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
       { href: "/pricing", label: "가격" },
       { href: "/#faq", label: "자주 묻는 질문" },
       { href: "/#contact-us", label: "연락처" },
+   ];
+
+   const policyLinks = [
+      { href: "/terms", label: "이용약관" },
+      { href: "/privacy", label: "개인정보처리방침" },
+      { href: "/refund-policy", label: "환불/해지 정책" },
+      { href: "/data-policy", label: "계정정보/데이터 삭제 기준" },
    ];
 
    return (
@@ -36,11 +43,24 @@ const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
 
                <div className="lg:text-right">
                   <ul className="flex flex-wrap gap-x-6 gap-y-3 lg:justify-end">
-                     {links.map((link) => (
+                     {primaryLinks.map((link) => (
                         <li key={link.href}>
                            <Link
                               href={link.href}
                               className="block text-sm font-medium text-zinc-700 transition hover:text-zinc-950"
+                           >
+                              {link.label}
+                           </Link>
+                        </li>
+                     ))}
+                  </ul>
+
+                  <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 lg:justify-end">
+                     {policyLinks.map((link) => (
+                        <li key={link.href}>
+                           <Link
+                              href={link.href}
+                              className="block text-xs font-medium text-zinc-500 transition hover:text-zinc-900"
                            >
                               {link.label}
                            </Link>

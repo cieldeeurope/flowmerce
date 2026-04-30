@@ -37,7 +37,7 @@ export default function AuthNav() {
    const handleLogout = () => {
       signOut();
 
-      if (pathname === "/admin") {
+      if (pathname === "/admin" || pathname === "/admin-flowmerce") {
          router.push("/");
       }
    };
@@ -45,7 +45,6 @@ export default function AuthNav() {
    if (session) {
       return (
          <div className="flex items-center gap-4">
-            {session.role === "admin" && <AuthLink href="/admin">관리자</AuthLink>}
             <AuthLink href="/mypage">마이페이지</AuthLink>
             <button
                type="button"

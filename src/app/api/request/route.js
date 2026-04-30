@@ -1,15 +1,6 @@
 export async function POST(request) {
    const body = await request.json();
-   const requiredFields = [
-      "name",
-      "email",
-      "platform",
-      "mallId",
-      "mallPassword",
-      "plan",
-      "phone",
-      "content",
-   ];
+   const requiredFields = ["type", "name", "phone", "content"];
    const hasMissingField = requiredFields.some((field) => !body[field]);
 
    if (hasMissingField) {
@@ -20,7 +11,7 @@ export async function POST(request) {
    }
 
    return Response.json({
-      message: "요청 완료",
+      message: "문의 접수 완료",
       request: {
          ...body,
          receivedAt: new Date().toISOString(),

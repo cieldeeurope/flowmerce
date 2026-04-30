@@ -1,20 +1,10 @@
 const SESSION_KEY = "flowmerce_session";
+const ADMIN_SESSION_KEY = "flowmerce_admin_session";
 const API_BASE_URL = (
    process.env.NEXT_PUBLIC_API_BASE_URL || "https://api.flowmerce.co.kr"
 ).replace(/\/$/, "");
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 const DEFAULT_PLAN = "none";
-
-const ADMIN_USER = {
-   loginId: "admin",
-   password: "admin1234",
-   name: "관리자",
-   customId: "admin",
-   email: "",
-   role: "admin",
-   plan: DEFAULT_PLAN,
-   sites: [],
-};
 
 async function parseApiResponse(response) {
    const data = await response.json().catch(() => ({}));
@@ -45,6 +35,11 @@ function saveSession(session) {
    window.dispatchEvent(new Event("flowmerce-auth"));
 }
 
+function saveAdminSession(session) {
+   window.localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session));
+   window.dispatchEvent(new Event("flowmerce-admin-auth"));
+}
+
 export function getSession() {
    if (typeof window === "undefined") {
       return null;
@@ -52,6 +47,18 @@ export function getSession() {
 
    try {
       return JSON.parse(window.localStorage.getItem(SESSION_KEY));
+   } catch {
+      return null;
+   }
+}
+
+export function getAdminSession() {
+   if (typeof window === "undefined") {
+      return null;
+   }
+
+   try {
+      return JSON.parse(window.localStorage.getItem(ADMIN_SESSION_KEY));
    } catch {
       return null;
    }
@@ -141,15 +148,6 @@ export async function signIn({ loginId, password }) {
       throw new Error("아이디와 비밀번호를 입력해주세요.");
    }
 
-   if (
-      normalizedLoginId === ADMIN_USER.loginId &&
-      password === ADMIN_USER.password
-   ) {
-      const session = buildSession(ADMIN_USER);
-      saveSession(session);
-      return session;
-   }
-
    const response = await fetch(`${API_BASE_URL}/user/login`, {
       method: "POST",
       headers: {
@@ -181,6 +179,50 @@ export async function signIn({ loginId, password }) {
 
    saveSession(session);
 
+   return session;
+}
+
+export async function signInAdmin({ loginId, password }) {
+   const normalizedLoginId = loginId.trim();
+
+   if (!normalizedLoginId || !password) {
+      throw new Error("아이디와 비밀번호를 입력해주세요.");
+   }
+
+   const response = await fetch(`${API_BASE_URL}/user/login`, {
+      method: "POST",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+         id: normalizedLoginId,
+         password,
+      }),
+   });
+
+   const data = await parseApiResponse(response);
+
+   if (data.success === false) {
+      throw new Error(data.message || "정보를 확인해주세요.");
+   }
+
+   if (data.role !== "admin") {
+      throw new Error("관리자 계정만 접근할 수 있습니다.");
+   }
+
+   const session = buildSession({
+      loginId: normalizedLoginId,
+      customId: data.customId || "admin",
+      name: data.name || "관리자",
+      email: data.email || "",
+      role: data.role,
+      plan: data.plan || DEFAULT_PLAN,
+      subscriptionStartAt: data.subscriptionStartAt || null,
+      subscriptionEndAt: data.subscriptionEndAt || null,
+      sites: Array.isArray(data.sites) ? data.sites : [],
+   });
+
+   saveAdminSession(session);
    return session;
 }
 
@@ -290,6 +332,15 @@ export function signOut() {
 
    window.localStorage.removeItem(SESSION_KEY);
    window.dispatchEvent(new Event("flowmerce-auth"));
+}
+
+export function signOutAdmin() {
+   if (typeof window === "undefined") {
+      return;
+   }
+
+   window.localStorage.removeItem(ADMIN_SESSION_KEY);
+   window.dispatchEvent(new Event("flowmerce-admin-auth"));
 }
 
 export function getApiBaseUrl() {
