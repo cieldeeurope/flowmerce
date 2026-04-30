@@ -9,10 +9,7 @@ import {
 
 export const metadata = {
    metadataBase: new URL(siteUrl),
-   title: {
-      default: defaultTitle,
-      template: `%s | ${siteName}`,
-   },
+   title: defaultTitle,
    description: defaultDescription,
    applicationName: siteName,
    authors: [{ name: siteName }],
