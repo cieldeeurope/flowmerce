@@ -42,6 +42,68 @@ export default function PricingPage() {
 
             <section className="pb-12 md:pb-16">
                <Container>
+                  <div className="mx-auto mb-12 max-w-5xl rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
+                     <div className="max-w-3xl">
+                        <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+                           Setup Guide
+                        </span>
+                        <h2 className="mt-4 text-2xl font-semibold md:text-3xl">
+                           결제 후에는 연동할 쇼핑몰 계정 정보가 필요합니다
+                        </h2>
+                        <p className="mt-4 text-base leading-8 text-zinc-600">
+                           플랜 결제와 사이트 선택이 끝나면 연동할 쇼핑몰 관리자 정보를 플로우머스로 전달해주셔야 세팅이 진행됩니다. partnerKey와 apiKey를 직접 찾기 어려운 경우가 많기 때문에, 대부분은 카카오톡 상담으로 관리자 URL과 로그인 정보만 먼저 전달해주시면 됩니다.
+                        </p>
+                     </div>
+
+                     <div className="mt-8 grid gap-4 lg:grid-cols-3">
+                        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                           <p className="text-sm font-semibold text-zinc-950">
+                              1. 사이트 선택 완료
+                           </p>
+                           <p className="mt-2 text-sm leading-7 text-zinc-600">
+                              마이페이지에서 플랜에 맞는 사이트를 확정하면 세팅 준비가 시작됩니다.
+                           </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                           <p className="text-sm font-semibold text-zinc-950">
+                              2. 쇼핑몰 관리자 정보 전달
+                           </p>
+                           <p className="mt-2 text-sm leading-7 text-zinc-600">
+                              카카오톡으로 쇼핑몰 관리자 URL, 아이디, 비밀번호를 보내주시면 됩니다. 계정이 여러 개면 함께 알려주시면 더 빠르게 세팅할 수 있습니다.
+                           </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                           <p className="text-sm font-semibold text-zinc-950">
+                              3. 키 확인과 세팅 진행
+                           </p>
+                           <p className="mt-2 text-sm leading-7 text-zinc-600">
+                              필요한 partnerKey, apiKey 확인 방법까지 플로우머스가 안내하고 세팅을 이어갑니다.
+                           </p>
+                        </div>
+                     </div>
+
+                     <div className="mt-6 flex flex-wrap gap-3">
+                        <a
+                           href="https://pf.kakao.com/_hPdjX/chat"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                        >
+                           카카오톡으로 세팅 문의하기
+                        </a>
+                        <a
+                           href="/inquiry?type=사이트 문의"
+                           className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+                        >
+                           문의 남기기
+                        </a>
+                     </div>
+
+                     <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-sm leading-7 text-red-800">
+                        구독이 종료되면 플로우머스가 관리하던 상품은 쇼핑몰과 데이터 저장소에서 삭제될 수 있습니다. 1개월 결제로 상품만 등록한 뒤 종료하는 방식은 운영 리스크가 크므로, 종료 전에는 반드시 상품 이관이나 정리 방식부터 먼저 상담해주세요.
+                     </div>
+                  </div>
+
                   <div className="mx-auto max-w-4xl text-center">
                      <h2 className="text-2xl font-semibold md:text-3xl">
                         월 요청 처리량 이란?

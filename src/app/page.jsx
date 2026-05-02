@@ -12,10 +12,13 @@ import SalesProof from "@/components/SalesProof";
 import Testimonials from "@/components/Testimonials";
 import { createMetadata, siteUrl } from "@/lib/seo";
 
+const homeTitle = "플로우머스";
+const homeDescription =
+   "상품 등록 자동화부터 SEO 상품명 최적화, 재고 연동, 원격 수집 운영까지 한 번에 관리하는 쇼핑몰 자동화 SaaS, 플로우머스.";
+
 export const metadata = createMetadata({
-   title: "쇼핑몰 자동화 솔루션",
-   description:
-      "쇼핑몰 상품 등록 자동화, 명품 구매대행 자동화, SEO 상품명 최적화, 재고관리 자동화까지 지원하는 플로우머스.",
+   title: homeTitle,
+   description: homeDescription,
    path: "/",
 });
 
@@ -26,7 +29,7 @@ export default function Home() {
          "@type": "Organization",
          name: "플로우머스",
          url: siteUrl,
-         logo: `${siteUrl}/icon.png`,
+         logo: `${siteUrl}/brand/silver-symbol.png`,
          sameAs: ["https://pf.kakao.com/_hPdjX/chat"],
       },
       {
@@ -39,15 +42,15 @@ export default function Home() {
       {
          "@context": "https://schema.org",
          "@type": "Service",
-         name: "플로우머스 쇼핑몰 자동화 솔루션",
+         name: "플로우머스 쇼핑몰 운영 자동화 SaaS",
          provider: {
             "@type": "Organization",
             name: "플로우머스",
          },
          areaServed: "KR",
-         serviceType: "쇼핑몰 자동화 및 명품 구매대행 자동화",
+         serviceType: "쇼핑몰 자동화 및 구매대행 운영 자동화",
          description:
-            "카페24, 고도몰, 스마트스토어, 메이크샵 등 쇼핑몰 상품 등록 자동화와 재고관리 자동화, 명품 구매대행 운영 구조를 지원하는 서비스입니다.",
+            "스마트스토어, 고도몰, 카페24 등 쇼핑몰 운영에 필요한 상품 등록 자동화, 재고 연동, SEO 상품명 최적화, 원격 수집 실행을 지원하는 SaaS입니다.",
       },
    ];
 

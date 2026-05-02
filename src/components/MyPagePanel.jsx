@@ -3,9 +3,10 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
    changePassword,
+   fetchHostingAccounts,
    fetchUserProfile,
    getSession,
    saveUserSites,
@@ -16,6 +17,7 @@ import { coreSourcingSites, highEndSites, plans } from "@/lib/pricingData";
 import { CheckIcon } from "./icons/CheckIcon";
 
 const boutiqueSites = ["Farfetch", "Cettire"];
+const kakaoChatUrl = "https://pf.kakao.com/_hPdjX/chat";
 const emptyPasswordForm = {
    currentPassword: "",
    newPassword: "",
@@ -121,6 +123,26 @@ function formatDate(value) {
    }).format(parsedDate);
 }
 
+function formatDateTime(value) {
+   if (!value) {
+      return "미정";
+   }
+
+   const parsedDate = new Date(value);
+
+   if (Number.isNaN(parsedDate.getTime())) {
+      return "미정";
+   }
+
+   return new Intl.DateTimeFormat("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+   }).format(parsedDate);
+}
+
 function formatNumber(value) {
    if (value === null || value === undefined || value === "") {
       return "미정";
@@ -142,6 +164,14 @@ function parseNullableNumber(value) {
 
    const parsed = Number(value);
    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizeAccountPlatforms(value) {
+   if (!Array.isArray(value)) {
+      return [];
+   }
+
+   return [...new Set(value.map((item) => String(item).trim()).filter(Boolean))];
 }
 
 function getUpgradePlanValues(currentPlan) {
@@ -351,6 +381,7 @@ export default function MyPagePanel() {
    const router = useRouter();
    const [session, setSession] = useState(null);
    const [profile, setProfile] = useState(null);
+   const [linkedAccountPlatforms, setLinkedAccountPlatforms] = useState([]);
    const [isCheckingSession, setIsCheckingSession] = useState(true);
    const [isLoadingProfile, setIsLoadingProfile] = useState(false);
    const [passwordForm, setPasswordForm] = useState(emptyPasswordForm);
@@ -409,7 +440,24 @@ export default function MyPagePanel() {
       });
    };
 
-   const handleRefreshProfile = async () => {
+   const loadLinkedAccounts = useCallback(async (customId) => {
+      try {
+         const result = await fetchHostingAccounts(customId);
+         const nextAccounts = Array.isArray(result)
+            ? result
+            : Array.isArray(result?.accounts)
+              ? result.accounts
+              : Array.isArray(result?.accountPlatforms)
+                ? result.accountPlatforms
+                : [];
+
+         setLinkedAccountPlatforms(normalizeAccountPlatforms(nextAccounts));
+      } catch {
+         setLinkedAccountPlatforms([]);
+      }
+   }, []);
+
+   const handleRefreshProfile = useCallback(async () => {
       if (!session?.customId || session.role === "admin") {
          return;
       }
@@ -422,16 +470,19 @@ export default function MyPagePanel() {
 
          if (!user) {
             setProfile(null);
+            setLinkedAccountPlatforms([]);
             return;
          }
 
          syncProfileState(user);
+         await loadLinkedAccounts(session.customId);
       } catch {
          setProfile(null);
+         setLinkedAccountPlatforms([]);
       } finally {
          setIsLoadingProfile(false);
       }
-   };
+   }, [loadLinkedAccounts, session?.customId, session?.role]);
 
    useEffect(() => {
       if (!session?.customId || session.role === "admin") {
@@ -468,7 +519,16 @@ export default function MyPagePanel() {
       return () => {
          cancelled = true;
       };
-   }, [session?.customId, session?.role]);
+   }, [handleRefreshProfile, session?.customId, session?.role]);
+
+   useEffect(() => {
+      if (!session?.customId || session.role === "admin") {
+         setLinkedAccountPlatforms([]);
+         return;
+      }
+
+      void loadLinkedAccounts(session.customId);
+   }, [loadLinkedAccounts, session?.customId, session?.role]);
 
    const account = profile
       ? {
@@ -568,6 +628,121 @@ export default function MyPagePanel() {
            : requestUsageStatus === "normal"
              ? "정상 이용 중"
              : "연동 예정";
+   const collectionProgressSource = account?.collectionProgress || null;
+   const collectionProgressStatus = String(
+      collectionProgressSource?.status ||
+         account?.collectionStatus ||
+         account?.runStatus ||
+         "",
+   ).toLowerCase();
+   const collectionProgressCurrent = parseNullableNumber(
+      collectionProgressSource?.current ??
+         account?.collectionCurrentCount ??
+         account?.runCurrentCount,
+   );
+   const collectionProgressTotal = parseNullableNumber(
+      collectionProgressSource?.total ??
+         account?.collectionTotalCount ??
+         account?.runTotalCount,
+   );
+   const collectionProgressPercent =
+      parseNullableNumber(
+         collectionProgressSource?.percent ??
+            account?.collectionProgressPercent ??
+            account?.runProgressPercent,
+      ) ??
+      (collectionProgressCurrent !== null &&
+      collectionProgressTotal !== null &&
+      collectionProgressTotal > 0
+         ? Math.max(
+              0,
+              Math.min(
+                 100,
+                 Math.round(
+                    (collectionProgressCurrent / collectionProgressTotal) * 100,
+                 ),
+              ),
+           )
+         : null);
+   const collectionProgressBlocks =
+      collectionProgressPercent === null
+         ? 0
+         : Math.min(5, Math.ceil(collectionProgressPercent / 20));
+   const collectionProgressLabel =
+      collectionProgressSource?.currentCategoryName ||
+      collectionProgressSource?.label ||
+      account?.collectionCurrentCategoryName ||
+      account?.runCurrentCategoryName ||
+      "";
+   const collectionProgressStartedAt =
+      collectionProgressSource?.startedAt ||
+      account?.collectionStartedAt ||
+      account?.runStartedAt ||
+      null;
+   const collectionProgressUpdatedAt =
+      collectionProgressSource?.updatedAt ||
+      account?.collectionUpdatedAt ||
+      account?.runUpdatedAt ||
+      null;
+   const collectionProgressMessage =
+      collectionProgressSource?.message ||
+      account?.collectionMessage ||
+      account?.runMessage ||
+      "";
+   const collectionProgressReady =
+      hasPaidPlan &&
+      (Boolean(collectionProgressStatus) ||
+         collectionProgressCurrent !== null ||
+         collectionProgressTotal !== null ||
+         collectionProgressPercent !== null ||
+         collectionProgressStartedAt ||
+         collectionProgressUpdatedAt ||
+         collectionProgressLabel ||
+         collectionProgressMessage);
+   const collectionProgressIsRunning = [
+      "running",
+      "in_progress",
+      "progress",
+      "processing",
+      "queued",
+   ].includes(collectionProgressStatus);
+   const collectionProgressTone =
+      collectionProgressStatus === "failed" || collectionProgressStatus === "error"
+         ? "error"
+         : collectionProgressStatus === "completed" ||
+             collectionProgressStatus === "done" ||
+             collectionProgressStatus === "success"
+           ? "success"
+         : collectionProgressIsRunning
+           ? "running"
+           : "idle";
+
+   useEffect(() => {
+      if (!collectionProgressIsRunning || !session?.customId || session.role === "admin") {
+         return;
+      }
+
+      const timer = window.setInterval(() => {
+         void handleRefreshProfile();
+      }, 10000);
+
+      return () => {
+         window.clearInterval(timer);
+      };
+   }, [
+      collectionProgressIsRunning,
+      handleRefreshProfile,
+      session?.customId,
+      session?.role,
+   ]);
+   const collectionProgressStatusLabel =
+      collectionProgressTone === "error"
+         ? "수집 실패"
+         : collectionProgressTone === "success"
+           ? "수집 완료"
+           : collectionProgressTone === "running"
+             ? "수집 진행 중"
+             : "대기 중";
 
    const passwordGuide = useMemo(() => {
       if (!passwordForm.newPassword) {
@@ -887,6 +1062,18 @@ export default function MyPagePanel() {
                         <p className="mt-4 text-base font-semibold text-zinc-950">
                            {step.label}
                         </p>
+                        {step.key === "sites" && step.status !== "complete" && (
+                           <div className="mt-3 rounded-lg border border-zinc-200 bg-white/80 px-3 py-2 text-xs leading-5 text-zinc-600">
+                              사이트 선택은 이 페이지 하단의{" "}
+                              <a
+                                 href="#site-settings"
+                                 className="font-semibold text-emerald-700 underline underline-offset-2"
+                              >
+                                 플랜별 사이트 설정
+                              </a>
+                              에서 진행할 수 있습니다.
+                           </div>
+                        )}
                      </div>
                   ))}
                </div>
@@ -915,6 +1102,36 @@ export default function MyPagePanel() {
                         value={account.email || "선택 입력 안 함"}
                      />
                   </dl>
+
+                  <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                     <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                           <p className="text-sm font-semibold text-zinc-950">
+                              연동된 쇼핑몰 계정
+                           </p>
+                           <p className="mt-2 text-sm leading-6 text-zinc-600">
+                              연동한 전체 호스팅 계정 목록
+                           </p>
+                        </div>
+                        <span className="inline-flex items-center rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-semibold text-zinc-600">
+                           총 {linkedAccountPlatforms.length}개
+                        </span>
+                     </div>
+
+                     {linkedAccountPlatforms.length > 0 ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                           {linkedAccountPlatforms.map((accountPlatform) => (
+                              <SiteBadge key={accountPlatform} label={accountPlatform} />
+                           ))}
+                        </div>
+                     ) : (
+                        <div className="mt-4 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
+                           {isLoadingProfile
+                              ? "연동된 쇼핑몰 계정을 확인하는 중입니다..."
+                              : "아직 연동된 accountPlatform 계정이 없습니다."}
+                        </div>
+                     )}
+                  </div>
                </section>
 
                <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
@@ -1112,10 +1329,19 @@ export default function MyPagePanel() {
                                  type="button"
                                  onClick={() => setModalMode("add")}
                                  className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
-                              >
-                                 플랜 추가하기
-                              </button>
-                           )}
+                           >
+                              플랜 추가하기
+                           </button>
+                          )}
+
+                           <a
+                              href={kakaoChatUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+                           >
+                              요청 수 추가 문의
+                           </a>
                         </>
                      )}
                   </div>
@@ -1127,6 +1353,190 @@ export default function MyPagePanel() {
                   )}
                </section>
             </div>
+
+            <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
+               <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="max-w-3xl">
+                     <p className="text-sm font-semibold text-emerald-600">
+                        RUN STATUS
+                     </p>
+                     <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
+                        자동 수집 진행 상황
+                     </h2>
+                     <p className="mt-2 text-sm leading-6 text-zinc-600">
+                        사이트 또는 관리자 페이지에서 수집 요청이 실행되면 현재 회차 기준 진행률을 여기서 바로 확인할 수 있습니다.
+                     </p>
+                  </div>
+                  <span
+                     className={clsx(
+                        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
+                        collectionProgressTone === "error"
+                           ? "border-red-200 bg-red-50 text-red-700"
+                           : collectionProgressTone === "success"
+                             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                             : collectionProgressTone === "running"
+                               ? "border-amber-200 bg-amber-50 text-amber-700"
+                               : "border-zinc-200 bg-zinc-50 text-zinc-600",
+                     )}
+                  >
+                     {collectionProgressStatusLabel}
+                  </span>
+               </div>
+
+               {collectionProgressReady ? (
+                  <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                     <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                              현재 진행률
+                           </p>
+                           <p className="mt-2 text-sm font-medium text-zinc-950">
+                              {collectionProgressPercent === null
+                                 ? "미정"
+                                 : `${collectionProgressPercent}%`}
+                           </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                              처리 회차
+                           </p>
+                           <p className="mt-2 text-sm font-medium text-zinc-950">
+                              {collectionProgressCurrent !== null &&
+                              collectionProgressTotal !== null
+                                 ? `${collectionProgressCurrent} / ${collectionProgressTotal}`
+                                 : "미정"}
+                           </p>
+                        </div>
+                        <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                              최근 갱신 시각
+                           </p>
+                           <p className="mt-2 text-sm font-medium text-zinc-950">
+                              {formatDateTime(collectionProgressUpdatedAt)}
+                           </p>
+                        </div>
+                     </div>
+
+                     <div className="mt-5">
+                        <div className="flex items-center justify-between gap-4">
+                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                              진행 바
+                           </p>
+                           <p className="text-sm font-semibold text-zinc-700">
+                              {collectionProgressLabel || "현재 진행 중인 카테고리 확인 중"}
+                           </p>
+                        </div>
+                        <div className="mt-3 grid grid-cols-5 gap-2">
+                           {Array.from({ length: 5 }).map((_, index) => (
+                              <span
+                                 key={`collection-progress-${index}`}
+                                 className={clsx(
+                                    "h-3 rounded-full border",
+                                    index < collectionProgressBlocks
+                                       ? collectionProgressTone === "error"
+                                          ? "border-red-600 bg-red-500"
+                                          : collectionProgressTone === "success"
+                                            ? "border-emerald-600 bg-emerald-500"
+                                            : "border-amber-500 bg-amber-400"
+                                       : "border-zinc-200 bg-white",
+                                 )}
+                              />
+                           ))}
+                        </div>
+                     </div>
+
+                     {(collectionProgressMessage || collectionProgressStartedAt) && (
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                           <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 수집 시작 시각
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-zinc-950">
+                                 {formatDateTime(collectionProgressStartedAt)}
+                              </p>
+                           </div>
+                           <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 진행 메모
+                              </p>
+                              <p className="mt-2 text-sm font-medium text-zinc-950">
+                                 {collectionProgressMessage || "진행 중"}
+                              </p>
+                           </div>
+                        </div>
+                     )}
+                  </div>
+               ) : (
+                  <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 px-5 py-4 text-sm text-zinc-600">
+                     현재 진행 중인 수집 작업이 없습니다. 수집이 시작되면 회차 기준 진행률과 최근 갱신 시각이 자동으로 표시됩니다.
+                  </div>
+               )}
+            </section>
+
+            <section
+               id="site-settings"
+               className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7"
+            >
+               <div className="max-w-3xl">
+                  <p className="text-sm font-semibold text-emerald-600">
+                     SETUP GUIDE
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
+                     세팅 준비 안내
+                  </h2>
+                  <p className="mt-2 text-sm leading-6 text-zinc-600">
+                     플랜 결제와 사이트 선택이 끝나면 연동할 쇼핑몰 계정을 플로우머스로 전달해주셔야 세팅이 이어집니다.
+                  </p>
+               </div>
+
+               <div className="mt-6 grid gap-4 lg:grid-cols-3">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                     <p className="text-sm font-semibold text-zinc-950">
+                        1. 쇼핑몰 관리자 정보 전달
+                     </p>
+                     <p className="mt-2 text-sm leading-6 text-zinc-600">
+                        카카오톡으로 쇼핑몰 관리자 URL, 로그인 아이디, 비밀번호를 보내주시면 됩니다.
+                     </p>
+                  </div>
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                     <p className="text-sm font-semibold text-zinc-950">
+                        2. 개발자센터 API 키를 모르셔도 괜찮습니다.
+                     </p>
+                     <p className="mt-2 text-sm leading-6 text-zinc-600">
+                        대부분 직접 찾기 어려우시니, 로그인 가능한 정보만 전달해주시면 필요한 키 확인 방법까지 안내드립니다.
+                     </p>
+                  </div>
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+                     <p className="text-sm font-semibold text-zinc-950">
+                        3. 계정이 여러 개면 같이 알려주세요
+                     </p>
+                     <p className="mt-2 text-sm leading-6 text-zinc-600">
+                        고도몰이나 스마트스토어 등 호스팅을 여러개 연동하실 경우 함께 전달해주시면 세팅이 빨라집니다.
+                     </p>
+                  </div>
+               </div>
+
+               <div className="mt-6 flex flex-wrap gap-3">
+                  <a
+                     href={kakaoChatUrl}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                  >
+                     카카오톡으로 계정 전달하기
+                  </a>
+                  <Link
+                     href="/inquiry?type=사이트 문의"
+                     className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+                  >
+                     문의로 먼저 남기기
+                  </Link>
+               </div>
+
+               <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-sm leading-7 text-red-800">
+                  1개월만 결제해서 상품만 등록한 뒤 상품 업로드를 유지하시는 방식은 불가능합니다. 구독이 종료되면 플로우머스가 관리하던 상품은 쇼핑몰과 데이터 저장소에서 전체 삭제가 원칙이오니, 종료 전에는 반드시 전환 방식이나 정리 일정을 먼저 상담해주세요.
+               </div>
+            </section>
 
             <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
                <div className="max-w-3xl">

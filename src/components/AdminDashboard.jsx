@@ -734,7 +734,7 @@ export default function AdminDashboard() {
    const [loadingCustomIds, setLoadingCustomIds] = useState(true);
    const [loadingAccountPlatforms, setLoadingAccountPlatforms] = useState(false);
    const [loadingSchedules, setLoadingSchedules] = useState(false);
-   const [runningSchedules, setRunningSchedules] = useState(false);
+   const [activeRunRequestCount, setActiveRunRequestCount] = useState(0);
    const [deletingSchedules, setDeletingSchedules] = useState(false);
    const [scheduleMessage, setScheduleMessage] = useState({
       tone: "neutral",
@@ -999,26 +999,37 @@ export default function AdminDashboard() {
       }
    };
 
-   const handleRunSchedules = async () => {
-      setScheduleMessage({ tone: "neutral", text: "" });
-      setRunningSchedules(true);
+   const handleRunSchedules = () => {
+      const scheduleIds = [...selectedScheduleIds];
+      const accountPlatformLabel = selectedAccountPlatform;
 
-      try {
-         await runSchedules(selectedScheduleIds);
-         setScheduleMessage({
-            tone: "success",
-            text: "선택한 예약 실행 요청을 보냈습니다.",
+      setScheduleMessage({ tone: "neutral", text: "" });
+
+      setActiveRunRequestCount((current) => current + 1);
+      setScheduleMessage({
+         tone: "success",
+         text: `${accountPlatformLabel} 예약 ${scheduleIds.length}개 실행을 시작했습니다. 다른 accountPlatform 예약도 이어서 실행할 수 있습니다.`,
+      });
+      setSelectedScheduleIds([]);
+
+      void runSchedules(scheduleIds)
+         .then(() => {
+            setScheduleMessage({
+               tone: "success",
+               text: `${accountPlatformLabel} 예약 ${scheduleIds.length}개 실행이 완료되었습니다.`,
+            });
+         })
+         .catch((error) => {
+            setScheduleMessage({
+               tone: "error",
+               text:
+                  error.message ||
+                  "예약 실행 요청에 실패했습니다. 서버 상태를 확인해주세요.",
+            });
+         })
+         .finally(() => {
+            setActiveRunRequestCount((current) => Math.max(0, current - 1));
          });
-      } catch (error) {
-         setScheduleMessage({
-            tone: "error",
-            text:
-               error.message ||
-               "예약 실행 요청에 실패했습니다. 서버 상태를 확인해주세요.",
-         });
-      } finally {
-         setRunningSchedules(false);
-      }
    };
 
    const handleDeleteSchedules = async () => {
@@ -1495,13 +1506,11 @@ export default function AdminDashboard() {
                            <button
                               type="button"
                               onClick={handleRunSchedules}
-                              disabled={
-                                 runningSchedules || selectedScheduleIds.length === 0
-                              }
+                              disabled={selectedScheduleIds.length === 0}
                               className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
                            >
-                              {runningSchedules
-                                 ? "실행 요청 중..."
+                              {activeRunRequestCount > 0
+                                 ? `선택한 예약 실행 (진행 중 ${activeRunRequestCount}개)`
                                  : "선택한 예약 실행"}
                            </button>
                         ) : (

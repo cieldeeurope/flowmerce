@@ -280,6 +280,23 @@ export async function fetchUserProfile(customId) {
    return parseApiResponse(response);
 }
 
+export async function fetchHostingAccounts(customId) {
+   const normalizedCustomId = customId.trim();
+
+   if (!normalizedCustomId) {
+      throw new Error("닉네임을 확인할 수 없습니다.");
+   }
+
+   const response = await fetch(
+      `${API_BASE_URL}/hosting/accounts?customId=${encodeURIComponent(normalizedCustomId)}`,
+      {
+         cache: "no-store",
+      },
+   );
+
+   return parseApiResponse(response);
+}
+
 export async function saveUserSites({ customId, sites }) {
    const normalizedCustomId = customId.trim();
 

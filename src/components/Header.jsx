@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import Container from "./Container";
-import NavLink from "./NavLink";
-import MobileNav from "./MobileNav";
 import AuthNav from "./AuthNav";
+import Container from "./Container";
+import MobileNav from "./MobileNav";
+import NavLink from "./NavLink";
 
 export default function Header() {
    return (
@@ -30,12 +30,12 @@ export default function Header() {
 
                   <nav className="flex min-w-0 flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right xl:gap-x-6">
                      <NavLink href="/">홈</NavLink>
-                     <NavLink href="/guide">핵심 가이드</NavLink>
+                     <NavLink href="/guide">소싱 가이드</NavLink>
                      <NavLink href="/program">프로그램 소개</NavLink>
                      <NavLink href="/consulting">컨설팅</NavLink>
                      <NavLink href="/pricing">가격</NavLink>
                      <NavLink href="/inquiry">문의</NavLink>
-                     <NavLink href="/#faq">자주묻는질문</NavLink>
+                     <NavLink href="/#faq">자주 묻는 질문</NavLink>
                      <NavLink href="/#contact-us">연락처</NavLink>
                   </nav>
                </div>

@@ -7,6 +7,9 @@ import {
    siteUrl,
 } from "@/lib/seo";
 
+const faviconUrl = `${siteUrl}/favicon.ico`;
+const appleIconUrl = `${siteUrl}/brand/silver-symbol.png`;
+
 export const metadata = {
    metadataBase: new URL(siteUrl),
    title: defaultTitle,
@@ -59,12 +62,9 @@ export const metadata = {
    themeColor: "#10b981",
    manifest: "/manifest.webmanifest",
    icons: {
-      icon: [
-         { url: "/favicon.ico", sizes: "any" },
-         { url: "/icon.png", type: "image/png", sizes: "768x768" },
-      ],
-      shortcut: "/favicon.ico",
-      apple: "/icon.png",
+      icon: [{ url: faviconUrl, sizes: "any" }],
+      shortcut: [faviconUrl],
+      apple: [{ url: appleIconUrl, type: "image/png" }],
    },
 };
 
@@ -83,6 +83,9 @@ export default function RootLayout({ children }) {
                name="naver-site-verification"
                content="aff30bb4569645b6f75ec1c2922ebe54a12b8a94"
             />
+            <link rel="shortcut icon" href={faviconUrl} />
+            <link rel="icon" href={faviconUrl} sizes="any" />
+            <link rel="apple-touch-icon" href={appleIconUrl} />
             <link
                rel="preconnect"
                href="https://cdn.jsdelivr.net"
