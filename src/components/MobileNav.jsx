@@ -1,21 +1,20 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
-import { Popover, Transition } from "@headlessui/react";
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getSession, signOut } from "@/lib/auth";
 
-function MobileNavLink({ href, children }) {
+function MobileNavLink({ href, children, onNavigate }) {
    return (
-      <Popover.Button
-         as={Link}
+      <Link
          href={href}
+         onClick={onNavigate}
          className="block w-full rounded-md px-1 py-2 text-left text-base font-medium text-zinc-800 transition hover:text-zinc-950"
       >
          {children}
-      </Popover.Button>
+      </Link>
    );
 }
 
@@ -50,6 +49,7 @@ export default function MobileNav() {
    const router = useRouter();
    const pathname = usePathname();
    const [session, setSession] = useState(null);
+   const [open, setOpen] = useState(false);
 
    useEffect(() => {
       const syncSession = () => setSession(getSession());
@@ -64,7 +64,31 @@ export default function MobileNav() {
       };
    }, []);
 
-   const handleLogout = (closeMenu) => {
+   useEffect(() => {
+      setOpen(false);
+   }, [pathname]);
+
+   useEffect(() => {
+      if (!open) {
+         return undefined;
+      }
+
+      const handleEscape = (event) => {
+         if (event.key === "Escape") {
+            setOpen(false);
+         }
+      };
+
+      window.addEventListener("keydown", handleEscape);
+
+      return () => {
+         window.removeEventListener("keydown", handleEscape);
+      };
+   }, [open]);
+
+   const closeMenu = () => setOpen(false);
+
+   const handleLogout = () => {
       signOut();
       closeMenu();
 
@@ -74,73 +98,92 @@ export default function MobileNav() {
    };
 
    return (
-      <Popover className="relative">
-         {({ open, close }) => (
+      <div className="relative">
+         <button
+            type="button"
+            aria-expanded={open}
+            aria-label="메뉴 열기"
+            onClick={() => setOpen((current) => !current)}
+            className="relative flex h-9 w-9 items-center justify-center rounded-md border border-zinc-200 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+         >
+            <MobileNavIcon open={open} />
+         </button>
+
+         {open && (
             <>
-               <Popover.Button className="relative flex h-9 w-9 items-center justify-center rounded-md border border-zinc-200 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
-                  <span className="sr-only">메뉴 열기</span>
-                  <MobileNavIcon open={open} />
-               </Popover.Button>
+               <button
+                  type="button"
+                  aria-label="메뉴 닫기"
+                  onClick={closeMenu}
+                  className="fixed inset-0 z-40 bg-zinc-950/20 backdrop-blur-[1px]"
+               />
 
-               <Transition
-                  as={Fragment}
-                  enter="transition duration-150 ease-out"
-                  enterFrom="opacity-0 scale-95"
-                  enterTo="opacity-100 scale-100"
-                  leave="transition duration-100 ease-in"
-                  leaveFrom="opacity-100 scale-100"
-                  leaveTo="opacity-0 scale-95"
-               >
-                  <>
-                     <Popover.Overlay className="fixed inset-0 z-40 bg-zinc-950/20 backdrop-blur-[1px]" />
-                     <Popover.Panel className="absolute right-0 top-full z-50 mt-4 w-[min(21rem,calc(100vw-2rem))] origin-top-right rounded-lg border border-zinc-200 bg-white p-5 shadow-xl">
-                        <div>
-                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                              Menu
-                           </p>
-                           <div className="mt-3 space-y-1">
-                              <MobileNavLink href="/">홈</MobileNavLink>
-                              <MobileNavLink href="/guide">소싱 가이드</MobileNavLink>
-                              <MobileNavLink href="/program">프로그램 소개</MobileNavLink>
-                              <MobileNavLink href="/consulting">컨설팅</MobileNavLink>
-                              <MobileNavLink href="/pricing">가격</MobileNavLink>
-                              <MobileNavLink href="/inquiry">문의</MobileNavLink>
-                              <MobileNavLink href="/#faq">자주 묻는 질문</MobileNavLink>
-                              <MobileNavLink href="/#contact-us">연락처</MobileNavLink>
-                           </div>
-                        </div>
+               <div className="absolute right-0 top-full z-50 mt-4 w-[min(21rem,calc(100vw-2rem))] origin-top-right rounded-lg border border-zinc-200 bg-white p-5 shadow-xl">
+                  <div>
+                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                        Menu
+                     </p>
+                     <div className="mt-3 space-y-1">
+                        <MobileNavLink href="/" onNavigate={closeMenu}>
+                           홈
+                        </MobileNavLink>
+                        <MobileNavLink href="/guide" onNavigate={closeMenu}>
+                           소싱 가이드
+                        </MobileNavLink>
+                        <MobileNavLink href="/program" onNavigate={closeMenu}>
+                           프로그램 소개
+                        </MobileNavLink>
+                        <MobileNavLink href="/consulting" onNavigate={closeMenu}>
+                           컨설팅
+                        </MobileNavLink>
+                        <MobileNavLink href="/pricing" onNavigate={closeMenu}>
+                           가격
+                        </MobileNavLink>
+                        <MobileNavLink href="/inquiry" onNavigate={closeMenu}>
+                           문의
+                        </MobileNavLink>
+                        <MobileNavLink href="/#faq" onNavigate={closeMenu}>
+                           자주 묻는 질문
+                        </MobileNavLink>
+                        <MobileNavLink href="/#contact-us" onNavigate={closeMenu}>
+                           연락처
+                        </MobileNavLink>
+                     </div>
+                  </div>
 
-                        <div className="mt-4 border-t border-zinc-200 pt-4">
-                           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                              Account
-                           </p>
-                           <div className="mt-3 space-y-1">
-                              {session ? (
-                                 <>
-                                    <MobileNavLink href="/mypage">
-                                       마이페이지
-                                    </MobileNavLink>
-                                    <Popover.Button
-                                       type="button"
-                                       onClick={() => handleLogout(close)}
-                                       className="block w-full rounded-md px-1 py-2 text-left text-base font-medium text-zinc-800 transition hover:text-zinc-950"
-                                    >
-                                       로그아웃
-                                    </Popover.Button>
-                                 </>
-                              ) : (
-                                 <>
-                                    <MobileNavLink href="/login">로그인</MobileNavLink>
-                                    <MobileNavLink href="/signup">회원가입</MobileNavLink>
-                                 </>
-                              )}
-                           </div>
-                        </div>
-                     </Popover.Panel>
-                  </>
-               </Transition>
+                  <div className="mt-4 border-t border-zinc-200 pt-4">
+                     <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                        Account
+                     </p>
+                     <div className="mt-3 space-y-1">
+                        {session ? (
+                           <>
+                              <MobileNavLink href="/mypage" onNavigate={closeMenu}>
+                                 마이페이지
+                              </MobileNavLink>
+                              <button
+                                 type="button"
+                                 onClick={handleLogout}
+                                 className="block w-full rounded-md px-1 py-2 text-left text-base font-medium text-zinc-800 transition hover:text-zinc-950"
+                              >
+                                 로그아웃
+                              </button>
+                           </>
+                        ) : (
+                           <>
+                              <MobileNavLink href="/login" onNavigate={closeMenu}>
+                                 로그인
+                              </MobileNavLink>
+                              <MobileNavLink href="/signup" onNavigate={closeMenu}>
+                                 회원가입
+                              </MobileNavLink>
+                           </>
+                        )}
+                     </div>
+                  </div>
+               </div>
             </>
          )}
-      </Popover>
+      </div>
    );
 }
