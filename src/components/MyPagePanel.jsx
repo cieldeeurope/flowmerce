@@ -668,12 +668,6 @@ export default function MyPagePanel() {
       collectionProgressPercent === null
          ? 0
          : Math.min(5, Math.ceil(collectionProgressPercent / 20));
-   const collectionProgressLabel =
-      collectionProgressSource?.currentCategoryName ||
-      collectionProgressSource?.label ||
-      account?.collectionCurrentCategoryName ||
-      account?.runCurrentCategoryName ||
-      "";
    const collectionProgressStartedAt =
       collectionProgressSource?.startedAt ||
       account?.collectionStartedAt ||
@@ -697,7 +691,6 @@ export default function MyPagePanel() {
          collectionProgressPercent !== null ||
          collectionProgressStartedAt ||
          collectionProgressUpdatedAt ||
-         collectionProgressLabel ||
          collectionProgressMessage);
    const collectionProgressIsRunning = [
       "running",
@@ -705,14 +698,22 @@ export default function MyPagePanel() {
       "progress",
       "processing",
       "queued",
+      "pending",
+      "requested",
    ].includes(collectionProgressStatus);
    const collectionProgressTone =
-      collectionProgressStatus === "failed" || collectionProgressStatus === "error"
+      collectionProgressStatus === "error"
          ? "error"
          : collectionProgressStatus === "completed" ||
              collectionProgressStatus === "done" ||
              collectionProgressStatus === "success"
            ? "success"
+         : collectionProgressStatus === "pending" ||
+            collectionProgressStatus === "failed" ||
+             collectionProgressStatus === "requested"
+           ? "pending"
+         : collectionProgressStatus === "not_requested"
+           ? "not_requested"
          : collectionProgressIsRunning
            ? "running"
            : "idle";
@@ -740,9 +741,25 @@ export default function MyPagePanel() {
          ? "수집 실패"
          : collectionProgressTone === "success"
            ? "수집 완료"
+           : collectionProgressTone === "pending"
+             ? "요청 대기 중"
+           : collectionProgressTone === "not_requested"
+             ? "요청 안함"
            : collectionProgressTone === "running"
              ? "수집 진행 중"
              : "대기 중";
+   const collectionProgressSummary =
+      collectionProgressTone === "not_requested"
+         ? "아직 수집 요청이 없습니다."
+         : collectionProgressTone === "pending"
+           ? "수집 예약이 접수되어 대기 중입니다."
+           : collectionProgressTone === "running"
+             ? "현재 요청된 예약을 순차적으로 처리하고 있습니다."
+             : collectionProgressTone === "success"
+               ? "최근 수집 요청이 완료되었습니다."
+               : collectionProgressTone === "error"
+                 ? "최근 수집 요청 중 오류가 있었습니다."
+                 : "현재 상태를 확인하고 있습니다.";
 
    const passwordGuide = useMemo(() => {
       if (!passwordForm.newPassword) {
@@ -1374,9 +1391,11 @@ export default function MyPagePanel() {
                            ? "border-red-200 bg-red-50 text-red-700"
                            : collectionProgressTone === "success"
                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                             : collectionProgressTone === "running"
-                               ? "border-amber-200 bg-amber-50 text-amber-700"
-                               : "border-zinc-200 bg-zinc-50 text-zinc-600",
+                            : collectionProgressTone === "pending"
+                              ? "border-sky-200 bg-sky-50 text-sky-700"
+                            : collectionProgressTone === "running"
+                              ? "border-amber-200 bg-amber-50 text-amber-700"
+                              : "border-zinc-200 bg-zinc-50 text-zinc-600",
                      )}
                   >
                      {collectionProgressStatusLabel}
@@ -1423,7 +1442,7 @@ export default function MyPagePanel() {
                               진행 바
                            </p>
                            <p className="text-sm font-semibold text-zinc-700">
-                              {collectionProgressLabel || "현재 진행 중인 카테고리 확인 중"}
+                              {collectionProgressSummary}
                            </p>
                         </div>
                         <div className="mt-3 grid grid-cols-5 gap-2">
@@ -1437,6 +1456,8 @@ export default function MyPagePanel() {
                                           ? "border-red-600 bg-red-500"
                                           : collectionProgressTone === "success"
                                             ? "border-emerald-600 bg-emerald-500"
+                                            : collectionProgressTone === "pending"
+                                              ? "border-sky-500 bg-sky-400"
                                             : "border-amber-500 bg-amber-400"
                                        : "border-zinc-200 bg-white",
                                  )}
@@ -1460,7 +1481,12 @@ export default function MyPagePanel() {
                                  진행 메모
                               </p>
                               <p className="mt-2 text-sm font-medium text-zinc-950">
-                                 {collectionProgressMessage || "진행 중"}
+                                 {collectionProgressMessage ||
+                                    (collectionProgressTone === "not_requested"
+                                       ? "아직 수집 요청을 하지 않았습니다."
+                                       : collectionProgressTone === "pending"
+                                         ? "수집 예약 접수 후 대기 중입니다."
+                                         : "진행 중")}
                               </p>
                            </div>
                         </div>
@@ -1468,7 +1494,7 @@ export default function MyPagePanel() {
                   </div>
                ) : (
                   <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 px-5 py-4 text-sm text-zinc-600">
-                     현재 진행 중인 수집 작업이 없습니다. 수집이 시작되면 회차 기준 진행률과 최근 갱신 시각이 자동으로 표시됩니다.
+                     아직 수집 요청을 하지 않았습니다. 수집 예약이 들어오면 이 영역에서 대기 중, 진행 중, 완료 상태를 자동으로 확인할 수 있습니다.
                   </div>
                )}
             </section>

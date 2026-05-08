@@ -3,11 +3,11 @@ import Container from "./Container";
 import { InstagramIcon } from "./icons/SocialLinkIcons";
 
 export default function Contacts() {
-const kakaoUrl =
-   "https://pf.kakao.com/_hPdjX/chat";
+   const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
+   const instagramUrl = "https://www.instagram.com/flowmerce.official/";
    const socialLinks = [
       { name: "Kakao chat", href: kakaoUrl, image: "/icons/kakaotalk.jpg" },
-      { name: "Consulting chat", href: kakaoUrl, icon: InstagramIcon },
+      { name: "Instagram", href: instagramUrl, icon: InstagramIcon },
    ];
 
    return (
@@ -48,7 +48,7 @@ const kakaoUrl =
                      <div>
                         <p className="text-sm text-zinc-600">24시 실시간 채팅</p>
                         <p className="mt-2 text-sm leading-6 text-zinc-600">
-                           상품 자동화 상담과 컨설팅 문의는 카카오톡 채팅으로 빠르게 확인합니다.
+                           상품 자동화 상담과 컨설팅 문의는 카카오톡 채팅과 인스타그램 DM으로 빠르게 확인합니다.
                         </p>
                         <div className="mt-4 flex items-center gap-x-2.5">
                            {socialLinks.map((link) => (

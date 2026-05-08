@@ -22,6 +22,7 @@ const initialSignupForm = {
    loginId: "",
    password: "",
    customId: "",
+   phone: "",
    email: "",
 };
 
@@ -29,6 +30,22 @@ const initialLoginForm = {
    loginId: "",
    password: "",
 };
+
+function formatPhoneInput(value) {
+   const digits = String(value || "")
+      .replace(/\D/g, "")
+      .slice(0, 11);
+
+   if (digits.length <= 3) {
+      return digits;
+   }
+
+   if (digits.length <= 7) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+   }
+
+   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
 
 function FieldFeedback({ tone = "neutral", message }) {
    if (!message) {
@@ -69,7 +86,7 @@ export default function AuthForm({ mode }) {
          return "";
       }
 
-      return "회원가입이 완료되었습니다. 지금 바로 로그인해서 마이페이지에서 진행 상태를 확인할 수 있습니다.";
+      return "회원가입이 완료되었습니다. 지금 바로 로그인해 마이페이지를 확인해보세요.";
    }, [searchParams]);
 
    const passwordGuide = useMemo(() => {
@@ -85,14 +102,16 @@ export default function AuthForm({ mode }) {
    }, [isSignup, signupForm.password]);
 
    const handleSignupChange = (field, value) => {
+      const nextValue = field === "phone" ? formatPhoneInput(value) : value;
+
       setSignupForm((current) => ({
          ...current,
-         [field]: value,
+         [field]: nextValue,
       }));
 
       if (field === "loginId") {
          setIdCheck((current) =>
-            current.value === value
+            current.value === nextValue
                ? current
                : { status: "idle", message: "", value: "" },
          );
@@ -100,7 +119,7 @@ export default function AuthForm({ mode }) {
 
       if (field === "customId") {
          setNicknameCheck((current) =>
-            current.value === value
+            current.value === nextValue
                ? current
                : { status: "idle", message: "", value: "" },
          );
@@ -184,6 +203,10 @@ export default function AuthForm({ mode }) {
                throw new Error("닉네임 중복체크를 완료해주세요.");
             }
 
+            if (!/^\d{3}-\d{4}-\d{4}$/.test(signupForm.phone)) {
+               throw new Error("연락처 형식이 아닙니다.");
+            }
+
             await signUp(signupForm);
 
             const next = searchParams.get("next");
@@ -211,8 +234,8 @@ export default function AuthForm({ mode }) {
          </h1>
          <p className="mt-2 text-zinc-600">
             {isSignup
-               ? "문의는 회원가입 없이도 가능합니다. 플랜 구독, 마이페이지 이용, 프로그램 사용 관리는 가입 후 진행할 수 있습니다."
-               : "로그인하면 마이페이지에서 플랜, 사이트, 비밀번호를 편하게 관리할 수 있습니다."}
+               ? "회원가입 후 관리자 확인과 세팅을 거치면 서비스를 이용하실 수 있습니다."
+               : "로그인 후 마이페이지에서 진행 상태와 이용 현황을 확인하실 수 있습니다."}
          </p>
 
          {registeredMessage && !isSignup && (
@@ -266,9 +289,9 @@ export default function AuthForm({ mode }) {
                               type="button"
                               onClick={handleCheckLoginId}
                               className={checkButtonClass}
-                              disabled={idCheck.status === "checking"}
+                              disabled={!signupForm.loginId.trim()}
                            >
-                              {idCheck.status === "checking" ? "확인중" : "중복체크"}
+                              중복체크
                            </button>
                         </div>
                         <FieldFeedback
@@ -282,75 +305,45 @@ export default function AuthForm({ mode }) {
                            message={idCheck.message}
                         />
                      </div>
-                  </>
-               )}
 
-               {!isSignup && (
-                  <div>
-                     <label htmlFor="loginId" className="text-sm font-medium text-zinc-600">
-                        아이디
-                     </label>
-                     <div className="mt-1.5">
-                        <input
-                           type="text"
-                           name="loginId"
-                           id="loginId"
-                           placeholder="아이디"
-                           className={inputClass}
-                           value={loginForm.loginId}
-                           onChange={(event) =>
-                              setLoginForm((current) => ({
-                                 ...current,
-                                 loginId: event.target.value,
-                              }))
+                     <div>
+                        <label
+                           htmlFor="password"
+                           className="text-sm font-medium text-zinc-600"
+                        >
+                           비밀번호
+                        </label>
+                        <div className="mt-1.5">
+                           <input
+                              type="password"
+                              name="password"
+                              id="password"
+                              placeholder="비밀번호"
+                              className={inputClass}
+                              value={signupForm.password}
+                              onChange={(event) =>
+                                 handleSignupChange("password", event.target.value)
+                              }
+                              required
+                           />
+                        </div>
+                        <FieldFeedback
+                           tone={
+                              signupForm.password
+                                 ? validatePassword(signupForm.password)
+                                    ? "success"
+                                    : "error"
+                                 : "neutral"
                            }
-                           required
+                           message={passwordGuide}
                         />
                      </div>
-                  </div>
-               )}
 
-               <div>
-                  <label htmlFor="password" className="text-sm font-medium text-zinc-600">
-                     비밀번호
-                  </label>
-                  <div className="mt-1.5">
-                     <input
-                        type="password"
-                        name="password"
-                        id="password"
-                        placeholder="비밀번호를 입력해주세요"
-                        className={inputClass}
-                        value={isSignup ? signupForm.password : loginForm.password}
-                        onChange={(event) =>
-                           isSignup
-                              ? handleSignupChange("password", event.target.value)
-                              : setLoginForm((current) => ({
-                                   ...current,
-                                   password: event.target.value,
-                                }))
-                        }
-                        required
-                     />
-                  </div>
-                  {isSignup && (
-                     <FieldFeedback
-                        tone={
-                           signupForm.password
-                              ? validatePassword(signupForm.password)
-                                 ? "success"
-                                 : "error"
-                              : "neutral"
-                        }
-                        message={passwordGuide}
-                     />
-                  )}
-               </div>
-
-               {isSignup && (
-                  <>
                      <div>
-                        <label htmlFor="customId" className="text-sm font-medium text-zinc-600">
+                        <label
+                           htmlFor="customId"
+                           className="text-sm font-medium text-zinc-600"
+                        >
                            닉네임
                         </label>
                         <div className="mt-1.5 flex gap-2">
@@ -370,9 +363,9 @@ export default function AuthForm({ mode }) {
                               type="button"
                               onClick={handleCheckNickname}
                               className={checkButtonClass}
-                              disabled={nicknameCheck.status === "checking"}
+                              disabled={!signupForm.customId.trim()}
                            >
-                              {nicknameCheck.status === "checking" ? "확인중" : "중복체크"}
+                              중복체크
                            </button>
                         </div>
                         <FieldFeedback
@@ -388,15 +381,37 @@ export default function AuthForm({ mode }) {
                      </div>
 
                      <div>
+                        <label htmlFor="phone" className="text-sm font-medium text-zinc-600">
+                           연락처
+                        </label>
+                        <div className="mt-1.5">
+                           <input
+                              type="tel"
+                              name="phone"
+                              id="phone"
+                              placeholder="010-0000-0000"
+                              inputMode="numeric"
+                              maxLength={13}
+                              className={inputClass}
+                              value={signupForm.phone}
+                              onChange={(event) =>
+                                 handleSignupChange("phone", event.target.value)
+                              }
+                              required
+                           />
+                        </div>
+                     </div>
+
+                     <div>
                         <label htmlFor="email" className="text-sm font-medium text-zinc-600">
-                           이메일 <span className="text-zinc-400">(선택)</span>
+                           이메일
                         </label>
                         <div className="mt-1.5">
                            <input
                               type="email"
                               name="email"
                               id="email"
-                              placeholder="you@example.com"
+                              placeholder="example@flowmerce.co.kr"
                               className={inputClass}
                               value={signupForm.email}
                               onChange={(event) =>
@@ -408,46 +423,91 @@ export default function AuthForm({ mode }) {
                   </>
                )}
 
-               {error && (
-                  <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                     {error}
-                  </p>
-               )}
-
                {!isSignup && (
-                  <p className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-6 text-zinc-600">
-                     비밀번호를 잊으셨다면 문의 페이지 또는 카카오톡 채널로 문의해주세요.
-                     기존 비밀번호 확인은 불가능하며, 본인 확인 후 임시 비밀번호 재설정을
-                     도와드립니다.
-                  </p>
-               )}
+                  <>
+                     <div>
+                        <label htmlFor="loginId" className="text-sm font-medium text-zinc-600">
+                           아이디
+                        </label>
+                        <div className="mt-1.5">
+                           <input
+                              type="text"
+                              name="loginId"
+                              id="loginId"
+                              placeholder="아이디"
+                              className={inputClass}
+                              value={loginForm.loginId}
+                              onChange={(event) =>
+                                 setLoginForm((current) => ({
+                                    ...current,
+                                    loginId: event.target.value,
+                                 }))
+                              }
+                              required
+                           />
+                        </div>
+                     </div>
 
-               <div className="pt-3.5">
-                  <button
-                     type="submit"
-                     disabled={submitting}
-                     className="block rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                     {submitting
-                        ? isSignup
-                           ? "가입 중..."
-                           : "로그인 중..."
-                        : isSignup
-                          ? "회원가입"
-                          : "로그인"}
-                  </button>
-               </div>
+                     <div>
+                        <label
+                           htmlFor="password"
+                           className="text-sm font-medium text-zinc-600"
+                        >
+                           비밀번호
+                        </label>
+                        <div className="mt-1.5">
+                           <input
+                              type="password"
+                              name="password"
+                              id="password"
+                              placeholder="비밀번호"
+                              className={inputClass}
+                              value={loginForm.password}
+                              onChange={(event) =>
+                                 setLoginForm((current) => ({
+                                    ...current,
+                                    password: event.target.value,
+                                 }))
+                              }
+                              required
+                           />
+                        </div>
+                     </div>
+                  </>
+               )}
             </div>
 
-            <p className="py-7 text-sm text-zinc-600">
-               {isSignup ? "이미 계정이 있으신가요?" : "아직 계정이 없으신가요?"}{" "}
-               <Link
-                  href={isSignup ? "/login" : "/signup"}
-                  className="font-medium text-emerald-600 hover:text-emerald-700"
+            <div className="space-y-4 py-7">
+               {error && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                     {error}
+                  </div>
+               )}
+
+               <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex h-12 w-full items-center justify-center rounded-lg bg-emerald-600 px-4 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
                >
-                  {isSignup ? "로그인" : "회원가입"}
-               </Link>
-            </p>
+                  {submitting
+                     ? isSignup
+                        ? "가입 중..."
+                        : "로그인 중..."
+                     : isSignup
+                       ? "회원가입"
+                       : "로그인"}
+               </button>
+
+               <p className="text-center text-sm text-zinc-600">
+                  {isSignup ? "이미 계정이 있나요?" : "아직 계정이 없나요?"}{" "}
+                  <Link
+                     href={isSignup ? "/login" : "/signup"}
+                     className="font-medium text-emerald-700 hover:text-emerald-800"
+                  >
+                     {isSignup ? "로그인" : "회원가입"}
+                  </Link>
+               </p>
+            </div>
          </form>
       </div>
    );

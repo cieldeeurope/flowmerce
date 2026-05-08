@@ -5,6 +5,7 @@ import { fetchAdminContacts } from "@/lib/requests";
 import {
    createAdminHostingAccount,
    createAdminUser,
+   fetchCafe24AuthorizeUrl,
    fetchAdminHostingAccounts,
    fetchAdminUsers,
    updateAdminHostingAccount,
@@ -31,7 +32,8 @@ const scheduleSubtabs = [
 ];
 
 const planOptions = ["none", "boutique", "basic", "pro", "enterprise"];
-const platformOptions = ["smartstore", "godomall", "cafe24"];
+const platformOptions = ["smartstore", "godomall", "cafe24", "makeshop"];
+const CAFE24_OAUTH_STATE_KEY = "flowmerce_cafe24_oauth_state";
 const requestLimitByPlan = {
    none: null,
    boutique: 100000,
@@ -113,6 +115,27 @@ function parseNullableInteger(value) {
    return Number.isNaN(parsed) ? null : parsed;
 }
 
+function encodeCafe24State(payload) {
+   const serialized = JSON.stringify(payload);
+   return btoa(serialized).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function formatPhoneInput(value) {
+   const digits = String(value || "")
+      .replace(/\D/g, "")
+      .slice(0, 11);
+
+   if (digits.length <= 3) {
+      return digits;
+   }
+
+   if (digits.length <= 7) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+   }
+
+   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
 function formatNumber(value) {
    if (value === null || value === undefined || value === "") {
       return "-";
@@ -154,6 +177,18 @@ function getScheduleDisplayName(schedule) {
    );
 }
 
+function isHostingAccountReady(account) {
+   if (!account) {
+      return false;
+   }
+
+   if (account.platform === "cafe24") {
+      return Boolean(account.partnerKey && account.apiKey && account.refreshToken);
+   }
+
+   return Boolean(account.partnerKey && account.apiKey);
+}
+
 function createEmptyUserForm() {
    return {
       id: "",
@@ -161,6 +196,7 @@ function createEmptyUserForm() {
       loginId: "",
       password: "",
       customId: "",
+      phone: "",
       isApproved: false,
       plan: "none",
       subscriptionStartAt: "",
@@ -184,6 +220,9 @@ function createEmptyHostingForm() {
       accountPlatform: "",
       partnerKey: "",
       apiKey: "",
+      refreshToken: "",
+      tokenExpiresAt: "",
+      refreshTokenExpiresAt: "",
       createdAt: "",
       updatedAt: "",
       topImages: "",
@@ -410,6 +449,20 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
             </label>
             <label className="block">
                <span className="text-sm font-medium text-zinc-600">
+                  phone (필수)
+               </span>
+               <input
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={13}
+                  value={form.phone}
+                  onChange={(event) => onChange("phone", event.target.value)}
+                  placeholder="010-0000-0000"
+                  className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+               />
+            </label>
+            <label className="block">
+               <span className="text-sm font-medium text-zinc-600">
                   isApproved (필수)
                </span>
                <label className="mt-1.5 flex items-center gap-3 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm font-medium text-zinc-700">
@@ -503,7 +556,9 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
                   </p>
                </div>
                <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-right text-sm">
-                  <p className="font-medium text-zinc-500">현재 사용률</p>
+                  <p className="font-medium text-zinc-500">
+                     {"현재 사용률"}
+                  </p>
                   <p className="mt-1 text-lg font-semibold text-zinc-950">
                      {requestPercent === null ? "-" : `${requestPercent}%`}
                   </p>
@@ -512,16 +567,16 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
                <ReadOnlyField
-                  label="플랜 요청수 (자동)"
+                  label="플랜 요청수(자동)"
                   value={formatNumber(requestLimitByPlan[form.plan] ?? null)}
                />
                <ReadOnlyField
-                  label="가능 요청수 (자동)"
+                  label="가능 요청수(자동)"
                   value={formatNumber(requestRemainingCount)}
                />
                <label className="block">
                   <span className="text-sm font-medium text-zinc-600">
-                     현재 요청수 (선택)
+                     현재 요청수(선택)
                   </span>
                   <input
                      type="number"
@@ -535,7 +590,7 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
                </label>
                <label className="block">
                   <span className="text-sm font-medium text-zinc-600">
-                     요청수 오버라이드 (선택)
+                     요청수 오버라이드(선택)
                   </span>
                   <input
                      type="number"
@@ -549,7 +604,7 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
                </label>
                <label className="block">
                   <span className="text-sm font-medium text-zinc-600">
-                     요청수 집계 시작일 (선택)
+                     요청수 집계 시작일(선택)
                   </span>
                   <input
                      type="datetime-local"
@@ -562,7 +617,7 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
                </label>
                <label className="block">
                   <span className="text-sm font-medium text-zinc-600">
-                     요청수 집계 종료일 (선택)
+                     요청수 집계 종료일(선택)
                   </span>
                   <input
                      type="datetime-local"
@@ -588,7 +643,26 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
    );
 }
 
-function HostingForm({ form, onChange, onSave, onReset, saving }) {
+function HostingForm({
+   form,
+   onChange,
+   onSave,
+   onReset,
+   onConnectCafe24,
+   saving,
+   connectingCafe24,
+}) {
+   const isCafe24 = form.platform === "cafe24";
+   const partnerKeyLabel = isCafe24
+      ? "mallId (필수)"
+      : "partnerKey (필수)";
+   const apiKeyLabel = isCafe24
+      ? "accessToken (자동)"
+      : "apiKey (필수)";
+   const availabilityText = isCafe24
+      ? "mallId, accessToken, refreshToken이 채워지면 사용 가능으로 표시됩니다."
+      : "partnerKey와 apiKey가 모두 채워지면 사용 가능으로 표시됩니다.";
+
    return (
       <div className="space-y-4 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
          <div className="flex flex-wrap items-center justify-between gap-3">
@@ -639,15 +713,13 @@ function HostingForm({ form, onChange, onSave, onReset, saving }) {
                </span>
                <input
                   value={form.accountPlatform}
-                  onChange={(event) =>
-                     onChange("accountPlatform", event.target.value)
-                  }
+                  onChange={(event) => onChange("accountPlatform", event.target.value)}
                   className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
                />
             </label>
             <label className="block">
                <span className="text-sm font-medium text-zinc-600">
-                  partnerKey (필수)
+                  {partnerKeyLabel}
                </span>
                <input
                   value={form.partnerKey}
@@ -657,7 +729,7 @@ function HostingForm({ form, onChange, onSave, onReset, saving }) {
             </label>
             <label className="block md:col-span-2">
                <span className="text-sm font-medium text-zinc-600">
-                  apiKey (필수)
+                  {apiKeyLabel}
                </span>
                <input
                   value={form.apiKey}
@@ -665,13 +737,46 @@ function HostingForm({ form, onChange, onSave, onReset, saving }) {
                   className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
                />
             </label>
+            {isCafe24 ? (
+               <>
+                  <label className="block md:col-span-2">
+                     <span className="text-sm font-medium text-zinc-600">
+                        {"refreshToken (자동)"}
+                     </span>
+                     <input
+                        value={form.refreshToken}
+                        onChange={(event) => onChange("refreshToken", event.target.value)}
+                        className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                     />
+                  </label>
+                  <label className="block">
+                     <span className="text-sm font-medium text-zinc-600">
+                        {"accessToken 만료일 (자동)"}
+                     </span>
+                     <input
+                        type="datetime-local"
+                        value={form.tokenExpiresAt}
+                        onChange={(event) => onChange("tokenExpiresAt", event.target.value)}
+                        className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                     />
+                  </label>
+                  <label className="block">
+                     <span className="text-sm font-medium text-zinc-600">
+                        {"refreshToken 만료일 (자동)"}
+                     </span>
+                     <input
+                        type="datetime-local"
+                        value={form.refreshTokenExpiresAt}
+                        onChange={(event) => onChange("refreshTokenExpiresAt", event.target.value)}
+                        className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                     />
+                  </label>
+               </>
+            ) : null}
             <ReadOnlyField label="createdAt (자동)" value={form.createdAt || "-"} />
             <div className="rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-600">
                <span className="font-medium text-zinc-700">사용 가능 상태</span>
-               <p className="mt-2 leading-6">
-                  partnerKey 와 apiKey 가 둘 다 들어가면 마이페이지에서 사용 가능으로
-                  계산할 수 있습니다.
-               </p>
+               <p className="mt-2 leading-6">{availabilityText}</p>
             </div>
          </div>
 
@@ -694,9 +799,7 @@ function HostingForm({ form, onChange, onSave, onReset, saving }) {
                </span>
                <textarea
                   value={form.bottomImages}
-                  onChange={(event) =>
-                     onChange("bottomImages", event.target.value)
-                  }
+                  onChange={(event) => onChange("bottomImages", event.target.value)}
                   placeholder="한 줄에 하나씩 입력하거나 쉼표로 구분하세요."
                   rows={5}
                   className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
@@ -704,18 +807,31 @@ function HostingForm({ form, onChange, onSave, onReset, saving }) {
             </label>
          </div>
 
-         <button
-            type="button"
-            onClick={onSave}
-            disabled={saving}
-            className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-         >
-            {saving ? "저장 중..." : "저장"}
-         </button>
+         <div className="flex flex-wrap items-center gap-3">
+            <button
+               type="button"
+               onClick={onSave}
+               disabled={saving}
+               className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+               {saving ? "저장 중..." : "저장"}
+            </button>
+            {isCafe24 ? (
+               <button
+                  type="button"
+                  onClick={onConnectCafe24}
+                  disabled={saving || connectingCafe24}
+                  className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-70"
+               >
+                  {connectingCafe24
+                     ? "Cafe24 연동 중..."
+                     : "Cafe24 연동"}
+               </button>
+            ) : null}
+         </div>
       </div>
    );
 }
-
 export default function AdminDashboard() {
    const [activeTab, setActiveTab] = useState("contacts");
    const [activeScheduleSubtab, setActiveScheduleSubtab] = useState("active");
@@ -757,6 +873,7 @@ export default function AdminDashboard() {
       text: "",
    });
    const [hostingForm, setHostingForm] = useState(createEmptyHostingForm());
+   const [connectingCafe24, setConnectingCafe24] = useState(false);
 
    const scheduleStatus = activeScheduleSubtab === "completed" ? "done" : "active";
 
@@ -833,10 +950,10 @@ export default function AdminDashboard() {
       };
    }, [scheduleStatus]);
 
-   useEffect(() => {
-      if (activeTab === "users" && !usersLoaded && !loadingUsers) {
-         void loadUsers();
-      }
+  useEffect(() => {
+     if (activeTab === "users" && !usersLoaded && !loadingUsers) {
+        void loadUsers();
+     }
 
       if (activeTab === "hosting" && !hostingLoaded && !loadingHostingAccounts) {
          void loadHostingAccounts();
@@ -848,6 +965,36 @@ export default function AdminDashboard() {
       loadingUsers,
       usersLoaded,
    ]);
+
+   useEffect(() => {
+      function handleCafe24Connected(event) {
+         if (event.origin !== window.location.origin) {
+            return;
+         }
+
+         if (event.data?.type !== "flowmerce-cafe24-connected") {
+            return;
+         }
+
+         setConnectingCafe24(false);
+         setHostingLoaded(false);
+         setHostingMessage({
+            tone: "success",
+            text: "Cafe24 연동이 완료되었습니다.",
+         });
+
+         if (event.data?.account) {
+            handleSelectHostingAccount(event.data.account);
+         }
+
+         void loadHostingAccounts();
+      }
+
+      window.addEventListener("message", handleCafe24Connected);
+      return () => {
+         window.removeEventListener("message", handleCafe24Connected);
+      };
+   }, []);
 
    useEffect(() => {
       if (!selectedCustomId) {
@@ -886,7 +1033,7 @@ export default function AdminDashboard() {
                   tone: "error",
                   text:
                      loadError.message ||
-                     "예약에 걸린 accountPlatform 목록을 불러오지 못했습니다.",
+                     "예약이 걸린 accountPlatform 목록을 불러오지 못했습니다.",
                });
             }
          } finally {
@@ -1040,7 +1187,7 @@ export default function AdminDashboard() {
          await deleteSchedules(selectedScheduleIds);
          setScheduleMessage({
             tone: "success",
-            text: "선택한 완료 예약이 삭제되었습니다.",
+            text: "선택한 완료 예약을 삭제했습니다.",
          });
          setSelectedScheduleIds([]);
          const items = await fetchSchedules(
@@ -1064,9 +1211,14 @@ export default function AdminDashboard() {
    };
 
    const handleUserFieldChange = (field, value) => {
+      const nextValue =
+         field === "phone"
+            ? formatPhoneInput(value)
+            : value;
+
       setUserForm((current) => ({
          ...current,
-         [field]: value,
+         [field]: nextValue,
       }));
    };
 
@@ -1086,6 +1238,7 @@ export default function AdminDashboard() {
          loginId: user.loginId || "",
          password: "",
          customId: user.customId || "",
+         phone: user.phone || "",
          isApproved: Boolean(user.isApproved),
          plan: user.plan || "none",
          subscriptionStartAt: toDateTimeLocalValue(user.subscriptionStartAt),
@@ -1120,6 +1273,11 @@ export default function AdminDashboard() {
          accountPlatform: account.accountPlatform || "",
          partnerKey: account.partnerKey || "",
          apiKey: account.apiKey || "",
+         refreshToken: account.refreshToken || "",
+         tokenExpiresAt: toDateTimeLocalValue(account.tokenExpiresAt),
+         refreshTokenExpiresAt: toDateTimeLocalValue(
+            account.refreshTokenExpiresAt,
+         ),
          createdAt: formatDateTime(account.createdAt),
          updatedAt: formatDateTime(account.updatedAt),
          topImages: stringifyList(account.topImages),
@@ -1132,11 +1290,18 @@ export default function AdminDashboard() {
       setUserMessage({ tone: "neutral", text: "" });
 
       try {
+         const normalizedPhone = formatPhoneInput(userForm.phone || "");
+
+         if (!/^\d{3}-\d{4}-\d{4}$/.test(normalizedPhone)) {
+            throw new Error("연락처 형식이 올바르지 않습니다.");
+         }
+
          const payload = {
             name: userForm.name.trim(),
             loginId: userForm.loginId.trim(),
             password: userForm.password || undefined,
             customId: userForm.customId.trim(),
+            phone: normalizedPhone,
             isApproved: userForm.isApproved,
             plan: userForm.plan,
             subscriptionStartAt: parseDateTimeLocalValue(
@@ -1186,6 +1351,21 @@ export default function AdminDashboard() {
       }
    };
 
+   const buildHostingPayload = () => ({
+      customId: hostingForm.customId.trim(),
+      platform: hostingForm.platform,
+      accountPlatform: hostingForm.accountPlatform.trim(),
+      partnerKey: hostingForm.partnerKey.trim(),
+      apiKey: hostingForm.apiKey.trim(),
+      refreshToken: hostingForm.refreshToken.trim() || null,
+      tokenExpiresAt: parseDateTimeLocalValue(hostingForm.tokenExpiresAt),
+      refreshTokenExpiresAt: parseDateTimeLocalValue(
+         hostingForm.refreshTokenExpiresAt,
+      ),
+      topImages: parseListText(hostingForm.topImages),
+      bottomImages: parseListText(hostingForm.bottomImages),
+   });
+
    const handleSaveHostingAccount = async () => {
       setSavingHostingAccount(true);
       setHostingMessage({ tone: "neutral", text: "" });
@@ -1195,27 +1375,33 @@ export default function AdminDashboard() {
             throw new Error("customId는 필수입니다.");
          }
 
-         const payload = {
-            customId: hostingForm.customId.trim(),
-            platform: hostingForm.platform,
-            accountPlatform: hostingForm.accountPlatform.trim(),
-            partnerKey: hostingForm.partnerKey.trim(),
-            apiKey: hostingForm.apiKey.trim(),
-            topImages: parseListText(hostingForm.topImages),
-            bottomImages: parseListText(hostingForm.bottomImages),
-         };
+         const payload = buildHostingPayload();
 
          if (hostingForm.id) {
-            await updateAdminHostingAccount(hostingForm.id, payload);
+            const result = await updateAdminHostingAccount(hostingForm.id, payload);
+            if (result?.success === false) {
+               throw new Error(
+                  result.message ||
+                     "Hosting 정보를 저장하지 못했습니다.",
+               );
+            }
             setHostingMessage({
                tone: "success",
-               text: "Hosting 정보가 수정되었습니다.",
+               text:
+                  "Hosting 정보가 수정되었습니다.",
             });
          } else {
-            await createAdminHostingAccount(payload);
+            const result = await createAdminHostingAccount(payload);
+            if (result?.success === false) {
+               throw new Error(
+                  result.message ||
+                     "Hosting 계정을 추가하지 못했습니다.",
+               );
+            }
             setHostingMessage({
                tone: "success",
-               text: "새 Hosting 계정이 추가되었습니다.",
+               text:
+                  "새 Hosting 계정이 추가되었습니다.",
             });
          }
 
@@ -1231,6 +1417,107 @@ export default function AdminDashboard() {
          });
       } finally {
          setSavingHostingAccount(false);
+      }
+   };
+
+   const handleConnectCafe24 = async () => {
+      setConnectingCafe24(true);
+      setHostingMessage({ tone: "neutral", text: "" });
+
+      try {
+         if (hostingForm.platform !== "cafe24") {
+            throw new Error(
+               "Cafe24 계정에서만 연동할 수 있습니다.",
+            );
+         }
+
+         if (!hostingForm.customId.trim()) {
+            throw new Error("customId는 필수입니다.");
+         }
+
+         if (!hostingForm.accountPlatform.trim()) {
+            throw new Error("accountPlatform은 필수입니다.");
+         }
+
+         if (!hostingForm.partnerKey.trim()) {
+            throw new Error("mallId는 필수입니다.");
+         }
+
+         const payload = buildHostingPayload();
+         let savedAccount = null;
+
+         if (hostingForm.id) {
+            const result = await updateAdminHostingAccount(hostingForm.id, payload);
+            if (result?.success === false) {
+               throw new Error(
+                  result.message ||
+                     "Cafe24 계정을 저장하지 못했습니다.",
+               );
+            }
+            savedAccount = result?.account || null;
+         } else {
+            const result = await createAdminHostingAccount(payload);
+            if (result?.success === false) {
+               throw new Error(
+                  result.message ||
+                     "Cafe24 계정을 추가하지 못했습니다.",
+               );
+            }
+            savedAccount = result?.account || null;
+         }
+
+         if (savedAccount) {
+            handleSelectHostingAccount(savedAccount);
+         }
+
+         const state = encodeCafe24State({
+            customId: payload.customId,
+            accountPlatform: payload.accountPlatform,
+            mallId: payload.partnerKey,
+            appOrigin: window.location.origin,
+            ts: Date.now(),
+         });
+
+         window.sessionStorage.setItem(CAFE24_OAUTH_STATE_KEY, state);
+
+         const result = await fetchCafe24AuthorizeUrl({
+            mallId: payload.partnerKey,
+            state,
+         });
+
+         const popup = window.open(
+            result.url,
+            "flowmerce-cafe24-connect",
+            "width=760,height=860,menubar=no,toolbar=no,location=yes,resizable=yes,scrollbars=yes,status=no",
+         );
+
+         if (!popup) {
+            throw new Error(
+               "브라우저 팝업이 차단되었습니다.",
+            );
+         }
+
+         popup.focus();
+         const popupWatcher = window.setInterval(() => {
+            if (!popup.closed) {
+               return;
+            }
+
+            window.clearInterval(popupWatcher);
+            setConnectingCafe24(false);
+         }, 700);
+         setHostingMessage({
+            tone: "neutral",
+            text: "Cafe24 승인 화면이 열렸습니다.",
+         });
+      } catch (error) {
+         setConnectingCafe24(false);
+         setHostingMessage({
+            tone: "error",
+            text:
+               error.message ||
+               "Cafe24 연동을 시작하지 못했습니다.",
+         });
       }
    };
 
@@ -1254,7 +1541,7 @@ export default function AdminDashboard() {
                <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                   <SectionHeader
                      title="전체 문의 관리"
-                     description="서버 DB에 저장된 문의를 관리자 전용으로 확인합니다. 긴 문의는 상세보기에서 전체 내용을 바로 읽을 수 있게 분리해두었습니다."
+                     description="서버 DB에 저장된 문의를 관리자 전용 화면에서 확인합니다. 각 문의는 상세보기에서 전체 내용을 바로 읽을 수 있습니다."
                   />
 
                   <div className="mt-7">
@@ -1338,7 +1625,7 @@ export default function AdminDashboard() {
                <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                   <SectionHeader
                      title="수집 예약 실행"
-                     description="실행 대상 예약과 완료된 예약을 분리해서 보고, 완료 목록에서는 선택 삭제까지 할 수 있도록 준비해두었습니다."
+                     description="실행 대상 예약과 완료된 예약을 분리해서 보고, 완료 목록에서는 선택 삭제까지 할 수 있습니다."
                   />
 
                   <div className="mt-6 flex flex-wrap gap-2">
@@ -1535,8 +1822,8 @@ export default function AdminDashboard() {
             {activeTab === "users" && (
                <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                   <SectionHeader
-                     title="User 엔티티 관리"
-                     description="customId 기준으로 목록을 보고, 해당 user를 누르면 오른쪽 폼에 값이 그대로 들어갑니다. 수정 후 저장하면 덮어쓰기, 새로 작성 상태에서 저장하면 새 User 추가로 동작하게 잡아뒀습니다."
+                     title="User 관리"
+                     description="customId 기준으로 목록을 확인하고, 선택한 User 정보를 오른쪽 폼에서 수정하거나 새 User를 추가합니다."
                      action={
                         <button
                            type="button"
@@ -1576,6 +1863,9 @@ export default function AdminDashboard() {
                                        loginId
                                     </th>
                                     <th className="px-5 py-4 text-left font-semibold text-zinc-950">
+                                       phone
+                                    </th>
+                                    <th className="px-5 py-4 text-left font-semibold text-zinc-950">
                                        플랜
                                     </th>
                                     <th className="px-5 py-4 text-left font-semibold text-zinc-950">
@@ -1600,10 +1890,13 @@ export default function AdminDashboard() {
                                           {user.loginId || "-"}
                                        </td>
                                        <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
+                                          {user.phone || "-"}
+                                       </td>
+                                       <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
                                           {user.plan || "none"}
                                        </td>
                                        <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
-                                          {user.isApproved ? "승인" : "대기"}
+                                          {user.isApproved ? "확인" : "대기"}
                                        </td>
                                     </tr>
                                  ))}
@@ -1629,8 +1922,8 @@ export default function AdminDashboard() {
             {activeTab === "hosting" && (
                <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                   <SectionHeader
-                     title="HostingAccount 엔티티 관리"
-                     description="목록은 customId 기준으로 보고, 해당 계정을 누르면 오른쪽 폼에 값이 그대로 들어갑니다. 수정 후 저장하면 덮어쓰기, 새로 작성 상태에서 저장하면 새 HostingAccount 추가로 동작합니다."
+                     title="HostingAccount 관리"
+                     description="customId 기준으로 Hosting 계정을 확인하고, 선택한 계정 정보를 오른쪽 폼에서 수정하거나 새 HostingAccount를 추가합니다."
                      action={
                         <button
                            type="button"
@@ -1691,7 +1984,7 @@ export default function AdminDashboard() {
                                           {account.accountPlatform || "-"}
                                        </td>
                                        <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
-                                          {account.partnerKey && account.apiKey
+                                          {isHostingAccountReady(account)
                                              ? "가능"
                                              : "미완료"}
                                        </td>
@@ -1709,7 +2002,9 @@ export default function AdminDashboard() {
                            onChange={handleHostingFieldChange}
                            onSave={handleSaveHostingAccount}
                            onReset={() => setHostingForm(createEmptyHostingForm())}
+                           onConnectCafe24={handleConnectCafe24}
                            saving={savingHostingAccount}
+                           connectingCafe24={connectingCafe24}
                         />
                      </div>
                   </div>
@@ -1724,3 +2019,4 @@ export default function AdminDashboard() {
       </>
    );
 }
+

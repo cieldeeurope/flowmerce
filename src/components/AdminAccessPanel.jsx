@@ -15,7 +15,10 @@ export default function AdminAccessPanel() {
    const [error, setError] = useState("");
 
    useEffect(() => {
-      const syncAdminSession = () => setSession(getAdminSession());
+      const syncAdminSession = () => {
+         const nextSession = getAdminSession();
+         setSession(nextSession?.accessToken ? nextSession : null);
+      };
 
       syncAdminSession();
       window.addEventListener("flowmerce-admin-auth", syncAdminSession);
@@ -47,7 +50,7 @@ export default function AdminAccessPanel() {
          <div className="flex min-h-screen items-center justify-center bg-zinc-100 px-5 py-10">
             <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-8 shadow-sm">
                <h1 className="text-2xl font-semibold text-zinc-950">
-                  플로우머스 관리자용
+                  플로우머스 관리자
                </h1>
                <form onSubmit={handleSubmit} className="mt-7 space-y-4">
                   <div>
@@ -112,7 +115,7 @@ export default function AdminAccessPanel() {
                <div>
                   <p className="text-sm font-semibold text-emerald-600">Admin</p>
                   <h1 className="mt-2 text-4xl font-semibold text-zinc-950">
-                     플로우머스 관리자용
+                     플로우머스 관리자
                   </h1>
                </div>
                <button

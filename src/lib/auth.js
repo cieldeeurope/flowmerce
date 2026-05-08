@@ -5,19 +5,20 @@ const API_BASE_URL = (
 ).replace(/\/$/, "");
 const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 const DEFAULT_PLAN = "none";
+const RESERVED_ADMIN_LOGIN_ID_REGEX = /admin/i;
 
 async function parseApiResponse(response) {
    const data = await response.json().catch(() => ({}));
 
    if (!response.ok) {
-      throw new Error(data.message || "잠시 후 다시 시도해주세요.");
+      throw new Error(data.message || "요청을 처리하지 못했습니다.");
    }
 
    return data;
 }
 
 function buildSession(user) {
-   return {
+   const session = {
       name: user.name || user.customId || user.loginId,
       email: user.email || "",
       loginId: user.loginId,
@@ -28,6 +29,32 @@ function buildSession(user) {
       subscriptionEndAt: user.subscriptionEndAt || null,
       sites: Array.isArray(user.sites) ? user.sites : [],
    };
+
+   if (user.accessToken) {
+      session.accessToken = user.accessToken;
+   }
+
+   return session;
+}
+
+function isReservedAdminLoginId(loginId) {
+   return RESERVED_ADMIN_LOGIN_ID_REGEX.test(String(loginId || "").trim());
+}
+
+function formatPhoneNumber(phone) {
+   const digits = String(phone || "")
+      .replace(/\D/g, "")
+      .slice(0, 11);
+
+   if (digits.length <= 3) {
+      return digits;
+   }
+
+   if (digits.length <= 7) {
+      return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+   }
+
+   return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
 }
 
 function saveSession(session) {
@@ -102,14 +129,29 @@ export async function checkNicknameAvailability(customId) {
    return parseApiResponse(response);
 }
 
-export async function signUp({ name, loginId, password, customId, email }) {
+export async function signUp({ name, loginId, password, customId, phone, email }) {
    const normalizedName = name.trim();
    const normalizedLoginId = loginId.trim();
    const normalizedCustomId = customId.trim();
+   const normalizedPhone = formatPhoneNumber(phone);
    const normalizedEmail = email.trim().toLowerCase();
 
-   if (!normalizedName || !normalizedLoginId || !password || !normalizedCustomId) {
-      throw new Error("이름, 아이디, 비밀번호, 닉네임은 모두 필수입니다.");
+   if (
+      !normalizedName ||
+      !normalizedLoginId ||
+      !password ||
+      !normalizedCustomId ||
+      !normalizedPhone
+   ) {
+      throw new Error("이름, 아이디, 비밀번호, 닉네임, 연락처를 입력해주세요.");
+   }
+
+   if (isReservedAdminLoginId(normalizedLoginId)) {
+      throw new Error("admin이 포함된 아이디는 사용할 수 없습니다.");
+   }
+
+   if (!/^\d{3}-\d{4}-\d{4}$/.test(normalizedPhone)) {
+      throw new Error("연락처 형식이 올바르지 않습니다.");
    }
 
    if (!validatePassword(password)) {
@@ -128,6 +170,7 @@ export async function signUp({ name, loginId, password, customId, email }) {
          loginId: normalizedLoginId,
          password,
          customId: normalizedCustomId,
+         phone: normalizedPhone,
          email: normalizedEmail || undefined,
       }),
    });
@@ -135,7 +178,7 @@ export async function signUp({ name, loginId, password, customId, email }) {
    const data = await parseApiResponse(response);
 
    if (data.success === false) {
-      throw new Error(data.message || "회원가입에 실패했습니다.");
+      throw new Error(data.message || "회원가입을 완료하지 못했습니다.");
    }
 
    return data;
@@ -146,6 +189,10 @@ export async function signIn({ loginId, password }) {
 
    if (!normalizedLoginId || !password) {
       throw new Error("아이디와 비밀번호를 입력해주세요.");
+   }
+
+   if (isReservedAdminLoginId(normalizedLoginId)) {
+      throw new Error("admin이 포함된 아이디는 홈페이지에서 사용할 수 없습니다.");
    }
 
    const response = await fetch(`${API_BASE_URL}/user/login`, {
@@ -162,7 +209,7 @@ export async function signIn({ loginId, password }) {
    const data = await parseApiResponse(response);
 
    if (data.success === false) {
-      throw new Error(data.message || "정보를 확인해주세요.");
+      throw new Error(data.message || "로그인에 실패했습니다.");
    }
 
    const session = buildSession({
@@ -189,7 +236,7 @@ export async function signInAdmin({ loginId, password }) {
       throw new Error("아이디와 비밀번호를 입력해주세요.");
    }
 
-   const response = await fetch(`${API_BASE_URL}/user/login`, {
+   const response = await fetch(`${API_BASE_URL}/user/admin/login`, {
       method: "POST",
       headers: {
          "Content-Type": "application/json",
@@ -203,11 +250,11 @@ export async function signInAdmin({ loginId, password }) {
    const data = await parseApiResponse(response);
 
    if (data.success === false) {
-      throw new Error(data.message || "정보를 확인해주세요.");
+      throw new Error(data.message || "로그인에 실패했습니다.");
    }
 
    if (data.role !== "admin") {
-      throw new Error("관리자 계정만 접근할 수 있습니다.");
+      throw new Error("관리자 권한이 없는 계정입니다.");
    }
 
    const session = buildSession({
@@ -220,7 +267,12 @@ export async function signInAdmin({ loginId, password }) {
       subscriptionStartAt: data.subscriptionStartAt || null,
       subscriptionEndAt: data.subscriptionEndAt || null,
       sites: Array.isArray(data.sites) ? data.sites : [],
+      accessToken: data.adminToken || "",
    });
+
+   if (!session.accessToken) {
+      throw new Error("관리자 인증 정보를 받아오지 못했습니다.");
+   }
 
    saveAdminSession(session);
    return session;
@@ -235,16 +287,16 @@ export async function changePassword({
    const normalizedLoginId = loginId.trim();
 
    if (!normalizedLoginId || !currentPassword || !newPassword || !newPasswordConfirm) {
-      throw new Error("기존 비밀번호와 새 비밀번호 정보를 모두 입력해주세요.");
+      throw new Error("아이디와 현재 비밀번호, 새 비밀번호를 입력해주세요.");
    }
 
    if (newPassword !== newPasswordConfirm) {
-      throw new Error("새 비밀번호가 서로 일치하지 않습니다.");
+      throw new Error("새 비밀번호가 일치하지 않습니다.");
    }
 
    if (!validatePassword(newPassword)) {
       throw new Error(
-         "새 비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다.",
+         "비밀번호는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다.",
       );
    }
 
@@ -267,7 +319,7 @@ export async function fetchUserProfile(customId) {
    const normalizedCustomId = customId.trim();
 
    if (!normalizedCustomId) {
-      throw new Error("닉네임을 확인할 수 없습니다.");
+      throw new Error("닉네임 정보가 없습니다.");
    }
 
    const response = await fetch(
@@ -284,7 +336,7 @@ export async function fetchHostingAccounts(customId) {
    const normalizedCustomId = customId.trim();
 
    if (!normalizedCustomId) {
-      throw new Error("닉네임을 확인할 수 없습니다.");
+      throw new Error("닉네임 정보가 없습니다.");
    }
 
    const response = await fetch(
@@ -301,7 +353,7 @@ export async function saveUserSites({ customId, sites }) {
    const normalizedCustomId = customId.trim();
 
    if (!normalizedCustomId) {
-      throw new Error("닉네임을 확인할 수 없습니다.");
+      throw new Error("닉네임 정보가 없습니다.");
    }
 
    const response = await fetch(`${API_BASE_URL}/user/sites`, {
@@ -358,6 +410,19 @@ export function signOutAdmin() {
 
    window.localStorage.removeItem(ADMIN_SESSION_KEY);
    window.dispatchEvent(new Event("flowmerce-admin-auth"));
+}
+
+export function getAdminAuthHeaders(additionalHeaders = {}) {
+   const session = getAdminSession();
+   const headers = {
+      ...additionalHeaders,
+   };
+
+   if (session?.accessToken) {
+      headers.Authorization = `Bearer ${session.accessToken}`;
+   }
+
+   return headers;
 }
 
 export function getApiBaseUrl() {

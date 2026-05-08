@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import Image from "next/image";
 import Link from "next/link";
 import Container from "@/components/Container";
@@ -751,6 +753,77 @@ function UploadedProductShowcaseSection() {
    );
 }
 
+function ProgramDemoSection() {
+   const demoVideoSrc = "/program/flowmerce-demo.mp4";
+   const hasDemoVideo = fs.existsSync(
+      path.join(process.cwd(), "public", "program", "flowmerce-demo.mp4"),
+   );
+
+   return (
+      <section className="bg-zinc-50 py-16 md:py-24">
+         <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
+            <div className="mx-auto max-w-4xl text-center">
+               <span className="inline-flex rounded-md border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+                  실제 프로그램 영상
+               </span>
+               <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
+                  실제 상품 등록이 어떻게 돌아가는지
+                  <br />
+                  영상으로 바로 확인할 수 있습니다
+               </h2>
+               <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-zinc-600">
+                  플로우머스 프로그램에서 계정 로그인, 카테고리 선택, 수집 예약, 실제 쇼핑몰 등록 결과까지
+                  한 흐름으로 보여주는 영역입니다. 영상 파일이 준비되면 바로 노출되고, 아직 준비 전이면 실제
+                  등록 화면 예시로 먼저 안내합니다.
+               </p>
+            </div>
+
+            <div className="mx-auto mt-10 max-w-6xl overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+               {hasDemoVideo ? (
+                  <video
+                     controls
+                     preload="metadata"
+                     className="block aspect-video w-full bg-black"
+                     poster="/program/product-upload-smartstore.png"
+                  >
+                     <source src={demoVideoSrc} type="video/mp4" />
+                  </video>
+               ) : (
+                  <div className="grid gap-0 lg:grid-cols-2">
+                     <div className="border-b border-zinc-200 bg-white p-3 lg:border-b-0 lg:border-r">
+                        <Image
+                           src="/program/product-upload-godomall.png"
+                           alt="고도몰 상품 등록 화면 예시"
+                           width={1600}
+                           height={900}
+                           className="h-auto w-full rounded-lg border border-zinc-200"
+                        />
+                     </div>
+                     <div className="bg-white p-3">
+                        <Image
+                           src="/program/product-upload-smartstore.png"
+                           alt="스마트스토어 상품 등록 화면 예시"
+                           width={1600}
+                           height={900}
+                           className="h-auto w-full rounded-lg border border-zinc-200"
+                        />
+                     </div>
+                  </div>
+               )}
+            </div>
+
+            <div className="mx-auto mt-6 max-w-6xl rounded-lg border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-600 shadow-sm">
+               <p className="font-semibold text-zinc-950">영상 파일 연결 방법</p>
+               <p className="mt-2">
+                  실제 녹화본을 준비한 뒤 <code className="rounded bg-zinc-100 px-1.5 py-0.5">public/program/flowmerce-demo.mp4</code>{" "}
+                  경로에 넣으면 이 영역에서 바로 재생됩니다.
+               </p>
+            </div>
+         </div>
+      </section>
+   );
+}
+
 function WordReplacementFeatureSection() {
    const examples = [
       ["스니커즈", "운동화"],
@@ -1044,6 +1117,8 @@ export default function ProgramPage() {
                   </div>
                </div>
             </section>
+
+            <ProgramDemoSection />
 
             <UploadedProductShowcaseSection />
 
