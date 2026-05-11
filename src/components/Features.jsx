@@ -1,75 +1,246 @@
+import Link from "next/link";
 import Container from "./Container";
-import { LoopRightIcon } from "./icons/LoopRightIcon";
-import ArrowLink from "./ArrowLink";
-import { DonutChartIcon } from "./icons/DonutChartIcon";
-import { TeamIcon } from "./icons/TeamIcon";
-import { DotsIcon } from "./icons/DotsIcon";
+
+const workflow = [
+   {
+      index: "01",
+      title: "고급 우회 기술 기반 상품 수집",
+      description:
+         "브랜드 사이트마다 다른 보안 강도와 구조를 고려해 수집 흐름을 설계합니다. 단순 복사 방식이 아니라 실제 운영에 버틸 수 있는 안정성을 먼저 봅니다.",
+   },
+   {
+      index: "02",
+      title: "자동 재고·품절·가격 관리",
+      description:
+         "재고관리 요청 한 번으로 기존 상품 업데이트, 새 상품 추가, 품절 상품 숨김 처리까지 이어집니다. 품절 취소와 CS 부담을 줄이는 데 가장 체감이 큰 구간입니다.",
+   },
+   {
+      index: "03",
+      title: "브라우저에서 바로 쓰는 운영 대시보드",
+      description:
+         "호스팅 연결, 쇼핑몰 카테고리 조회, 매핑, 마진 설정, 단어 치환, 수집 예약까지 웹에서 처리할 수 있어 설치형 프로그램 의존도를 크게 줄입니다.",
+   },
+   {
+      index: "04",
+      title: "실시간 상품 업데이트",
+      description:
+         "방문자가 상품 페이지에 접속하면 보고 있는 제품 기준으로 가격과 재고를 다시 확인해 최신 상태로 반영합니다. 품절 취소와 가격 문의 CS를 줄이는 데 유리합니다.",
+   },
+];
+
+const dashboardPanels = [
+   {
+      title: "상품수집 탭",
+      items: [
+         "브랜드 선택과 사이트별 카테고리 조회",
+         "쇼핑몰 카테고리 연결과 매핑 저장",
+         "매핑한 카테고리 확인과 수집 예약",
+      ],
+   },
+   {
+      title: "마진 탭",
+      items: [
+         "금액 구간별 마진 저장",
+         "환율과 거래처 할인율 반영",
+         "계정별 운영 방식에 맞춘 별도 기준 관리",
+      ],
+   },
+   {
+      title: "치환 탭",
+      items: [
+         "반복 단어 정리",
+         "상품명과 문구 스타일 통일",
+         "운영 계정별 치환 규칙 저장",
+      ],
+   },
+];
+
+const directUsePoints = [
+   "로그인된 계정 기준으로 구독한 사이트만 보여서 처음 들어와도 헤매지 않습니다.",
+   "선택한 호스팅 계정 기준으로 매핑, 마진, 치환을 바로 바꿔가며 사용할 수 있습니다.",
+   "수집 예약 결과도 성공, 중복, 실패 흐름으로 바로 확인할 수 있습니다.",
+   "설치 없이 로그인만 하면 같은 화면에서 이어집니다.",
+   "웹 대시보드 하나에서 매핑부터 수집 요청까지 끊기지 않게 이어집니다.",
+];
+
+const comparisonRows = [
+   ["프로그램 설치", "설치 없이 바로 사용", "설치가 필요한 경우가 많음"],
+   ["자동 재고관리", "수집 흐름과 함께 자동 반영", "직접 확인하거나 별도 요청이 필요함"],
+   ["실시간 상품 업데이트", "방문 상품 기준으로 가격·재고 재확인", "고정 정보 노출이 많음"],
+   ["상품 매핑 방식", "카테고리 클릭 중심으로 바로 매핑", "항목별 수동 확인이 많은 편"],
+   ["상세페이지 구성", "AI 기반으로 상품 특성에 맞춰 조정", "모든 고객이 거의 동일한 구성"],
+   ["SEO 고려", "상품명·치환·구조까지 함께 고려", "운영자 수동 보정 비중이 큼"],
+   ["호스팅 계정 전환", "계정 선택 후 즉시 전환", "환경별로 따로 관리되기 쉬움"],
+   ["문의 대응", "카카오톡 24시간 접수와 유선 상담 연계", "운영사마다 대응 방식이 다름"],
+];
 
 export default function Features() {
-   const features = [
-      {
-         icon: LoopRightIcon,
-         name: "구매대행 구조를 잘 아는 수집 자동화",
-         description:
-            "모든 사람이 쉽게 접하는 상품 구조로는 수익이 생기기 어렵습니다. 플로우머스는 구매대행에 맞는 흐름으로 상품을 수집합니다.",
-      },
-      {
-         icon: DonutChartIcon,
-         name: "SEO 상품명과 상세내용 최적화",
-         description:
-            "같은 상품명과 같은 상세내용을 반복 등록하면 중복 상품처럼 보일 수 있습니다. 플로우머스는 AI를 통해 같은 결과물만 반복하지 않도록 설계했습니다.",
-      },
-      {
-         icon: DotsIcon,
-         name: "편리한 마진 적용과 단어 치환 제공",
-         description:
-            "브랜드별, 금액대별로 원하는 마진식을 적용하고 특정 단어를 원하는 표현으로 치환해 운영 흐름에 맞게 조정할 수 있습니다.",
-      },
-      {
-         icon: TeamIcon,
-         name: "원클릭 수집 예약과 재고관리",
-         description:
-            "최초 카테고리 매핑 이후에는 수집 예약과 재고관리를 원클릭으로 요청할 수 있고, 재고관리 중 새 상품까지 함께 등록할 수 있습니다.",
-      },
-   ];
-
    return (
       <section className="pt-16 md:pt-28" id="features">
          <Container>
             <div className="space-y-4 sm:text-center">
-               <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
-                  Features
+               <span className="inline-flex rounded-full border border-amber-200 bg-[#fbf7ef] px-3 py-1 text-xs font-semibold text-amber-900">
+                  Core Workflow
                </span>
                <h2 className="mx-auto max-w-3xl text-2xl font-semibold sm:text-3xl md:text-4xl md:leading-tight">
-                  다른 구매대행 솔루션처럼 무작정 상품만 올린다고 좋은 결과가
-                  나오지는 않습니다.
+                  상품만 올리는 자동화보다,
+                  <br />
+                  운영 흐름이 끊기지 않는 쪽이 더 중요합니다
                </h2>
-               <p className="mx-auto max-w-2xl text-zinc-600">
-                  플로우머스는 운영 구조까지 함께 설계합니다.
+               <p className="mx-auto max-w-3xl text-zinc-600">
+                  플로우머스는 신상품 등록, 재고·품절·가격 반영, 마진 설정,
+                  단어 치환, 카테고리 매핑, 수집 예약을 한 흐름으로 묶어 실제
+                  운영에서 자주 손이 가는 부분을 줄이는 데 초점을 둡니다.
                </p>
             </div>
 
-            <div className="mt-10 grid grid-cols-1 gap-7 md:mt-14 md:grid-cols-2">
-               {features.map((feature) => (
-                  <div
-                     key={feature.name}
-                     className="flex flex-col justify-between rounded-lg border border-zinc-200 bg-zinc-50 p-6 shadow-sm md:min-h-80"
+            <div className="mt-10 grid gap-5 md:mt-14 md:grid-cols-2 xl:grid-cols-4">
+               {workflow.map((feature) => (
+                  <article
+                     key={feature.title}
+                     className="rounded-md border border-black/5 bg-white p-6 shadow-sm transition duration-200 hover:-translate-y-0.5"
                   >
-                     <div className="space-y-5">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-100 shadow-sm ring-1 ring-emerald-300">
-                           <feature.icon className="h-6 w-6 text-emerald-600" />
-                        </div>
-                        <h3 className="text-xl font-semibold">{feature.name}</h3>
+                     <p className="text-sm font-semibold text-amber-800">
+                        {feature.index}
+                     </p>
+                     <h3 className="mt-4 text-xl font-semibold text-zinc-950">
+                        {feature.title}
+                     </h3>
+                     <p className="mt-3 text-sm leading-7 text-zinc-600">
+                        {feature.description}
+                     </p>
+                  </article>
+               ))}
+            </div>
+
+            <div className="mt-10 space-y-8 md:mt-14">
+               <section className="rounded-md border border-black/5 bg-[#efe8dd] p-6 shadow-sm md:p-8">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                     <div className="max-w-2xl">
+                        <p className="text-sm font-semibold text-amber-900">
+                           Flowmerce Dashboard
+                        </p>
+                        <h3 className="mt-2 text-2xl font-semibold leading-tight text-zinc-950 md:text-3xl">
+                           고객이 직접 써도
+                           <br />
+                           한눈에 알기 쉽게 설계했습니다.
+                        </h3>
+                        <p className="mt-4 text-sm leading-7 text-zinc-600">
+                           관리자만 쓰는 백오피스가 아니라, 실제 고객이 로그인해서
+                           호스팅 계정을 고르고 카테고리를 매핑하고 수집 요청까지
+                           넣을 수 있도록 설계했습니다. 한 화면에서 지금 뭘
+                           해야 하는지 읽히는 구조가 핵심입니다.
+                        </p>
+                     </div>
+                     <Link
+                        href="/program"
+                        className="inline-flex h-11 items-center justify-center rounded-md border border-zinc-300 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
+                     >
+                        운영 화면 자세히 보기
+                     </Link>
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap gap-2">
+                     <span className="rounded-full border border-black/10 bg-white/75 px-3 py-1.5 text-xs font-semibold text-zinc-700">
+                        로그인 기반 계정 분기
+                     </span>
+                     <span className="rounded-full border border-black/10 bg-white/75 px-3 py-1.5 text-xs font-semibold text-zinc-700">
+                        호스팅 계정별 전환
+                     </span>
+                     <span className="rounded-full border border-black/10 bg-white/75 px-3 py-1.5 text-xs font-semibold text-zinc-700">
+                        탭형 상품수집 · 마진 · 치환
+                     </span>
+                     <span className="rounded-full border border-black/10 bg-white/75 px-3 py-1.5 text-xs font-semibold text-zinc-700">
+                        웹에서 바로 수집 예약
+                     </span>
+                  </div>
+
+                  <div className="mt-6 grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+                     <div className="rounded-md border border-white/80 bg-white/85 p-5">
+                        <h4 className="text-base font-semibold text-zinc-950">
+                           직접 사용할 때 체감되는 포인트
+                        </h4>
+                        <ul className="mt-4 space-y-3 text-sm leading-6 text-zinc-600">
+                           {directUsePoints.map((item) => (
+                              <li key={item} className="flex gap-3">
+                                 <span className="mt-1.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#8c6333] text-[11px] font-bold text-white">
+                                    ✓
+                                 </span>
+                                 <span>{item}</span>
+                              </li>
+                           ))}
+                        </ul>
                      </div>
 
-                     <div className="mt-5 space-y-5">
-                        <p className="text-sm leading-7 text-zinc-600">
-                           {feature.description}
-                        </p>
-                        <ArrowLink href="/pricing" text="플랜 자세히 보기" />
+                     <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-1">
+                        {dashboardPanels.map((panel) => (
+                           <article
+                              key={panel.title}
+                              className="rounded-md border border-white/80 bg-white/95 p-5 shadow-sm"
+                           >
+                              <h4 className="text-base font-semibold text-zinc-950">
+                                 {panel.title}
+                              </h4>
+                              <ul className="mt-3 space-y-2.5 text-sm leading-6 text-zinc-600">
+                                 {panel.items.map((item) => (
+                                    <li key={item} className="flex gap-2">
+                                       <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#8c6333]" />
+                                       <span>{item}</span>
+                                    </li>
+                                 ))}
+                              </ul>
+                           </article>
+                        ))}
                      </div>
                   </div>
-               ))}
+               </section>
+
+               <section className="rounded-md border border-black/5 bg-white p-6 shadow-sm md:p-8">
+                  <p className="text-sm font-semibold text-amber-900">
+                     왜 플로우머스인가
+                  </p>
+                  <h3 className="mt-2 text-2xl font-semibold leading-tight text-zinc-950 md:text-3xl">
+                     플로우머스를 써야 하는 이유
+                  </h3>
+                  <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-600">
+                     단순히 상품을 긁어오는 프로그램이 아니라, 고객이 직접 매핑하고
+                     수집 요청을 넣고, 재고·가격·상세페이지까지 운영 흐름을 이어갈 수
+                     있는 쪽에 초점을 맞췄습니다.
+                  </p>
+                  <div className="mt-6 overflow-hidden rounded-md border border-black/5">
+                     <div className="grid grid-cols-[0.82fr_1.08fr_0.86fr] bg-[#fbf7ef] text-sm font-semibold text-zinc-950">
+                        <div className="border-r border-black/5 px-4 py-3">
+                           항목
+                        </div>
+                        <div className="bg-[#1c1917] px-4 py-3 text-white">
+                           플로우머스
+                        </div>
+                        <div className="border-l border-black/5 px-4 py-3">
+                           타사 프로그램
+                        </div>
+                     </div>
+                     <div className="divide-y divide-black/5 bg-white">
+                        {comparisonRows.map(([label, flowmerce, legacy]) => (
+                           <div
+                              key={label}
+                              className="grid grid-cols-[0.82fr_1.08fr_0.86fr] text-sm text-zinc-600"
+                           >
+                              <div className="border-r border-black/5 px-4 py-4 font-semibold text-zinc-950">
+                                 {label}
+                              </div>
+                              <div className="border-r border-[#8c6333] border-l-2 bg-[#fcf8f1] px-4 py-4 font-medium leading-6 text-zinc-900">
+                                 {flowmerce}
+                              </div>
+                              <div className="px-4 py-4 leading-6">{legacy}</div>
+                           </div>
+                        ))}
+                     </div>
+                  </div>
+                  <p className="mt-4 text-sm leading-7 text-zinc-500">
+                     명품 운영 기준으로 고객이 실제로 체감하는 차이를 중심으로 정리한
+                     비교입니다.
+                  </p>
+               </section>
             </div>
          </Container>
       </section>

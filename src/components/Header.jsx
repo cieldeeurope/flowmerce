@@ -7,7 +7,7 @@ import NavLink from "./NavLink";
 
 export default function Header() {
    return (
-      <header className="z-50 border-b border-zinc-200 bg-zinc-50 py-4">
+      <header className="sticky top-0 z-50 border-b border-black/5 bg-white/90 py-4 backdrop-blur">
          <Container>
             <div className="flex items-center justify-between gap-6 lg:items-start">
                <div className="flex shrink-0 items-center">
@@ -30,12 +30,12 @@ export default function Header() {
 
                   <nav className="flex min-w-0 flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right xl:gap-x-6">
                      <NavLink href="/">홈</NavLink>
-                     <NavLink href="/guide">소싱 가이드</NavLink>
-                     <NavLink href="/program">프로그램 소개</NavLink>
+                     <NavLink href="/guide">운영 가이드</NavLink>
+                     <NavLink href="/program">운영 화면</NavLink>
                      <NavLink href="/consulting">컨설팅</NavLink>
-                     <NavLink href="/pricing">가격</NavLink>
+                     <NavLink href="/pricing">요금</NavLink>
+                     <NavLink href="/#faq">FAQ</NavLink>
                      <NavLink href="/inquiry">문의</NavLink>
-                     <NavLink href="/#faq">자주 묻는 질문</NavLink>
                      <NavLink href="/#contact-us">연락처</NavLink>
                   </nav>
                </div>

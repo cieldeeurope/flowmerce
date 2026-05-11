@@ -21,11 +21,11 @@ export default function PricingPage() {
    return (
       <>
          <Header />
-         <main className="bg-zinc-50">
+         <main className="bg-[#f7f4ef] text-zinc-950">
             <section className="py-16 md:py-24">
                <Container>
                   <div className="mx-auto max-w-3xl text-center">
-                     <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+                     <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                         Pricing
                      </span>
                      <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
@@ -36,7 +36,7 @@ export default function PricingPage() {
                      </p>
                   </div>
 
-                  <PricingPlanCards />
+                  <PricingPlanCards tone="luxury" />
                </Container>
             </section>
 
@@ -44,7 +44,7 @@ export default function PricingPage() {
                <Container>
                   <div className="mx-auto mb-12 max-w-5xl rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                      <div className="max-w-3xl">
-                        <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+                        <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                            Setup Guide
                         </span>
                         <h2 className="mt-4 text-2xl font-semibold md:text-3xl">
@@ -87,7 +87,7 @@ export default function PricingPage() {
                            href="https://pf.kakao.com/_hPdjX/chat"
                            target="_blank"
                            rel="noopener noreferrer"
-                           className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                           className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                         >
                            카카오톡으로 세팅 문의하기
                         </a>
@@ -144,7 +144,7 @@ export default function PricingPage() {
                         보안 레벨, 수집 난이도까지 함께 기준으로 봅니다. 현재 가능한
                         <a
                            href="#supported-sites"
-                           className="mx-1 font-semibold text-emerald-700 underline decoration-emerald-300 underline-offset-4 hover:text-emerald-800"
+                           className="mx-1 font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-950"
                         >
                            하이엔드 사이트 목록 보기
                         </a>
@@ -215,7 +215,7 @@ export default function PricingPage() {
                <Container>
                   <div className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm md:p-10">
                      <div className="max-w-3xl">
-                        <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+                        <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                            Supported Sites
                         </span>
                         <h2 className="mt-4 text-2xl font-semibold md:text-3xl">
@@ -253,7 +253,7 @@ function SiteGroup({ title, description, sites, highlighted = false }) {
    return (
       <div
          className={clsx(
-            highlighted ? "border-emerald-200 bg-emerald-50" : "border-zinc-200 bg-zinc-50",
+            highlighted ? "border-amber-200 bg-[#fbf7ef]" : "border-zinc-200 bg-zinc-50",
             "rounded-lg border p-5",
          )}
       >

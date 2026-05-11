@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { exchangeCafe24AccessToken } from "@/lib/admin";
+import { exchangeWorkspaceCafe24AccessToken } from "@/lib/workspace";
 
 const OAUTH_STATE_KEY = "flowmerce_cafe24_oauth_state";
 
@@ -55,8 +56,18 @@ export default function Cafe24CallbackPage() {
             const appOrigin =
                String(parsedState?.appOrigin || "").trim() ||
                window.location.origin;
+            const returnPath =
+               String(parsedState?.returnPath || "").trim() ||
+               "/admin-flowmerce";
+            const accessScope =
+               String(parsedState?.accessScope || "admin").trim() || "admin";
 
-            const result = await exchangeCafe24AccessToken({
+            const exchangeToken =
+               accessScope === "user"
+                  ? exchangeWorkspaceCafe24AccessToken
+                  : exchangeCafe24AccessToken;
+
+            const result = await exchangeToken({
                customId: parsedState.customId,
                accountPlatform: parsedState.accountPlatform,
                mallId: parsedState.mallId,
@@ -91,7 +102,7 @@ export default function Cafe24CallbackPage() {
                ) {
                   window.close();
                } else if (typeof window !== "undefined") {
-                  window.location.href = `${appOrigin}/admin-flowmerce`;
+                  window.location.href = `${appOrigin}${returnPath}`;
                }
             }, 900);
          } catch (loadError) {

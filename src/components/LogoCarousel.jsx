@@ -1,4 +1,4 @@
-﻿import Image from "next/image";
+import Image from "next/image";
 import Container from "./Container";
 
 export default function LogoCarousel() {
@@ -14,7 +14,7 @@ export default function LogoCarousel() {
    ];
 
    return (
-      <section className="relative">
+      <section className="relative bg-[#f7f4ef]">
          <Container>
             <div className="py-10 md:py-14">
                <div className="inline-flex w-full flex-nowrap overflow-hidden [mask-image:_linear-gradient(to_right,transparent_0,_black_128px,_black_calc(100%-128px),transparent_100%)]">
@@ -26,7 +26,7 @@ export default function LogoCarousel() {
                      >
                         {channels.map((channel) => (
                            <li key={`${channel.name}-${index}`}>
-                              <div className="flex h-16 min-w-52 items-center justify-center rounded-lg border border-zinc-200 bg-white px-5 py-3 shadow-sm">
+                              <div className="flex h-16 min-w-52 items-center justify-center rounded-md border border-black/5 bg-white px-5 py-3 shadow-sm">
                                  <Image
                                     src={channel.logo}
                                     alt={`${channel.name} 로고`}
@@ -48,11 +48,11 @@ export default function LogoCarousel() {
                className="absolute inset-0 flex items-center"
                aria-hidden="true"
             >
-               <div className="w-full border-t border-zinc-200"></div>
+               <div className="w-full border-t border-black/5"></div>
             </div>
             <div className="relative flex justify-center">
-               <div className="items-center rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-medium text-zinc-600 shadow-sm sm:px-5 sm:py-2 sm:text-sm">
-                  지원 플랫폼은 계속 확장됩니다
+               <div className="rounded-full border border-black/5 bg-white px-4 py-2 text-xs font-medium text-zinc-600 shadow-sm sm:text-sm">
+                  운영 중인 플랫폼과 준비 중인 채널은 계속 확장됩니다
                </div>
             </div>
          </div>

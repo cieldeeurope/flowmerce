@@ -1,86 +1,116 @@
+import Image from "next/image";
 import Link from "next/link";
 import Container from "./Container";
-import ArrowLink from "./ArrowLink";
+
+const quickActions = [
+   "카테고리 매핑",
+   "수집 예약",
+   "마진 설정",
+   "단어 치환",
+   "재고·품절 반영",
+];
+
+const heroPoints = [
+   {
+      title: "자동 재고·품절 관리",
+      description:
+         "신상품 등록만이 아니라 품절, 가격 변경, 노출 상태까지 이어서 관리할 수 있습니다.",
+   },
+   {
+      title: "설치 없는 웹 대시보드",
+      description:
+         "프로그램 설치나 Java 설정 없이 브라우저에서 바로 매핑하고 수집 요청할 수 있습니다.",
+   },
+   {
+      title: "명품 판매 운영 기준",
+      description:
+         "현지 사이트 기준 수집과 마진 구조, 운영 흐름을 명품 판매 방식에 맞춰 설계했습니다.",
+   },
+];
 
 export default function Hero() {
-   const categories = [
-      "명품 쇼핑몰 자동화",
-      "SEO 상품명·상세 최적화",
-      "마진·단어 치환 자동화",
-      "재고관리 자동화",
-   ];
-
    return (
-      <section className="relative overflow-hidden bg-gradient-to-b from-emerald-50 via-white to-sky-50 py-20 text-zinc-950 md:py-28">
-         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_top_right,rgba(14,165,233,0.16),transparent_28%)]" />
+      <section className="relative overflow-hidden bg-[#120f0b] text-white">
+         <div className="absolute inset-0">
+            <Image
+               src="/home/main-hero-luxury.png"
+               alt="럭셔리 브랜드 매장이 이어진 쇼핑몰 전경"
+               fill
+               priority
+               className="object-cover object-center"
+               sizes="100vw"
+            />
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,8,0.34)_0%,rgba(8,8,8,0.52)_35%,rgba(8,8,8,0.78)_100%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(218,180,106,0.22),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.10),transparent_30%)]" />
+         </div>
+
          <Container>
-            <div className="relative mx-auto max-w-5xl text-center">
-               <div className="flex flex-wrap justify-center gap-2">
-                  {categories.map((category) => (
-                     <span
-                        key={category}
-                        className="rounded-full border border-emerald-200 bg-white/90 px-3.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm backdrop-blur"
+            <div className="relative flex min-h-[62vh] items-end py-16 md:min-h-[68vh] md:py-20">
+               <div className="max-w-4xl">
+                  <span className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold tracking-[0.12em] text-[#f1deba] backdrop-blur">
+                     LUXURY COMMERCE AUTOMATION
+                  </span>
+
+                  <h1 className="mt-5 max-w-4xl text-4xl font-semibold leading-[1.12] sm:text-5xl md:text-6xl">
+                     명품 쇼핑몰 운영,
+                     <br />
+                     상품등록 & 재고관리 자동화 서비스
+                  </h1>
+
+                  <p className="mt-6 max-w-3xl text-base leading-8 text-white/82 sm:text-lg sm:leading-9">
+                     플로우머스는 카페24, 고도몰, 스마트스토어, 메이크샵 운영에
+                     필요한 상품 수집, 쇼핑몰 카테고리 매핑, 마진 설정, 단어
+                     치환, 수집 예약, 재고·품절 관리를 별도 프로그램 없이 바로 처리할 수 있도록 설계했습니다.
+                  </p>
+
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                     <Link
+                        href="/pricing"
+                        className="inline-flex h-12 items-center justify-center rounded-md bg-zinc-950 px-6 text-sm font-semibold text-white transition hover:bg-zinc-800"
                      >
-                        {category}
-                     </span>
-                  ))}
-               </div>
-
-               <div className="mt-8 inline-flex rounded-full border border-emerald-200 bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">
-                  쇼핑몰 10년 운영 경험으로 만든 쇼핑몰 완벽 자동화
-               </div>
-
-               <h1 className="mx-auto mt-7 max-w-4xl text-4xl font-semibold leading-[1.18] sm:text-5xl sm:leading-[1.16] md:text-6xl md:leading-[1.14]">
-                  상품은 플로우머스에 맡기고
-                  <br />
-                  판매와 운영에만 집중하세요
-               </h1>
-               <p className="mx-auto mt-7 max-w-3xl text-base leading-8 text-zinc-600 sm:text-lg sm:leading-9">
-                  모든 호스팅사에 맞춘 상품 자동화를 제공하고, 명품 사이트 수집부터
-                  마진 설정, 단어 치환, SEO 최적화까지 한 번에 운영할 수 있도록
-                  설계했습니다. 반복되는 등록과 재고 흐름은 플로우머스가 처리하고,
-                  고객님은 판매와 운영에만 집중하시면 됩니다.
-               </p>
-
-               <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                  <Link
-                     href="/pricing"
-                     className="inline-flex rounded-lg border border-emerald-700 bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
-                  >
-                     플랜 구독하기
-                  </Link>
-
-                  <ArrowLink href="/pricing" text="가격과 지원 사이트 보기" />
-               </div>
-
-               <dl className="mx-auto mt-12 grid max-w-4xl grid-cols-1 gap-4 text-left sm:grid-cols-3">
-                  <div className="rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-                     <dt className="text-sm font-medium text-zinc-500">
-                        실사용 매출 성과 확인
-                     </dt>
-                     <dd className="mt-2 text-lg font-semibold leading-7">
-                        실제 이용객 매출 성장 사례로 검증한 운영 데이터 기반
-                     </dd>
+                        요금과 플랜 보기
+                     </Link>
+                     <Link
+                        href="/program"
+                        className="inline-flex h-12 items-center justify-center rounded-md border border-white/20 bg-white/8 px-6 text-sm font-semibold text-white transition hover:bg-white/14"
+                     >
+                        운영 화면 보기
+                     </Link>
                   </div>
-                  <div className="rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-                     <dt className="text-sm font-medium text-zinc-500">
-                        최적화된 AI 기반 상품 콘텐츠
-                     </dt>
-                     <dd className="mt-2 text-lg font-semibold leading-7">
-                        SEO에 최적화된 상품명과 상세페이지 자동 반영
-                     </dd>
+
+                  <div className="mt-7 flex flex-wrap gap-2">
+                     {quickActions.map((item) => (
+                        <span
+                           key={item}
+                           className="rounded-full border border-white/12 bg-black/20 px-3 py-1.5 text-xs font-medium text-white/78 backdrop-blur"
+                        >
+                           {item}
+                        </span>
+                     ))}
                   </div>
-                  <div className="rounded-lg border border-zinc-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-                     <dt className="text-sm font-medium text-zinc-500">
-                        최적화 운영 지원
-                     </dt>
-                     <dd className="mt-2 text-lg font-semibold leading-7">
-                        24시간 실시간 응대와 쇼핑몰 완벽 연동 사전 셋팅
-                     </dd>
-                  </div>
-               </dl>
+               </div>
             </div>
          </Container>
+
+         <div className="relative border-t border-white/10 bg-[#15120f]/92 backdrop-blur">
+            <Container>
+               <div className="grid gap-4 py-5 md:grid-cols-3">
+                  {heroPoints.map((point) => (
+                     <div
+                        key={point.title}
+                        className="rounded-md border border-white/10 bg-white/[0.04] p-5 transition duration-200 hover:-translate-y-0.5 hover:bg-white/[0.07]"
+                     >
+                        <p className="text-sm font-semibold text-[#f1deba]">
+                           {point.title}
+                        </p>
+                        <p className="mt-2 text-sm leading-7 text-white/72">
+                           {point.description}
+                        </p>
+                     </div>
+                  ))}
+               </div>
+            </Container>
+         </div>
       </section>
    );
 }

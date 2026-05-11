@@ -33,25 +33,25 @@ const planMeta = {
    },
    boutique: {
       label: "Boutique",
-      badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      badgeClass: "border-amber-200 bg-[#fbf7ef] text-amber-900",
       description:
          "대형 플랫폼 대상 상품등록 및 재고관리를 위한 Boutique 플랜을 이용 중입니다.",
    },
    basic: {
       label: "Basic",
-      badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      badgeClass: "border-amber-200 bg-[#fbf7ef] text-amber-900",
       description:
          "기본 운영 흐름을 시작하기 좋은 Basic 플랜을 이용 중입니다.",
    },
    pro: {
       label: "Pro",
-      badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      badgeClass: "border-amber-200 bg-[#fbf7ef] text-amber-900",
       description:
          "다중 사이트 운영과 확장에 적합한 Pro 플랜을 이용 중입니다.",
    },
    enterprise: {
       label: "Enterprise",
-      badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700",
+      badgeClass: "border-amber-200 bg-[#fbf7ef] text-amber-900",
       description:
          "대규모 운영에 맞춘 Enterprise 플랜을 이용 중입니다.",
    },
@@ -246,7 +246,7 @@ function PlanModal({ mode, options, onClose }) {
          <div className="relative z-10 w-full max-w-6xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl">
             <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5 sm:px-8">
                <div>
-                  <p className="text-sm font-semibold text-emerald-600">
+                  <p className="text-sm font-semibold text-amber-900">
                      {isUpgrade ? "Upgrade Plan" : "Additional Plan"}
                   </p>
                   <h3 className="mt-1 text-2xl font-semibold text-zinc-950">
@@ -279,7 +279,7 @@ function PlanModal({ mode, options, onClose }) {
                         key={plan.name}
                         className={clsx(
                            plan.recommended
-                              ? "border-emerald-600"
+                              ? "border-[#8c6333]"
                               : "border-zinc-200",
                            "relative flex h-full flex-col rounded-lg border bg-white p-7 shadow-sm",
                         )}
@@ -288,7 +288,7 @@ function PlanModal({ mode, options, onClose }) {
                            <h4 className="flex min-h-[36px] items-start gap-2 text-2xl font-semibold">
                               <span>{plan.name}</span>
                               {plan.recommended && (
-                                 <span className="rounded border border-emerald-700 bg-emerald-600 px-2 py-1 text-xs font-semibold text-white shadow-sm">
+                                 <span className="rounded border border-zinc-950 bg-zinc-950 px-2 py-1 text-xs font-semibold text-white shadow-sm">
                                     추천
                                  </span>
                               )}
@@ -313,7 +313,7 @@ function PlanModal({ mode, options, onClose }) {
                                  key={feature}
                                  className="flex items-center gap-x-2 text-sm text-zinc-600"
                               >
-                                 <CheckIcon className="h-5 w-5 shrink-0 text-emerald-600" />
+                                 <CheckIcon className="h-5 w-5 shrink-0 text-amber-900" />
                                  {feature}
                               </li>
                            ))}
@@ -321,7 +321,7 @@ function PlanModal({ mode, options, onClose }) {
 
                         <Link
                            href="/pricing"
-                           className="mt-7 inline-flex w-full justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                           className="mt-7 inline-flex w-full justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                         >
                            플랜 자세히 보기
                         </Link>
@@ -367,7 +367,7 @@ function SiteConfirmModal({ open, onConfirm, onCancel, loading }) {
                   type="button"
                   onClick={onConfirm}
                   disabled={loading}
-                  className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333] disabled:cursor-not-allowed disabled:opacity-70"
                >
                   {loading ? "저장 중..." : "예"}
                </button>
@@ -999,7 +999,7 @@ export default function MyPagePanel() {
       <>
          <div className="space-y-8">
             <div className="max-w-3xl">
-               <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+               <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                   My Page
                </span>
                <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
@@ -1009,12 +1009,23 @@ export default function MyPagePanel() {
                   회원가입 시 입력한 정보와 현재 플랜 상태를 확인하고, 사이트 확정과 비밀번호
                   변경도 바로 진행할 수 있습니다.
                </p>
+               <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <Link
+                     href="/flowmerce-studio"
+                     className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
+                  >
+                     플로우머스 대시보드
+                  </Link>
+                  <p className="text-sm text-zinc-500">
+                     호스팅, 매핑, 마진, 치환, 수집 예약을 한 화면에서 이어서 작업할 수 있어요.
+                  </p>
+               </div>
             </div>
 
             <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
                <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
-                     <p className="text-sm font-semibold text-emerald-600">
+                     <p className="text-sm font-semibold text-amber-900">
                         STEP GUIDE
                      </p>
                      <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
@@ -1025,7 +1036,7 @@ export default function MyPagePanel() {
                         있습니다.
                      </p>
                   </div>
-                  <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-700">
+                  <span className="inline-flex items-center rounded-full border border-amber-200 bg-[#fbf7ef] px-3 py-1.5 text-sm font-semibold text-amber-900">
                      {completedStepCount}/6 완료
                   </span>
                </div>
@@ -1037,7 +1048,7 @@ export default function MyPagePanel() {
                         className={clsx(
                            "rounded-lg border p-4 transition",
                            step.status === "complete"
-                              ? "border-emerald-200 bg-emerald-50"
+                              ? "border-amber-200 bg-[#fbf7ef]"
                               : step.status === "current"
                                 ? "border-amber-200 bg-amber-50"
                                 : "border-zinc-200 bg-zinc-50",
@@ -1048,7 +1059,7 @@ export default function MyPagePanel() {
                               className={clsx(
                                  "inline-flex rounded-full px-2.5 py-1 text-xs font-semibold",
                                  step.status === "complete"
-                                    ? "bg-white text-emerald-700 ring-1 ring-emerald-200"
+                                    ? "bg-white text-amber-900 ring-1 ring-amber-200"
                                     : step.status === "current"
                                       ? "bg-white text-amber-700 ring-1 ring-amber-200"
                                       : "bg-white text-zinc-500 ring-1 ring-zinc-200",
@@ -1060,14 +1071,14 @@ export default function MyPagePanel() {
                               className={clsx(
                                  "inline-flex items-center gap-1 text-xs font-semibold",
                                  step.status === "complete"
-                                    ? "text-emerald-700"
+                                    ? "text-amber-900"
                                     : step.status === "current"
                                       ? "text-amber-700"
                                       : "text-zinc-500",
                               )}
                            >
                               {step.status === "complete" && (
-                                 <CheckIcon className="h-4 w-4 text-emerald-600" />
+                                 <CheckIcon className="h-4 w-4 text-amber-900" />
                               )}
                               {step.status === "complete"
                                  ? "완료"
@@ -1084,7 +1095,7 @@ export default function MyPagePanel() {
                               사이트 선택은 이 페이지 하단의{" "}
                               <a
                                  href="#site-settings"
-                                 className="font-semibold text-emerald-700 underline underline-offset-2"
+                                 className="font-semibold text-amber-900 underline underline-offset-2"
                               >
                                  플랜별 사이트 설정
                               </a>
@@ -1221,7 +1232,7 @@ export default function MyPagePanel() {
                                     : requestUsageStatus === "warning"
                                       ? "border-amber-200 bg-amber-50 text-amber-700"
                                       : requestUsageStatus === "normal"
-                                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                        ? "border-amber-200 bg-[#fbf7ef] text-amber-900"
                                         : "border-zinc-200 bg-white text-zinc-600",
                               )}
                            >
@@ -1278,7 +1289,7 @@ export default function MyPagePanel() {
                                              ? "border-red-600 bg-red-500"
                                              : requestUsageStatus === "warning"
                                                ? "border-amber-500 bg-amber-400"
-                                               : "border-emerald-600 bg-emerald-500"
+                                               : "border-[#8c6333] bg-[#8c6333]"
                                           : "border-zinc-200 bg-white",
                                     )}
                                  />
@@ -1317,7 +1328,7 @@ export default function MyPagePanel() {
                      {currentPlan === "none" ? (
                         <Link
                            href="/pricing"
-                           className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                           className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                         >
                            플랜 구독하기
                         </Link>
@@ -1335,7 +1346,7 @@ export default function MyPagePanel() {
                               <button
                                  type="button"
                                  onClick={() => setModalMode("upgrade")}
-                                 className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                                 className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                               >
                                  업그레이드
                               </button>
@@ -1374,7 +1385,7 @@ export default function MyPagePanel() {
             <section className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7">
                <div className="flex flex-wrap items-start justify-between gap-4">
                   <div className="max-w-3xl">
-                     <p className="text-sm font-semibold text-emerald-600">
+                     <p className="text-sm font-semibold text-amber-900">
                         RUN STATUS
                      </p>
                      <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
@@ -1390,7 +1401,7 @@ export default function MyPagePanel() {
                         collectionProgressTone === "error"
                            ? "border-red-200 bg-red-50 text-red-700"
                            : collectionProgressTone === "success"
-                             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                             ? "border-amber-200 bg-[#fbf7ef] text-amber-900"
                             : collectionProgressTone === "pending"
                               ? "border-sky-200 bg-sky-50 text-sky-700"
                             : collectionProgressTone === "running"
@@ -1455,7 +1466,7 @@ export default function MyPagePanel() {
                                        ? collectionProgressTone === "error"
                                           ? "border-red-600 bg-red-500"
                                           : collectionProgressTone === "success"
-                                            ? "border-emerald-600 bg-emerald-500"
+                                            ? "border-[#8c6333] bg-[#8c6333]"
                                             : collectionProgressTone === "pending"
                                               ? "border-sky-500 bg-sky-400"
                                             : "border-amber-500 bg-amber-400"
@@ -1504,7 +1515,7 @@ export default function MyPagePanel() {
                className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm sm:p-7"
             >
                <div className="max-w-3xl">
-                  <p className="text-sm font-semibold text-emerald-600">
+                  <p className="text-sm font-semibold text-amber-900">
                      SETUP GUIDE
                   </p>
                   <h2 className="mt-2 text-2xl font-semibold text-zinc-950">
@@ -1547,7 +1558,7 @@ export default function MyPagePanel() {
                      href={kakaoChatUrl}
                      target="_blank"
                      rel="noopener noreferrer"
-                     className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                     className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                   >
                      카카오톡으로 계정 전달하기
                   </a>
@@ -1589,7 +1600,7 @@ export default function MyPagePanel() {
                )}
 
                {currentPlan === "enterprise" && (
-                  <div className="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
+                  <div className="mt-6 rounded-lg border border-amber-200 bg-[#fbf7ef] px-5 py-4 text-sm text-amber-900">
                      Enterprise 플랜은 모든 사이트가 적용됩니다. 별도의 선택 없이 운영 범위가
                      전체로 처리됩니다.
                   </div>
@@ -1661,7 +1672,7 @@ export default function MyPagePanel() {
                                           setCoreSelection(event.target.value)
                                        }
                                        disabled={!canAddCore}
-                                       className="block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none"
+                                       className="block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-[#8c6333] focus:outline-none"
                                     >
                                        <option value="">사이트를 선택해주세요</option>
                                        {availableCoreOptions.map((site) => (
@@ -1674,7 +1685,7 @@ export default function MyPagePanel() {
                                        type="button"
                                        onClick={handleAddCoreSite}
                                        disabled={!canAddCore}
-                                       className="inline-flex shrink-0 items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                       className="inline-flex shrink-0 items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                        선택
                                     </button>
@@ -1726,7 +1737,7 @@ export default function MyPagePanel() {
                                           setHighEndSelection(event.target.value)
                                        }
                                        disabled={!canAddHighEnd}
-                                       className="block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
+                                       className="block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-[#8c6333] focus:outline-none disabled:bg-zinc-100 disabled:text-zinc-400"
                                     >
                                        <option value="">사이트를 선택해주세요</option>
                                        {availableHighEndOptions.map((site) => (
@@ -1739,7 +1750,7 @@ export default function MyPagePanel() {
                                        type="button"
                                        onClick={handleAddHighEndSite}
                                        disabled={!canAddHighEnd}
-                                       className="inline-flex shrink-0 items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                       className="inline-flex shrink-0 items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333] disabled:cursor-not-allowed disabled:opacity-60"
                                     >
                                        선택
                                     </button>
@@ -1781,7 +1792,7 @@ export default function MyPagePanel() {
                                  <button
                                     type="button"
                                     onClick={openSiteConfirm}
-                                    className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                                    className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                                  >
                                     저장
                                  </button>
@@ -1807,7 +1818,7 @@ export default function MyPagePanel() {
                            className={clsx(
                               "rounded-lg border px-4 py-3 text-sm font-medium",
                               siteMessage.tone === "success"
-                                 ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                                 ? "border-amber-200 bg-[#fbf7ef] text-amber-900"
                                  : "border-red-200 bg-red-50 text-red-700",
                            )}
                         >
@@ -1847,7 +1858,7 @@ export default function MyPagePanel() {
                               event.target.value,
                            )
                         }
-                        className="mt-1.5 block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600"
+                        className="mt-1.5 block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#8c6333]"
                         placeholder="현재 비밀번호를 입력해주세요"
                         required
                      />
@@ -1863,7 +1874,7 @@ export default function MyPagePanel() {
                         onChange={(event) =>
                            handlePasswordFieldChange("newPassword", event.target.value)
                         }
-                        className="mt-1.5 block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600"
+                        className="mt-1.5 block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#8c6333]"
                         placeholder="새 비밀번호를 입력해주세요"
                         required
                      />
@@ -1872,7 +1883,7 @@ export default function MyPagePanel() {
                            className={clsx(
                               "mt-2 text-xs font-medium",
                               validatePassword(passwordForm.newPassword)
-                                 ? "text-emerald-700"
+                                 ? "text-amber-900"
                                  : "text-red-700",
                            )}
                         >
@@ -1894,7 +1905,7 @@ export default function MyPagePanel() {
                               event.target.value,
                            )
                         }
-                        className="mt-1.5 block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600"
+                        className="mt-1.5 block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#8c6333]"
                         placeholder="새 비밀번호를 한 번 더 입력해주세요"
                         required
                      />
@@ -1905,7 +1916,7 @@ export default function MyPagePanel() {
                         className={clsx(
                            "rounded-lg border px-4 py-3 text-sm font-medium lg:col-span-2",
                            passwordMessage.tone === "success"
-                              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                              ? "border-amber-200 bg-[#fbf7ef] text-amber-900"
                               : "border-red-200 bg-red-50 text-red-700",
                         )}
                      >
@@ -1917,7 +1928,7 @@ export default function MyPagePanel() {
                      <button
                         type="submit"
                         disabled={isSubmittingPassword}
-                        className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333] disabled:cursor-not-allowed disabled:opacity-70"
                      >
                         {isSubmittingPassword ? "변경 중..." : "비밀번호 수정"}
                      </button>

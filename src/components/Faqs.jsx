@@ -69,7 +69,7 @@ export default function Faqs() {
       <section className="pt-16 md:pt-28" id="faq">
          <Container>
             <div className="space-y-4 sm:text-center">
-               <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+               <span className="inline-flex rounded-full border border-amber-200 bg-[#fbf7ef] px-3 py-1 text-xs font-semibold text-amber-900 shadow-sm">
                   FAQ
                </span>
                <h2 className="mx-auto max-w-2xl text-2xl font-semibold leading-tight sm:text-3xl md:text-4xl">

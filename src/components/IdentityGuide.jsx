@@ -1,87 +1,85 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import Container from "./Container";
 
+const points = [
+   {
+      title: "현지 사이트 기준 상품 수집",
+      description: "국내보다 빠르게 상품 흐름을 확인하고 먼저 운영에 반영할 수 있습니다.",
+   },
+   {
+      title: "품절·미입고 상품 대응",
+      description: "국내에 없는 상품이나 이미 빠진 상품 흐름까지 함께 관리할 수 있습니다.",
+   },
+   {
+      title: "마진 구조를 반영한 운영",
+      description: "금액 구간별 마진, 환율, 거래처 할인율 기준을 실제 운영 방식에 맞춰 설정합니다.",
+   },
+   {
+      title: "하이엔드 브랜드 확장",
+      description: "명품 판매자에게 중요한 브랜드 폭과 운영 속도를 함께 고려합니다.",
+   },
+   {
+      title: "설치형이 아닌 웹 운영",
+      description: "운영 PC 환경이나 프로그램 설치 여부에 덜 묶이고, 브라우저에서 바로 이어집니다.",
+   },
+   {
+      title: "셋업과 상담 지원",
+      description: "호스팅 연결과 기본 흐름은 함께 안내하고, 필요한 경우 컨설팅까지 이어갈 수 있습니다.",
+   },
+];
 
 export default function IdentityGuide() {
-   const points = [
-      {
-         title: "현지 사이트 기준 상품 수집",
-         description: "국내보다 빠르게, 더 많은 상품을 먼저 선점합니다.",
-      },
-      {
-         title: "국내 미입고·품절 상품까지 소싱",
-         description: "경쟁이 적은 상품으로 판매 기회를 넓힙니다.",
-      },
-      {
-         title: "고환율 환경에서도 검증된 마진 구조",
-         description: "실제 운영 기준으로 충분한 수익 사례를 확보했습니다.",
-      },
-      {
-         title: "하이엔드 브랜드까지 소싱 가능",
-         description: "거래처 연결부터 배송 흐름까지 한 번에 처리합니다.",
-      },
-      {
-         title: "국내 백화점에서 기분 좋은 경험",
-         description:
-            "원하는 제품이 국내에 있다면 국내 소싱으로도 마진을 확보할 수 있습니다.",
-      },
-      {
-         title: "전업과 부업의 선택 및 전환 가능",
-         description:
-            "부업으로 시작해 본업을 뛰어넘는 수익 구조까지 기대할 수 있습니다.",
-      },
-   ];
-
    return (
       <section className="pt-16 md:pt-28" id="guide">
          <Container>
-            <div className="overflow-hidden rounded-lg border border-emerald-200 bg-gradient-to-br from-white via-emerald-50 to-sky-50 shadow-sm">
+            <div className="overflow-hidden rounded-md border border-black/5 bg-[#efe8dd] shadow-sm">
                <div className="grid gap-9 p-7 md:p-10 lg:grid-cols-[1fr_1fr] lg:items-center">
                   <div>
-                     <span className="inline-flex rounded-md border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
-                        지나치지 마시고 꼭 읽어보세요
+                     <span className="inline-flex rounded-full border border-white/80 bg-white/90 px-3 py-1 text-xs font-semibold text-amber-900 shadow-sm">
+                        Why Flowmerce
                      </span>
                      <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
-                        왜 플로우머스를 <br /> 선택해야만 하는가?
+                        명품 판매 운영에서
+                        <br />
+                        자주 놓치기 쉬운 기준까지 함께 봅니다
                      </h2>
                      <div className="mt-5 space-y-4 text-base leading-8 text-zinc-600">
                         <p className="font-semibold text-zinc-950">
-                           무료를 내세운 병행수입 컨설팅이 곧 실제 수익화로 이어지는 것은 아닙니다. 재고 넘기기를 위한 목적이나 구매 요청 시 마진을 넣기 때문에 시작 전에는 반드시 구조부터 확인해야 합니다.
+                           플로우머스는 상품만 올리는 도구보다는, 실제 운영에서
+                           자주 반복되는 관리 업무를 줄이는 쪽에 더 가깝습니다.
                         </p>
                         <p>
-                           플로우머스는 다릅니다. 상품만 올리는 단순 툴을 판매하는게 아닙니다.
+                           재고와 품절, 가격 변경, 카테고리 매핑, 마진 설정,
+                           상품 문구 정리, 수집 예약처럼 판매자가 계속 손대게 되는
+                           작업을 한 흐름으로 이어지게 만드는 것이 핵심입니다.
                         </p>
                         <p>
-                           국내에 없는 상품, 이미 품절된 상품을 현지 사이트 기준으로 먼저 확보하고 가격 차이를 이용해 본인이 마진을 만들어내는 구매대행 자동화 시스템입니다.
-                        </p>
-                        <p>
-                           10년간 명품 시장과 쇼핑몰을 운영하며 직접 검증한 수익 구조를 자동화 흐름에 담았습니다.
-                        </p>
-                        <p>
-                           저희 플로우머스는 툴만 제공하지 않습니다. 현지 거래처, 실전 전략, 일대일 컨설팅까지 실제로 돈이 되는 구조를 함께 제공합니다.
+                           특히 명품 판매는 단순 수집보다 상품 흐름을 빠르게
+                           확인하고, 품절과 가격 변동을 놓치지 않는 쪽이 운영
+                           리스크를 줄이는 데 더 중요합니다.
                         </p>
                      </div>
                      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
                         <Link
                            href="/guide"
-                           className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-center text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700 sm:min-w-72"
+                           className="inline-flex justify-center rounded-md bg-zinc-950 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-zinc-800 sm:min-w-64"
                         >
-                           꼭 읽어야 하는 플로우머스의 핵심 가이드
+                           운영 가이드 자세히 보기
                         </Link>
                         <Link
                            href="/consulting"
-                           className="inline-flex justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 shadow-sm duration-150 hover:bg-zinc-50 sm:min-w-48"
+                           className="inline-flex justify-center rounded-md border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-50 sm:min-w-44"
                         >
-                           일대일 컨설팅 알아보기
+                           컨설팅 알아보기
                         </Link>
                      </div>
                   </div>
 
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                      {points.map((point) => (
-                        <div
+                        <article
                            key={point.title}
-                           className="rounded-lg border border-white bg-white/90 p-4 shadow-sm"
+                           className="rounded-md border border-white/80 bg-white/92 p-4 shadow-sm"
                         >
                            <p className="text-sm font-semibold leading-6 text-zinc-950">
                               {point.title}
@@ -89,7 +87,7 @@ export default function IdentityGuide() {
                            <p className="mt-2 text-sm leading-6 text-zinc-600">
                               {point.description}
                            </p>
-                        </div>
+                        </article>
                      ))}
                   </div>
                </div>

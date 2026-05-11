@@ -104,7 +104,7 @@ export default function MobileNav() {
             aria-expanded={open}
             aria-label="메뉴 열기"
             onClick={() => setOpen((current) => !current)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-md border border-zinc-200 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            className="relative flex h-9 w-9 items-center justify-center rounded-md border border-zinc-200 bg-white shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900"
          >
             <MobileNavIcon open={open} />
          </button>
@@ -128,22 +128,22 @@ export default function MobileNav() {
                            홈
                         </MobileNavLink>
                         <MobileNavLink href="/guide" onNavigate={closeMenu}>
-                           소싱 가이드
+                           운영 가이드
                         </MobileNavLink>
                         <MobileNavLink href="/program" onNavigate={closeMenu}>
-                           프로그램 소개
+                           운영 화면
                         </MobileNavLink>
                         <MobileNavLink href="/consulting" onNavigate={closeMenu}>
                            컨설팅
                         </MobileNavLink>
                         <MobileNavLink href="/pricing" onNavigate={closeMenu}>
-                           가격
+                           요금
+                        </MobileNavLink>
+                        <MobileNavLink href="/#faq" onNavigate={closeMenu}>
+                           FAQ
                         </MobileNavLink>
                         <MobileNavLink href="/inquiry" onNavigate={closeMenu}>
                            문의
-                        </MobileNavLink>
-                        <MobileNavLink href="/#faq" onNavigate={closeMenu}>
-                           자주 묻는 질문
                         </MobileNavLink>
                         <MobileNavLink href="/#contact-us" onNavigate={closeMenu}>
                            연락처

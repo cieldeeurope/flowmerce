@@ -15,10 +15,10 @@ export default function InquiryPage() {
    return (
       <>
          <Header />
-         <main className="bg-zinc-50 py-16 md:py-24">
+         <main className="bg-[#f7f4ef] py-16 md:py-24 text-zinc-950">
             <Container>
                <div className="mb-10 max-w-3xl">
-                  <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+                  <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                      Inquiry
                   </span>
                   <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">

@@ -10,7 +10,7 @@ const reactions = [
          avatar: {
             type: "initial",
             text: "김",
-            className: "bg-emerald-100 text-emerald-700 ring-emerald-200",
+            className: "bg-amber-100 text-amber-800 ring-amber-200",
          },
       },
    },
@@ -24,7 +24,7 @@ const reactions = [
             type: "cover",
             text: "SEO",
             className:
-               "bg-gradient-to-br from-sky-500 via-cyan-400 to-emerald-300 text-white ring-sky-200",
+               "bg-gradient-to-br from-[#8c6333] via-[#b78949] to-[#dec08e] text-white ring-amber-200",
          },
       },
    },
@@ -37,7 +37,7 @@ const reactions = [
          avatar: {
             type: "initial",
             text: "이",
-            className: "bg-violet-100 text-violet-700 ring-violet-200",
+            className: "bg-rose-100 text-rose-700 ring-rose-200",
          },
       },
    },
@@ -49,9 +49,9 @@ const reactions = [
          detail: "초기 셋팅 완료",
          avatar: {
             type: "cover",
-            text: "서울",
+            text: "운영",
             className:
-               "bg-gradient-to-br from-slate-700 via-slate-600 to-slate-500 text-white ring-slate-300",
+               "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-600 text-white ring-zinc-300",
          },
       },
    },
@@ -64,7 +64,7 @@ const reactions = [
          avatar: {
             type: "initial",
             text: "박",
-            className: "bg-amber-100 text-amber-700 ring-amber-200",
+            className: "bg-orange-100 text-orange-700 ring-orange-200",
          },
       },
    },
@@ -78,7 +78,7 @@ const reactions = [
             type: "cover",
             text: "PRO",
             className:
-               "bg-gradient-to-br from-indigo-600 via-blue-500 to-sky-400 text-white ring-indigo-200",
+               "bg-gradient-to-br from-[#3f3527] via-[#6b5736] to-[#b78949] text-white ring-amber-200",
          },
       },
    },
@@ -91,7 +91,7 @@ const reactions = [
          avatar: {
             type: "initial",
             text: "최",
-            className: "bg-rose-100 text-rose-700 ring-rose-200",
+            className: "bg-stone-200 text-stone-800 ring-stone-300",
          },
       },
    },
@@ -105,7 +105,7 @@ const reactions = [
             type: "cover",
             text: "SHOP",
             className:
-               "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-600 text-white ring-zinc-300",
+               "bg-gradient-to-br from-[#1a1917] via-[#4f4538] to-[#8c6333] text-white ring-stone-300",
          },
       },
    },
@@ -118,7 +118,7 @@ const reactions = [
          avatar: {
             type: "initial",
             text: "정",
-            className: "bg-cyan-100 text-cyan-700 ring-cyan-200",
+            className: "bg-yellow-100 text-yellow-800 ring-yellow-200",
          },
       },
    },
@@ -126,7 +126,7 @@ const reactions = [
 
 function StarRating() {
    return (
-      <div className="flex items-center gap-1 text-amber-400" aria-label="별점 5점">
+      <div className="flex items-center gap-1 text-amber-500" aria-label="별점 5점">
          {Array.from({ length: 5 }).map((_, index) => (
             <span key={index} className="text-sm leading-none">
                ★
@@ -157,9 +157,9 @@ export default function Testimonials() {
    return (
       <section className="py-16 md:py-24" id="testimonials">
          <Container>
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5 shadow-sm sm:p-7 md:p-8">
+            <div className="rounded-md border border-black/5 bg-[#f1ebe1] p-5 shadow-sm sm:p-7 md:p-8">
                <div className="mx-auto max-w-3xl text-center">
-                  <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-100 px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
+                  <span className="inline-flex rounded-full border border-white/90 bg-white/90 px-3 py-1 text-xs font-semibold text-amber-900 shadow-sm">
                      현장에서 많이 나오는 반응
                   </span>
                   <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
@@ -168,9 +168,11 @@ export default function Testimonials() {
                      이런 이야기를 가장 많이 듣습니다
                   </h2>
                   <p className="mt-5 text-base leading-8 text-zinc-600">
-                     플로우머스를 경험해본 사람들의 반응은 생각보다 더 만족도가 높습니다.
+                     플로우머스를 경험해본 사람들의 반응은 생각보다 더 만족도가
+                     높습니다.
                      <br />
-                     운영 부담, 컨설팅 만족도, 전업 가능성, 명품 판매의 재미까지 가장 자주 나오는 반응들입니다.
+                     운영 부담, 컨설팅 만족도, 전업 가능성, 명품 판매의 재미까지
+                     가장 자주 나오는 반응들입니다.
                   </p>
                </div>
 
@@ -178,7 +180,7 @@ export default function Testimonials() {
                   {reactions.map((reaction) => (
                      <article
                         key={reaction.id}
-                        className="flex h-full flex-col justify-between rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition-transform duration-150 hover:-translate-y-0.5"
+                        className="flex h-full flex-col justify-between rounded-md border border-white/80 bg-white p-5 shadow-sm transition-transform duration-150 hover:-translate-y-0.5"
                      >
                         <div>
                            <StarRating />

@@ -13,7 +13,7 @@ export default function MyPage() {
    return (
       <>
          <Header />
-         <main className="bg-zinc-50 py-16 md:py-24">
+         <main className="bg-[#f7f4ef] py-16 md:py-24">
             <Container>
                <MyPagePanel />
             </Container>

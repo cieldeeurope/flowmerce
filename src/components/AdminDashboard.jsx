@@ -34,6 +34,7 @@ const scheduleSubtabs = [
 const planOptions = ["none", "boutique", "basic", "pro", "enterprise"];
 const platformOptions = ["smartstore", "godomall", "cafe24", "makeshop"];
 const CAFE24_OAUTH_STATE_KEY = "flowmerce_cafe24_oauth_state";
+const CAFE24_REFRESH_WARNING_MS = 3 * 24 * 60 * 60 * 1000;
 const requestLimitByPlan = {
    none: null,
    boutique: 100000,
@@ -59,6 +60,23 @@ function formatDateTime(value) {
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
+   }).format(parsed);
+}
+
+function formatMonthDay(value) {
+   if (!value) {
+      return "-";
+   }
+
+   const parsed = new Date(value);
+
+   if (Number.isNaN(parsed.getTime())) {
+      return "-";
+   }
+
+   return new Intl.DateTimeFormat("ko-KR", {
+      month: "2-digit",
+      day: "2-digit",
    }).format(parsed);
 }
 
@@ -174,6 +192,85 @@ function getScheduleDisplayName(schedule) {
       schedule.categoryName ||
       schedule.name ||
       "-"
+   );
+}
+
+function getCafe24RefreshStatus(account) {
+   if (!account || account.platform !== "cafe24") {
+      return null;
+   }
+
+   if (!account.refreshTokenExpiresAt) {
+      return {
+         level: "unknown",
+         badge: "\uBBF8\uD655\uC778",
+         summary: "\uBBF8\uD655\uC778",
+         expiresAt: null,
+      };
+   }
+
+   const expiresAt = new Date(account.refreshTokenExpiresAt);
+   if (Number.isNaN(expiresAt.getTime())) {
+      return {
+         level: "unknown",
+         badge: "\uBBF8\uD655\uC778",
+         summary: "\uBBF8\uD655\uC778",
+         expiresAt: null,
+      };
+   }
+
+   const diffMs = expiresAt.getTime() - Date.now();
+   if (diffMs <= 0) {
+      return {
+         level: "expired",
+         badge: "\uB9CC\uB8CC",
+         summary: "\uAC31\uC2E0 \uD544\uC694",
+         expiresAt,
+      };
+   }
+
+   if (diffMs <= CAFE24_REFRESH_WARNING_MS) {
+      const remainingDays = Math.max(
+         1,
+         Math.ceil(diffMs / (24 * 60 * 60 * 1000)),
+      );
+
+      return {
+         level: "warning",
+         badge: `D-${remainingDays}`,
+         summary: "\uAC31\uC2E0 \uD544\uC694",
+         expiresAt,
+      };
+   }
+
+   return {
+      level: "ok",
+      badge: "\uC815\uC0C1",
+      summary: "\uC815\uC0C1",
+      expiresAt,
+   };
+}
+
+function Cafe24RefreshBadge({ status }) {
+   if (!status) {
+      return <span className="text-zinc-400">-</span>;
+   }
+
+   const toneClass =
+      status.level === "expired"
+         ? "border-red-200 bg-red-50 text-red-700"
+         : status.level === "warning"
+           ? "border-amber-200 bg-amber-50 text-amber-700"
+           : status.level === "ok"
+             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+             : "border-zinc-200 bg-zinc-50 text-zinc-700";
+
+   return (
+      <span
+         className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${toneClass}`}
+      >
+         {status.badge}
+      </span>
    );
 }
 
@@ -876,6 +973,24 @@ export default function AdminDashboard() {
    const [connectingCafe24, setConnectingCafe24] = useState(false);
 
    const scheduleStatus = activeScheduleSubtab === "completed" ? "done" : "active";
+   const cafe24RefreshWatchAccounts = useMemo(() => {
+      return hostingAccounts
+         .map((account) => ({
+            account,
+            status: getCafe24RefreshStatus(account),
+         }))
+         .filter(
+            ({ status }) =>
+               status &&
+               (status.level === "expired" || status.level === "warning"),
+         )
+         .sort((left, right) => {
+            const leftTime = left.status?.expiresAt?.getTime?.() ?? Number.POSITIVE_INFINITY;
+            const rightTime =
+               right.status?.expiresAt?.getTime?.() ?? Number.POSITIVE_INFINITY;
+            return leftTime - rightTime;
+         });
+   }, [hostingAccounts]);
 
    useEffect(() => {
       let cancelled = false;
@@ -995,6 +1110,29 @@ export default function AdminDashboard() {
          window.removeEventListener("message", handleCafe24Connected);
       };
    }, []);
+
+   useEffect(() => {
+      if (activeTab !== "hosting") {
+         return undefined;
+      }
+
+      const intervalId = window.setInterval(() => {
+         if (document.visibilityState === "hidden") {
+            return;
+         }
+
+         void fetchAdminHostingAccounts()
+            .then((items) => {
+               setHostingAccounts(items);
+               setHostingLoaded(true);
+            })
+            .catch(() => {});
+      }, 60 * 1000);
+
+      return () => {
+         window.clearInterval(intervalId);
+      };
+   }, [activeTab]);
 
    useEffect(() => {
       if (!selectedCustomId) {
@@ -1963,6 +2101,9 @@ export default function AdminDashboard() {
                                        accountPlatform
                                     </th>
                                     <th className="px-5 py-4 text-left font-semibold text-zinc-950">
+                                       {"CAFE24 \uD1A0\uD070"}
+                                    </th>
+                                    <th className="px-5 py-4 text-left font-semibold text-zinc-950">
                                        사용 가능
                                     </th>
                                  </tr>
@@ -1982,6 +2123,20 @@ export default function AdminDashboard() {
                                        </td>
                                        <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
                                           {account.accountPlatform || "-"}
+                                       </td>
+                                       <td className="px-5 py-4 text-zinc-600">
+                                          {account.platform === "cafe24" ? (
+                                             <div className="flex items-center gap-2 whitespace-nowrap">
+                                                <Cafe24RefreshBadge
+                                                   status={getCafe24RefreshStatus(account)}
+                                                />
+                                                <span className="text-xs text-zinc-500">
+                                                   {formatMonthDay(account.refreshTokenExpiresAt)}
+                                                </span>
+                                             </div>
+                                          ) : (
+                                             "-"
+                                          )}
                                        </td>
                                        <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
                                           {isHostingAccountReady(account)

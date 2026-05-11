@@ -9,8 +9,10 @@ import { CheckIcon } from "./icons/CheckIcon";
 export default function PricingPlanCards({
    ctaHref = "/signup",
    compact = false,
+   tone = "default",
 }) {
    const [billing, setBilling] = useState("monthly");
+   const isLuxuryTone = tone === "luxury";
 
    const discount =
       billing === "sixMonth" ? "-5%" : billing === "annual" ? "-10%" : "";
@@ -46,7 +48,9 @@ export default function PricingPlanCards({
                         billing === option.id
                            ? option.id === "monthly"
                               ? "bg-zinc-950 text-white"
-                              : "bg-emerald-600 text-white"
+                              : isLuxuryTone
+                                ? "bg-[#8c6333] text-white"
+                                : "bg-emerald-600 text-white"
                            : "text-zinc-600 hover:text-zinc-950",
                         "rounded-md px-4 py-2 text-sm font-semibold transition",
                      )}
@@ -63,7 +67,9 @@ export default function PricingPlanCards({
                   key={plan.name}
                   className={clsx(
                      plan.recommended
-                        ? "border-emerald-600 bg-white"
+                        ? isLuxuryTone
+                           ? "border-[#8c6333] bg-white"
+                           : "border-emerald-600 bg-white"
                         : "border-zinc-200 bg-white",
                      compact
                         ? "rounded-2xl border p-7 shadow-sm"
@@ -72,7 +78,12 @@ export default function PricingPlanCards({
                   )}
                >
                   {discount && (
-                     <div className="absolute -right-10 top-5 w-36 rotate-45 bg-emerald-600 py-1.5 text-center text-xs font-bold text-white shadow-sm">
+                     <div
+                        className={clsx(
+                           "absolute -right-10 top-5 w-36 rotate-45 py-1.5 text-center text-xs font-bold text-white shadow-sm",
+                           isLuxuryTone ? "bg-[#8c6333]" : "bg-emerald-600",
+                        )}
+                     >
                         {discount}
                      </div>
                   )}
@@ -81,7 +92,14 @@ export default function PricingPlanCards({
                      <h3 className="flex min-h-[36px] items-start gap-2 text-xl font-semibold md:text-2xl">
                         <span>{plan.name}</span>
                         {plan.recommended && (
-                           <span className="rounded border border-emerald-700 bg-emerald-600 px-2 py-1 text-xs font-semibold text-white shadow-sm">
+                           <span
+                              className={clsx(
+                                 "rounded px-2 py-1 text-xs font-semibold text-white shadow-sm",
+                                 isLuxuryTone
+                                    ? "border border-[#8c6333] bg-[#8c6333]"
+                                    : "border border-emerald-700 bg-emerald-600",
+                              )}
+                           >
                               추천
                            </span>
                         )}
@@ -115,7 +133,12 @@ export default function PricingPlanCards({
                            key={feature}
                            className="flex items-center gap-x-2 text-sm text-zinc-600"
                         >
-                           <CheckIcon className="h-5 w-5 shrink-0 text-emerald-600" />
+                           <CheckIcon
+                              className={clsx(
+                                 "h-5 w-5 shrink-0",
+                                 isLuxuryTone ? "text-[#8c6333]" : "text-emerald-600",
+                              )}
+                           />
                            {feature}
                         </li>
                      ))}
@@ -123,8 +146,10 @@ export default function PricingPlanCards({
 
                   <Link
                      href={ctaHref}
-                     className={clsx(
-                        "inline-flex w-full justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700",
+                  className={clsx(
+                        isLuxuryTone
+                           ? "inline-flex w-full justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white shadow-sm duration-150 hover:bg-[#8c6333]"
+                           : "inline-flex w-full justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700",
                         compact ? "mt-auto" : "mt-7",
                      )}
                   >

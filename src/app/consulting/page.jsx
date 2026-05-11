@@ -50,11 +50,11 @@ export default function ConsultingPage() {
    return (
       <>
          <Header />
-         <main className="bg-white">
-            <section className="bg-gradient-to-b from-emerald-50 via-white to-sky-50 py-16 md:py-24">
+         <main className="bg-[#f7f4ef] text-zinc-950">
+            <section className="bg-[linear-gradient(180deg,#f6efe4_0%,#fbf8f3_48%,#f7f4ef_100%)] py-16 md:py-24">
                <Container>
                   <div className="mx-auto max-w-4xl text-center">
-                     <span className="inline-flex rounded-md border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm">
+                     <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                         Consulting
                      </span>
                      <h1 className="mt-5 text-4xl font-semibold leading-tight sm:text-5xl">
@@ -72,7 +72,7 @@ export default function ConsultingPage() {
                            href={kakaoUrl}
                            target="_blank"
                            rel="noopener noreferrer"
-                           className="inline-flex rounded-lg border border-emerald-700 bg-emerald-600 px-6 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
+                           className="inline-flex rounded-lg border border-zinc-950 bg-zinc-950 px-6 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#8c6333]"
                         >
                            컨설팅 신청하기
                         </a>
@@ -129,7 +129,7 @@ export default function ConsultingPage() {
                   <div className="rounded-lg border border-zinc-200 bg-zinc-950 p-7 text-white shadow-sm md:p-10">
                      <div className="grid gap-8 lg:grid-cols-[1fr_0.8fr] lg:items-center">
                         <div>
-                           <span className="text-sm font-semibold text-emerald-300">
+                           <span className="text-sm font-semibold text-[#f1deba]">
                               1:1 Consulting
                            </span>
                            <h2 className="mt-3 text-3xl font-semibold">
@@ -154,7 +154,7 @@ export default function ConsultingPage() {
                               href={kakaoUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="mt-7 inline-flex w-full justify-center rounded-lg border border-emerald-500 bg-emerald-500 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-600"
+                              className="mt-7 inline-flex w-full justify-center rounded-lg border border-[#8c6333] bg-[#8c6333] px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#6b5736]"
                            >
                               컨설팅 신청하기
                            </a>

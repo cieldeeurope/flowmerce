@@ -74,7 +74,7 @@ function LoginMockup() {
    return (
       <div className="mx-auto w-full max-w-sm rounded-lg border border-zinc-300 bg-zinc-100 shadow-sm">
          <div className="flex h-8 items-center gap-2 border-b border-zinc-300 bg-white px-3 text-xs text-zinc-600">
-            <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-emerald-100" />
+            <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-[#f1deba]" />
             로그인
          </div>
          <div className="px-6 py-8 text-center">
@@ -93,7 +93,7 @@ function LoginMockup() {
             </div>
 
             <div className="mt-5 flex justify-center gap-2">
-               <button className="rounded border border-cyan-700 bg-cyan-100 px-4 py-1.5 text-sm text-zinc-900">
+               <button className="rounded border border-[#8c6333] bg-[#fbf7ef] px-4 py-1.5 text-sm text-zinc-900">
                   로그인
                </button>
                <button className="rounded border border-zinc-300 bg-zinc-200 px-4 py-1.5 text-sm text-zinc-700">
@@ -130,7 +130,7 @@ function ProgramButton({ children, active, muted }) {
       <span
          className={`rounded border px-3 py-1.5 text-xs ${
             active
-               ? "border-cyan-500 bg-cyan-50 font-semibold text-zinc-950"
+               ? "border-[#8c6333] bg-[#fbf7ef] font-semibold text-zinc-950"
                : muted
                  ? "border-zinc-200 bg-zinc-100 text-zinc-300"
                  : "border-zinc-300 bg-zinc-200 text-zinc-700"
@@ -157,7 +157,7 @@ function CategoryBox({ title, items = [], selectedIndex, muted }) {
                         key={item}
                         className={`border-b border-zinc-100 px-2 py-1.5 ${
                            selectedIndex === index
-                              ? "bg-cyan-600 text-white"
+                              ? "bg-zinc-900 text-white"
                               : index % 2 === 0
                                 ? "bg-zinc-50"
                                 : "bg-white"
@@ -186,7 +186,7 @@ function ProgramWindow({ mode = "hosting" }) {
    return (
       <div className="rounded-lg border border-zinc-300 bg-zinc-100 shadow-sm">
          <div className="flex h-8 items-center gap-2 border-b border-zinc-300 bg-white px-3 text-xs text-zinc-600">
-            <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-emerald-100" />
+            <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-[#f1deba]" />
             Crawler Program
          </div>
          <div className="p-4">
@@ -243,7 +243,7 @@ function ProgramWindow({ mode = "hosting" }) {
                   <button
                      className={`h-10 w-full rounded border text-sm ${
                         isMargin
-                           ? "border-cyan-500 bg-cyan-50 text-zinc-950"
+                           ? "border-[#8c6333] bg-[#fbf7ef] text-zinc-950"
                            : "border-zinc-300 bg-zinc-200 text-zinc-700"
                      }`}
                   >
@@ -257,7 +257,7 @@ function ProgramWindow({ mode = "hosting" }) {
                   <button
                      className={`h-10 w-full rounded border text-sm ${
                         isMapped
-                           ? "border-cyan-500 bg-cyan-50 text-zinc-950"
+                           ? "border-[#8c6333] bg-[#fbf7ef] text-zinc-950"
                            : "border-zinc-300 bg-zinc-200 text-zinc-700"
                      }`}
                   >
@@ -271,7 +271,7 @@ function ProgramWindow({ mode = "hosting" }) {
                   <button
                      className={`h-10 w-full rounded border text-sm ${
                         isReplacement
-                           ? "border-cyan-500 bg-cyan-50 text-zinc-950"
+                           ? "border-[#8c6333] bg-[#fbf7ef] text-zinc-950"
                            : "border-zinc-300 bg-zinc-200 text-zinc-700"
                      }`}
                   >
@@ -288,7 +288,7 @@ function ProgramWindow({ mode = "hosting" }) {
                   <button
                      className={`h-12 w-full rounded border text-sm ${
                         isCollected
-                           ? "border-emerald-500 bg-emerald-50 font-semibold text-emerald-800"
+                           ? "border-[#8c6333] bg-[#fbf7ef] font-semibold text-zinc-950"
                            : "border-zinc-300 bg-zinc-200 text-zinc-700"
                      }`}
                   >
@@ -317,7 +317,7 @@ function HostingMockup() {
                   <label className="text-xs font-semibold text-zinc-600">
                      Select Account
                   </label>
-                  <select className="h-9 rounded border border-cyan-500 bg-cyan-50 px-3 text-sm text-zinc-900">
+                  <select className="h-9 rounded border border-[#8c6333] bg-[#fbf7ef] px-3 text-sm text-zinc-900">
                      <option>- 선택 -</option>
                      <option>godomall_1</option>
                      <option>smartstore_1</option>
@@ -347,11 +347,11 @@ function MarginSettingsMockup() {
          <ProgramWindow mode="margin" />
          <div className="absolute left-1/2 top-1/2 w-[min(92%,520px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-zinc-300 bg-white p-5 shadow-2xl">
             <div className="mb-5 flex h-7 items-center gap-2 text-sm font-semibold text-zinc-800">
-               <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-emerald-100" />
+               <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-[#f1deba]" />
                마진 설정
             </div>
             <p className="mb-3 text-sm text-zinc-700">현재 설정중인 마진</p>
-            <div className="h-40 rounded border-2 border-cyan-500 bg-white" />
+            <div className="h-40 rounded border-2 border-amber-200 bg-white" />
             <div className="mt-5 grid gap-3 text-sm">
                {fields.map(([label, placeholder]) => (
                   <div
@@ -390,10 +390,10 @@ function ReplacementSettingsMockup() {
          <ProgramWindow mode="replacement" />
          <div className="absolute left-1/2 top-1/2 w-[min(92%,500px)] -translate-x-1/2 -translate-y-1/2 rounded-lg border border-zinc-300 bg-white p-5 shadow-2xl">
             <div className="mb-5 flex h-7 items-center gap-2 text-sm font-semibold text-zinc-800">
-               <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-emerald-100" />
+               <span className="h-3 w-3 rounded-sm border border-zinc-400 bg-[#f1deba]" />
                단어 치환 설정
             </div>
-            <div className="h-52 rounded border-2 border-cyan-500 bg-white" />
+            <div className="h-52 rounded border-2 border-amber-200 bg-white" />
             <div className="mt-5 grid gap-3 text-sm">
                <div className="grid grid-cols-[100px_1fr] items-center gap-3">
                   <span className="text-zinc-700">치환할 단어</span>
@@ -506,11 +506,11 @@ function VisitorStockUpdateSection() {
    return (
       <section
          id="visitor-stock-update"
-         className="scroll-mt-24 bg-zinc-50 py-16 md:py-24"
+         className="scroll-mt-24 bg-[#f1ebe1] py-16 md:py-24"
       >
          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
             <div className="mx-auto max-w-4xl text-center">
-               <span className="inline-flex rounded-md border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+               <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                   실시간 방문자 재고 업데이트
                </span>
                <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
@@ -527,7 +527,7 @@ function VisitorStockUpdateSection() {
 
             <div className="mt-10 grid gap-5 xl:grid-cols-[1fr_auto_1fr] xl:items-center">
                <ProductUpdateMockup />
-               <div className="hidden h-12 w-12 items-center justify-center rounded-full border border-emerald-200 bg-white text-2xl font-semibold text-emerald-700 shadow-sm xl:flex">
+               <div className="hidden h-12 w-12 items-center justify-center rounded-full border border-amber-200 bg-white text-2xl font-semibold text-amber-900 shadow-sm xl:flex">
                   →
                </div>
                <ProductUpdateMockup updated />
@@ -540,7 +540,7 @@ function VisitorStockUpdateSection() {
                         key={benefit}
                         className="flex gap-3 rounded-lg border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-600 shadow-sm"
                      >
-                        <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-700">
+                        <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#8c6333] text-sm font-bold text-white">
                            ✓
                         </span>
                         <span>{benefit}</span>
@@ -548,7 +548,7 @@ function VisitorStockUpdateSection() {
                   ))}
                </div>
 
-               <div className="rounded-lg border border-emerald-200 bg-white p-6 shadow-sm">
+               <div className="rounded-lg border border-amber-200 bg-white p-6 shadow-sm">
                   <h3 className="text-2xl font-semibold text-zinc-950">
                      이용료 안내
                   </h3>
@@ -610,7 +610,7 @@ function MarginFeatureSection() {
       <section id="margin-feature" className="scroll-mt-24 py-16 md:py-24">
          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
             <div className="mx-auto max-w-4xl text-center">
-               <span className="inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+               <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                   마진 기능 사용법
                </span>
                <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
@@ -655,7 +655,7 @@ function MarginFeatureSection() {
                         <p>
                            먼저 최소 금액, 최대 금액, 최소 마진, 마진 값(%)을 입력하고 환율 값을 넣어 사용합니다.
                         </p>
-                        <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-950">
+                        <p className="rounded-lg border border-amber-200 bg-[#fbf7ef] p-4 text-zinc-900">
                            환율은 예를 들어 <span className="font-semibold">1700</span>처럼 현재 운영 기준에 맞는 값을 입력하면 됩니다.
                            거래처 할인율은 브랜드별 공급가 할인율을 넣는 항목으로, 예를 들어 <span className="font-semibold">3</span> 또는 <span className="font-semibold">5</span>처럼 입력해 실제 매입 원가를 더 정확하게 반영할 수 있습니다.
                         </p>
@@ -710,7 +710,7 @@ function UploadedProductShowcaseSection() {
       <section className="py-16 md:py-24">
          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
             <div className="mx-auto max-w-4xl text-center">
-               <span className="inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+               <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                   실제 등록 결과
                </span>
                <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
@@ -760,10 +760,10 @@ function ProgramDemoSection() {
    );
 
    return (
-      <section className="bg-zinc-50 py-16 md:py-24">
+      <section className="bg-[#f1ebe1] py-16 md:py-24">
          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
             <div className="mx-auto max-w-4xl text-center">
-               <span className="inline-flex rounded-md border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+               <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                   실제 프로그램 영상
                </span>
                <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
@@ -834,7 +834,7 @@ function WordReplacementFeatureSection() {
    return (
       <section
          id="word-replacement-feature"
-         className="scroll-mt-24 bg-zinc-50 py-16 md:py-24"
+         className="scroll-mt-24 bg-[#f1ebe1] py-16 md:py-24"
       >
          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
             <div className="mx-auto max-w-4xl text-center">
@@ -873,7 +873,7 @@ function WordReplacementFeatureSection() {
                         <p className="text-lg font-semibold text-zinc-950">
                            {from}
                         </p>
-                        <p className="my-2 text-sm font-semibold text-emerald-700">
+                        <p className="my-2 text-sm font-semibold text-amber-900">
                            ↓
                         </p>
                         <p className="text-lg font-semibold text-zinc-950">{to}</p>
@@ -890,11 +890,11 @@ export default function ProgramPage() {
    return (
       <>
          <Header />
-         <main className="bg-white">
-            <section className="bg-gradient-to-b from-emerald-50 via-white to-sky-50 py-16 md:py-24">
+         <main className="bg-[#f7f4ef] text-zinc-950">
+            <section className="bg-[linear-gradient(180deg,#f6efe4_0%,#ffffff_48%,#f7f4ef_100%)] py-16 md:py-24">
                <Container>
                   <div className="mx-auto max-w-4xl text-center">
-                     <span className="inline-flex rounded-md border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
+                     <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                         프로그램 소개
                      </span>
                      <h1 className="mt-5 text-4xl font-semibold leading-tight text-zinc-950 sm:text-5xl">
@@ -908,7 +908,7 @@ export default function ProgramPage() {
                      <div className="mt-8 grid gap-3 sm:grid-cols-2">
                         <a
                            href="#inventory-program"
-                           className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
+                           className="inline-flex justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#8c6333]"
                         >
                            상품등록 및 재고관리 프로그램
                         </a>
@@ -922,13 +922,13 @@ export default function ProgramPage() {
                      <div className="mx-auto mt-3 grid max-w-2xl gap-3 sm:grid-cols-2">
                         <a
                            href="#margin-feature"
-                           className="inline-flex justify-center rounded-lg border border-emerald-200 bg-white/80 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm duration-150 hover:bg-emerald-50"
+                           className="inline-flex justify-center rounded-lg border border-amber-200 bg-white/80 px-5 py-3 text-sm font-semibold text-amber-900 shadow-sm duration-150 hover:bg-[#fbf7ef]"
                         >
                            마진 기능 사용법
                         </a>
                         <a
                            href="#word-replacement-feature"
-                           className="inline-flex justify-center rounded-lg border border-emerald-200 bg-white/80 px-5 py-3 text-sm font-semibold text-emerald-700 shadow-sm duration-150 hover:bg-emerald-50"
+                           className="inline-flex justify-center rounded-lg border border-amber-200 bg-white/80 px-5 py-3 text-sm font-semibold text-amber-900 shadow-sm duration-150 hover:bg-[#fbf7ef]"
                         >
                            단어치환 기능 사용법
                         </a>
@@ -965,7 +965,7 @@ export default function ProgramPage() {
                               비밀번호가 기억나지 않는 경우에는 플로우머스에 문의해주세요.
                               계정 확인 후 안내해드립니다.
                            </p>
-                           <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm leading-7 text-emerald-950">
+                           <p className="rounded-lg border border-amber-200 bg-[#fbf7ef] p-4 text-sm leading-7 text-zinc-800">
                               중요한 점은, 플로우머스에서 프로그램 셋팅이 완료되어야
                               로그인이 가능하다는 것입니다. 셋팅 완료 시 별도로 연락을
                               드립니다.
@@ -977,7 +977,7 @@ export default function ProgramPage() {
                </Container>
             </section>
 
-            <section className="bg-zinc-50 py-16 md:py-24">
+            <section className="bg-[#f1ebe1] py-16 md:py-24">
                <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
                   <div className="mx-auto max-w-4xl text-center">
                      <span className="inline-flex rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-700">
@@ -1003,7 +1003,7 @@ export default function ProgramPage() {
                <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
                   <div className="grid gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
                      <div>
-                        <span className="inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+                        <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                            03. 셋팅된 호스팅 계정 선택
                         </span>
                         <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
@@ -1025,7 +1025,7 @@ export default function ProgramPage() {
                </div>
             </section>
 
-            <section className="bg-zinc-50 py-16 md:py-24">
+            <section className="bg-[#f1ebe1] py-16 md:py-24">
                <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
                   <div className="mx-auto max-w-4xl text-center">
                      <span className="inline-flex rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-700">
@@ -1052,7 +1052,7 @@ export default function ProgramPage() {
             <section className="py-16 md:py-24">
                <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
                   <div className="mx-auto max-w-4xl text-center">
-                     <span className="inline-flex rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+                     <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                         05. 카테고리 매핑
                      </span>
                      <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
@@ -1071,7 +1071,7 @@ export default function ProgramPage() {
                </div>
             </section>
 
-            <section className="bg-zinc-50 py-16 md:py-24">
+            <section className="bg-[#f1ebe1] py-16 md:py-24">
                <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
                   <div className="mx-auto max-w-4xl text-center">
                      <span className="inline-flex rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-zinc-700">
@@ -1091,7 +1091,7 @@ export default function ProgramPage() {
                      <ProgramWindow mode="collected" />
                   </div>
 
-                  <div className="mx-auto mt-8 max-w-4xl rounded-lg border border-emerald-200 bg-white p-6 text-center shadow-sm">
+                  <div className="mx-auto mt-8 max-w-4xl rounded-lg border border-amber-200 bg-white p-6 text-center shadow-sm">
                      <h3 className="text-2xl font-semibold text-zinc-950">
                         카테고리 매핑은 최초 1회만, 이후에는 수집예약만 누르면 됩니다
                      </h3>
@@ -1103,7 +1103,7 @@ export default function ProgramPage() {
                      <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
                         <Link
                            href="/inquiry"
-                           className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
+                           className="inline-flex justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#8c6333]"
                         >
                            문의 남기기
                         </Link>

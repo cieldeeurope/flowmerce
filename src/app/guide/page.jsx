@@ -144,11 +144,11 @@ export default function GuidePage() {
    return (
       <>
          <Header />
-         <main className="bg-white">
-            <section className="bg-[linear-gradient(180deg,#ecfdf5_0%,#ffffff_48%,#f0f9ff_100%)] py-14 md:py-20">
+         <main className="bg-[#f7f4ef] text-zinc-950">
+            <section className="bg-[linear-gradient(180deg,#f6efe4_0%,#ffffff_48%,#f7f4ef_100%)] py-14 md:py-20">
                <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
                   <div className="mx-auto max-w-4xl text-center">
-                     <span className="inline-flex rounded-md border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
+                     <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                         핵심 가이드
                      </span>
                      <h1 className="mt-5 text-4xl font-semibold leading-tight text-zinc-950 sm:text-5xl">
@@ -164,7 +164,7 @@ export default function GuidePage() {
                      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                         <Link
                            href="/pricing"
-                           className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
+                           className="inline-flex justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#8c6333]"
                         >
                            플랜별 구독하기
                         </Link>
@@ -293,7 +293,7 @@ export default function GuidePage() {
                                     </td>
                                     <td className="px-5 py-4 text-zinc-700">{row.order}</td>
                                     <td className="px-5 py-4 text-zinc-700">{row.cost}</td>
-                                    <td className="px-5 py-4 font-semibold text-emerald-700">
+                                    <td className="px-5 py-4 font-semibold text-[#8c6333]">
                                        {row.margin}
                                     </td>
                                     <td className="px-5 py-4 text-zinc-600">{row.detail}</td>
@@ -306,10 +306,10 @@ export default function GuidePage() {
                </Container>
             </section>
 
-            <section className="bg-zinc-50 py-16 md:py-24">
+            <section className="bg-[#f1ebe1] py-16 md:py-24">
                <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
                   <div className="mx-auto max-w-4xl text-center">
-                     <span className="inline-flex rounded-md border border-emerald-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+                     <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900">
                         국내 소싱 사례
                      </span>
                      <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
@@ -376,7 +376,7 @@ export default function GuidePage() {
                      ))}
                   </div>
 
-                  <div className="mt-8 rounded-lg border border-emerald-200 bg-white p-6 shadow-sm md:p-8">
+                  <div className="mt-8 rounded-lg border border-amber-200 bg-white p-6 shadow-sm md:p-8">
                      <p className="text-base leading-8 text-zinc-600">
                         매장 예약 후 직접 구매했고, 할인 행사까지 적용되어 실제 구매가는
                         2,773,495원이었습니다. 수수료를 제외하고도 1,137,025원의
@@ -390,10 +390,10 @@ export default function GuidePage() {
 
             <section className="py-16 md:py-24">
                <Container>
-                  <div className="overflow-hidden rounded-lg border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-sky-50 p-7 shadow-sm md:p-10">
+                  <div className="overflow-hidden rounded-lg border border-amber-200 bg-[linear-gradient(135deg,#fbf7ef_0%,#ffffff_55%,#f1ebe1_100%)] p-7 shadow-sm md:p-10">
                      <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
                         <div>
-                           <span className="inline-flex rounded-md border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm">
+                           <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
                               먼저 시작하는 사람이 유리합니다
                            </span>
                            <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
@@ -424,7 +424,7 @@ export default function GuidePage() {
                      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                         <Link
                            href="/pricing"
-                           className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-emerald-700"
+                           className="inline-flex justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#8c6333]"
                         >
                            플랜 먼저 확인하기
                         </Link>
@@ -463,7 +463,7 @@ export default function GuidePage() {
                <Container>
                   <div className="rounded-lg border border-zinc-200 bg-zinc-950 p-7 text-white shadow-sm md:p-10">
                      <div className="max-w-3xl">
-                        <span className="text-sm font-semibold text-emerald-300">
+                        <span className="text-sm font-semibold text-[#f1deba]">
                            앞으로의 플로우머스
                         </span>
                         <h2 className="mt-3 text-3xl font-semibold">
@@ -486,7 +486,7 @@ export default function GuidePage() {
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                            <Link
                               href="/pricing"
-                              className="inline-flex justify-center rounded-lg border border-emerald-400 bg-emerald-400 px-5 py-3 text-sm font-semibold text-zinc-950 duration-150 hover:bg-emerald-300"
+                              className="inline-flex justify-center rounded-lg border border-[#dec08e] bg-[#dec08e] px-5 py-3 text-sm font-semibold text-zinc-950 duration-150 hover:bg-[#f1deba]"
                            >
                               플랜별 구독하기
                            </Link>

@@ -7,7 +7,7 @@ import { getSession } from "@/lib/auth";
 import { submitInquiry } from "@/lib/requests";
 
 const fieldClass =
-   "block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-emerald-600";
+   "block w-full rounded-lg border-0 bg-white px-4 py-3 text-sm shadow-sm ring-1 ring-inset ring-zinc-300 placeholder:text-zinc-400 focus:ring-2 focus:ring-inset focus:ring-[#8c6333]";
 
 const inquiryTypes = [
    "플랜 문의",
@@ -114,7 +114,7 @@ export default function RequestForm() {
                </a>
                <Link
                   href="#inquiry-form"
-                  className="inline-flex justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700"
+                  className="inline-flex justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                >
                   문의글 작성하기
                </Link>
@@ -215,7 +215,7 @@ export default function RequestForm() {
                <p
                   className={`mt-5 rounded-lg px-4 py-3 text-sm font-medium ${
                      status === "success"
-                        ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+                        ? "border border-amber-200 bg-[#fbf7ef] text-zinc-900"
                         : "border border-red-200 bg-red-50 text-red-700"
                   }`}
                >
@@ -226,7 +226,7 @@ export default function RequestForm() {
             <button
                type="submit"
                disabled={status === "loading"}
-               className="mt-7 inline-flex rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+               className="mt-7 inline-flex rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333] disabled:cursor-not-allowed disabled:opacity-70"
             >
                {status === "loading" ? "접수 중..." : "문의 등록하기"}
             </button>

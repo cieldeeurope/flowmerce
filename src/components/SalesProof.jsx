@@ -20,24 +20,27 @@ export default function SalesProof() {
    return (
       <section className="py-16 md:py-24">
          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
-            <div className="rounded-lg border border-emerald-200 bg-white p-4 shadow-sm sm:p-6 md:p-8">
+            <div className="rounded-md border border-black/5 bg-white p-4 shadow-sm sm:p-6 md:p-8">
                <div className="mx-auto max-w-4xl text-center">
-                  <span className="inline-flex rounded-md border border-emerald-300 bg-emerald-50 px-2.5 py-1.5 text-xs font-semibold text-emerald-700">
+                  <span className="inline-flex rounded-full border border-amber-200 bg-[#fbf7ef] px-3 py-1 text-xs font-semibold text-amber-900">
                      실제 운영 성과
                   </span>
                   <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
-                     스마트스토어 하나만으로도 숫자는 증명됩니다
+                     스마트스토어 하나만으로도
+                     <br />
+                     숫자는 충분히 증명됩니다
                   </h2>
                   <p className="mt-5 text-base leading-8 text-zinc-600">
-                     말보다 결과가 먼저 보이도록, 솔루션을 이용하여 매출을 낸 운영 화면을 크게 보여드립니다.
+                     말보다 결과가 먼저 보이도록, 실제 운영 화면을 크게
+                     보여드립니다.
                      <br />
                      3개월 동안 마케팅 없이 상품만 올려둔 스마트스토어 한 곳의
                      사례입니다.
                   </p>
                </div>
 
-               <div className="mt-8 rounded-lg border border-zinc-200 bg-zinc-50 p-2 shadow-sm sm:p-3">
-                  <div className="overflow-x-auto rounded-lg border border-zinc-200 bg-white">
+               <div className="mt-8 rounded-md border border-black/5 bg-[#faf7f2] p-2 shadow-sm sm:p-3">
+                  <div className="overflow-x-auto rounded-md border border-black/5 bg-white">
                      <Image
                         src="/cases/sales-performance.png"
                         alt="스마트스토어 3개월 매출 성과"
@@ -77,7 +80,7 @@ export default function SalesProof() {
                      {stats.map((stat) => (
                         <div
                            key={stat.label}
-                           className="rounded-lg border border-zinc-200 bg-zinc-50 p-4"
+                           className="rounded-md border border-black/5 bg-[#faf7f2] p-4"
                         >
                            <p className="text-xs font-semibold text-zinc-500">
                               {stat.label}
@@ -90,16 +93,16 @@ export default function SalesProof() {
                   </div>
                </div>
 
-               <div className="mt-8 rounded-lg border border-emerald-200 bg-emerald-50 p-5 text-sm leading-7 text-emerald-950">
+               <div className="mt-8 rounded-md border border-amber-200 bg-[#fbf7ef] p-5 text-sm leading-7 text-zinc-700">
                   <p>
                      간혹 고객이 귀한 제품을 요청하거나, 국내에서 구하지 못하는
                      상품을 웃돈을 주고서라도 구매하는 경우가 있습니다. 이런 요청
-                     주문은 마진이 15%에서 30%까지 올라가는 사례도 있고, 하이엔드
-                     제품 하나로 약 300만원의 마진이 남은 사례도 있습니다. 자세한
-                     TIP 은{" "}
+                     주문은 마진이 15%에서 30%까지 올라가는 사례도 있고,
+                     하이엔드 제품 하나로 약 300만원의 마진이 남은 사례도
+                     있습니다. 자세한 TIP은{" "}
                      <Link
                         href="/guide"
-                        className="font-semibold text-emerald-700 underline underline-offset-4"
+                        className="font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4"
                      >
                         핵심 가이드
                      </Link>
@@ -113,13 +116,14 @@ export default function SalesProof() {
                   제대로 된 구조 설계와 소싱 전략이 궁금하다면{" "}
                   <Link
                      href="/consulting"
-                     className="font-semibold text-zinc-900 underline underline-offset-4"
+                     className="font-semibold text-zinc-900 underline decoration-zinc-300 underline-offset-4"
                   >
                      컨설팅
                   </Link>
                   에서 더 깊게 안내받을 수 있습니다.
                   <br />
-                  중고시장이나 가품 시장이 아니라 정식 소싱 구조로 성과를 만드는 것이 핵심입니다.
+                  중고시장이나 가품 시장이 아니라 정식 소싱 구조로 성과를
+                  만드는 것이 핵심입니다.
                </p>
             </div>
          </div>
