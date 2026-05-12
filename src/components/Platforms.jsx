@@ -74,6 +74,26 @@ export default function Platforms() {
             "오픈마켓 비중이 커지는 운영자에게 맞춰 연동 범위를 확대해갈 예정입니다.",
       },
       {
+         name: "트렌비",
+         logo: "/platforms/trenbe-card.jpg",
+         logoClassName: "max-h-11 w-11 rounded-xl",
+         status: "준비 중",
+         statusTone: "text-rose-700",
+         statusType: "pending",
+         description:
+            "명품 플랫폼 확장이 필요한 흐름에 맞춰 준비 중인 채널입니다.",
+      },
+      {
+         name: "머스트잇",
+         logo: "/platforms/mustit-card.jpg",
+         logoClassName: "max-h-[1.2rem] w-[3.65rem]",
+         status: "준비 중",
+         statusTone: "text-rose-700",
+         statusType: "pending",
+         description:
+            "브랜드 중심 판매 채널 확장에 맞춰 순차적으로 연동할 예정입니다.",
+      },
+      {
          name: "쿠팡",
          logo: "/platforms/coupang.png",
          logoClassName: "max-h-7 w-16",

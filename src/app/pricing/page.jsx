@@ -1,5 +1,6 @@
 ﻿import clsx from "clsx";
 import Container from "@/components/Container";
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import PricingPlanCards from "@/components/PricingPlanCards";
@@ -42,6 +43,45 @@ export default function PricingPage() {
 
             <section className="pb-12 md:pb-16">
                <Container>
+                  <div className="mx-auto mb-10 max-w-5xl rounded-lg border border-amber-200 bg-[#fbf7ef] p-7 shadow-sm">
+                     <div className="max-w-3xl">
+                        <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
+                           Subscription
+                        </span>
+                        <h2 className="mt-4 text-2xl font-semibold md:text-3xl">
+                           구독 전 꼭 확인해야 하는 운영 기준
+                        </h2>
+                        <p className="mt-4 text-base leading-8 text-zinc-600">
+                           플로우머스는 단순 결제형 상품이 아니라, 계정 승인과 사이트 확정, 세팅
+                           온보딩까지 함께 이어지는 운영형 서비스입니다. 구독 전에는 운영 동의서와
+                           환불, 데이터 처리 기준을 함께 확인해주셔야 합니다.
+                        </p>
+                     </div>
+
+                     <div className="mt-8 grid gap-4 lg:grid-cols-4">
+                        <PolicyCard
+                           href="/subscription-agreement"
+                           title="구독 및 운영 동의서"
+                           description="구독 시작, 세팅 진행, 사이트 확정, 종료 후 상품 삭제 원칙까지 한 번에 확인합니다."
+                        />
+                        <PolicyCard
+                           href="/terms"
+                           title="이용약관"
+                           description="회원 승인, 서비스 이용 범위, 운영 제한과 책임 범위를 확인합니다."
+                        />
+                        <PolicyCard
+                           href="/refund-policy"
+                           title="환불 및 해지정책"
+                           description="세팅 전후 환불 가능 범위와 구독 종료 절차를 확인합니다."
+                        />
+                        <PolicyCard
+                           href="/data-policy"
+                           title="계정정보 및 데이터 기준"
+                           description="구독 종료 후 상품과 운영 데이터가 어떻게 처리되는지 확인합니다."
+                        />
+                     </div>
+                  </div>
+
                   <div className="mx-auto mb-12 max-w-5xl rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                      <div className="max-w-3xl">
                         <span className="inline-flex rounded-md border border-amber-200 bg-[#fbf7ef] px-2.5 py-1.5 text-xs font-semibold text-amber-900 shadow-sm">
@@ -270,6 +310,18 @@ function SiteGroup({ title, description, sites, highlighted = false }) {
             ))}
          </div>
       </div>
+   );
+}
+
+function PolicyCard({ href, title, description }) {
+   return (
+      <Link
+         href={href}
+         className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-zinc-950"
+      >
+         <p className="text-sm font-semibold text-zinc-950">{title}</p>
+         <p className="mt-2 text-sm leading-7 text-zinc-600">{description}</p>
+      </Link>
    );
 }
 

@@ -128,10 +128,10 @@ export default function MobileNav() {
                            홈
                         </MobileNavLink>
                         <MobileNavLink href="/guide" onNavigate={closeMenu}>
-                           운영 가이드
+                           핵심 가이드
                         </MobileNavLink>
                         <MobileNavLink href="/program" onNavigate={closeMenu}>
-                           운영 화면
+                           사용 메뉴얼
                         </MobileNavLink>
                         <MobileNavLink href="/consulting" onNavigate={closeMenu}>
                            컨설팅

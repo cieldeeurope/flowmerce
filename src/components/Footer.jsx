@@ -8,21 +8,28 @@ export default function Footer() {
       "https://map.naver.com/p/search/%EA%B3%A0%EC%82%B0%ED%9B%84%EB%A1%9C95%EB%B2%88%EA%B8%B8%2024/address/3z5QA9,2AN975,%EC%9D%B8%EC%B2%9C%EA%B4%91%EC%97%AD%EC%8B%9C%20%EC%84%9C%EA%B5%AC%20%EA%B3%A0%EC%82%B0%ED%9B%84%EB%A1%9C95%EB%B2%88%EA%B8%B8%2024?c=15.00,0,0,0,dh&isCorrectAnswer=true";
 
    const primaryLinks = [
-      { href: "/", label: "홈" },
-      { href: "/guide", label: "운영 가이드" },
-      { href: "/program", label: "운영 화면" },
-      { href: "/consulting", label: "컨설팅" },
-      { href: "/pricing", label: "요금" },
+      { href: "/", label: "\ud648" },
+      { href: "/guide", label: "\ud575\uc2ec \uac00\uc774\ub4dc" },
+      { href: "/program", label: "\uc0ac\uc6a9 \uba54\ub274\uc5bc" },
+      { href: "/consulting", label: "\ucee8\uc124\ud305" },
+      { href: "/pricing", label: "\uc694\uae08" },
       { href: "/#faq", label: "FAQ" },
-      { href: "/inquiry", label: "문의" },
-      { href: "/#contact-us", label: "연락처" },
+      { href: "/inquiry", label: "\ubb38\uc758" },
+      { href: "/#contact-us", label: "\uc5f0\ub77d\ucc98" },
    ];
 
    const policyLinks = [
-      { href: "/terms", label: "이용약관" },
-      { href: "/privacy", label: "개인정보처리방침" },
-      { href: "/refund-policy", label: "환불 및 해지정책" },
-      { href: "/data-policy", label: "계정정보 및 데이터 기준" },
+      { href: "/terms", label: "\uc774\uc6a9\uc57d\uad00" },
+      { href: "/privacy", label: "\uac1c\uc778\uc815\ubcf4\ucc98\ub9ac\ubc29\uce68" },
+      {
+         href: "/subscription-agreement",
+         label: "\uad6c\ub3c5 \ubc0f \uc6b4\uc601 \ub3d9\uc758\uc11c",
+      },
+      { href: "/refund-policy", label: "\ud658\ubd88 \ubc0f \ud574\uc9c0\uc815\ucc45" },
+      {
+         href: "/data-policy",
+         label: "\uacc4\uc815\uc815\ubcf4 \ubc0f \ub370\uc774\ud130 \uae30\uc900",
+      },
    ];
 
    return (
@@ -30,7 +37,11 @@ export default function Footer() {
          <Container>
             <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-start">
                <div>
-                  <Link href="/" className="inline-flex" aria-label="플로우머스">
+                  <Link
+                     href="/"
+                     className="inline-flex"
+                     aria-label="Flowmerce"
+                  >
                      <Image
                         src="/brand/flowmerce-logo-text.png"
                         alt="Flowmerce"
@@ -40,8 +51,9 @@ export default function Footer() {
                      />
                   </Link>
                   <p className="mt-4 max-w-sm text-sm leading-6 text-zinc-600">
-                     명품 쇼핑몰 운영에 필요한 상품 수집, 등록, 재고·품절 반영,
-                     마진 설정과 수집 예약을 웹에서 관리하는 자동화 서비스입니다.
+                     {
+                        "\uba85\ud488 \uc1fc\ud551\ubab0 \uc6b4\uc601\uc5d0 \ud544\uc694\ud55c \uc0c1\ud488 \uc218\uc9d1, \ub4f1\ub85d, \uc7ac\uace0\u00b7\ud488\uc808 \ubc18\uc601, \ub9c8\uc9c4 \uc124\uc815\uacfc \uc218\uc9d1 \uc608\uc57d\uc744 \uc6f9\uc5d0\uc11c \uad00\ub9ac\ud558\ub294 \uc790\ub3d9\ud654 \uc11c\ube44\uc2a4\uc785\ub2c8\ub2e4."
+                     }
                   </p>
                </div>
 
@@ -73,20 +85,20 @@ export default function Footer() {
                   </ul>
 
                   <div className="mt-7 space-y-2 text-sm leading-6 text-zinc-600">
-                     <p>사업자등록번호 : 433-27-02243</p>
+                     <p>{"\uc0ac\uc5c5\uc790\ub4f1\ub85d\ubc88\ud638 : 433-27-02243"}</p>
                      <p>
-                        카카오톡 채널 :{" "}
+                        {"\uce74\uce74\uc624\ud1a1 \ucc44\ub110 : "}
                         <a
                            href={kakaoUrl}
                            target="_blank"
                            rel="noopener noreferrer"
                            className="font-medium text-zinc-950 underline decoration-zinc-300 underline-offset-4 transition hover:decoration-zinc-950"
                         >
-                           바로 문의하기
+                           {"\ubc14\ub85c \ubb38\uc758\ud558\uae30"}
                         </a>
                      </p>
                      <p>
-                        이메일 :{" "}
+                        {"\uc774\uba54\uc77c : "}
                         <a
                            href="mailto:contact@flowmerce.co.kr"
                            className="font-medium text-zinc-950 underline decoration-zinc-300 underline-offset-4 transition hover:decoration-zinc-950"
@@ -94,17 +106,18 @@ export default function Footer() {
                            contact@flowmerce.co.kr
                         </a>
                      </p>
-                     <p>전화 : +82 070-8098-3779</p>
+                     <p>{"\uc804\ud654 : +82 070-8098-3779"}</p>
                      <p>
-                        플로우머스 소재지 |{" "}
+                        {"\ud50c\ub85c\uc6b0\uba38\uc2a4 \uc18c\uc7ac\uc9c0 | "}
                         <a
                            href={addressMapUrl}
                            target="_blank"
                            rel="noopener noreferrer"
                            className="underline decoration-zinc-300 underline-offset-4 transition hover:decoration-zinc-950"
                         >
-                           인천광역시 서구 고산후로95번길 24, 4층 401호
-                           (당하동, 그린프라자)
+                           {
+                              "\uc778\ucc9c\uad11\uc5ed\uc2dc \uc11c\uad6c \uace0\uc0b0\ud6c4\ub85c95\ubc88\uae38 24, 4\uce35 401\ud638 (\ub2f9\ud558\ub3d9, \uadf8\ub9b0\ud504\ub77c\uc790)"
+                           }
                         </a>
                      </p>
                   </div>

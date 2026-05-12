@@ -1,4 +1,5 @@
 import "./globals.css";
+import UserSessionManager from "@/components/UserSessionManager";
 import {
    defaultDescription,
    defaultKeywords,
@@ -96,7 +97,10 @@ export default function RootLayout({ children }) {
                href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
             />
          </head>
-         <body className="flex h-full flex-col">{children}</body>
+         <body className="flex h-full flex-col">
+            <UserSessionManager />
+            {children}
+         </body>
       </html>
    );
 }

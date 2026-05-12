@@ -30,8 +30,8 @@ export default function Header() {
 
                   <nav className="flex min-w-0 flex-wrap items-center justify-end gap-x-4 gap-y-2 text-right xl:gap-x-6">
                      <NavLink href="/">홈</NavLink>
-                     <NavLink href="/guide">운영 가이드</NavLink>
-                     <NavLink href="/program">운영 화면</NavLink>
+                     <NavLink href="/guide">핵심 가이드</NavLink>
+                     <NavLink href="/program">사용 메뉴얼</NavLink>
                      <NavLink href="/consulting">컨설팅</NavLink>
                      <NavLink href="/pricing">요금</NavLink>
                      <NavLink href="/#faq">FAQ</NavLink>

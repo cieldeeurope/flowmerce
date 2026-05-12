@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchUserProfile, getSession, updateSessionData } from "@/lib/auth";
 import { coreSourcingSites, highEndSites } from "@/lib/pricingData";
 import {
@@ -78,7 +78,7 @@ const SITE_LABELS = {
    Jacquemus: "자크뮈스",
    Jilsander: "질샌더",
    Ourlegacy: "아워레가시",
-   Polene: "폴렌",
+   Polene: "폴렌느",
    Rickowens: "릭오웬스",
    Apc: "아페쎄",
    Chloe: "끌로에",
@@ -399,7 +399,7 @@ function SecondaryButton({ children, className, ...props }) {
       <button
          type="button"
          className={clsx(
-            "rounded-md border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-60",
+            "rounded-md border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 hover:text-zinc-950 active:bg-zinc-100 active:text-zinc-950 disabled:cursor-not-allowed disabled:opacity-60",
             className,
          )}
          {...props}
@@ -438,11 +438,23 @@ function ProgramListView({
    emptyText,
    multi = true,
    secondaryText,
+   showCheckboxes = false,
+   onToggleAll,
+   allSelected = false,
 }) {
    return (
       <div className="border border-zinc-300 bg-white">
-         <div className="border-b border-zinc-300 px-3 py-2">
+         <div className="flex items-center justify-between gap-3 border-b border-zinc-300 px-3 py-2">
             <p className="text-sm font-medium text-zinc-900">{title}</p>
+            {showCheckboxes && items.length > 0 && onToggleAll ? (
+               <button
+                  type="button"
+                  onClick={onToggleAll}
+                  className="text-xs font-medium text-[#8c6333] transition hover:text-zinc-950"
+               >
+                  {allSelected ? "전체해제" : "전체체크"}
+               </button>
+            ) : null}
          </div>
          <div className="h-[360px] overflow-x-auto overflow-y-auto">
             {items.length === 0 ? (
@@ -458,18 +470,39 @@ function ProgramListView({
                               type="button"
                               onClick={() => onToggle(item, multi)}
                               className={clsx(
-                                 "flex w-full min-w-max flex-col items-start gap-1 px-3 py-2 text-left text-sm transition",
+                                 "flex w-full min-w-max items-start px-3 py-2 text-left text-sm transition",
                                  selected ? "bg-[#fbf7ef] text-zinc-950" : "hover:bg-zinc-50",
                               )}
                            >
-                              <span className="whitespace-nowrap leading-5">
-                                 {item.label || item.name || item.categoryName || item.categoryCode}
-                              </span>
-                              {secondaryText ? (
-                                 <span className="whitespace-nowrap text-xs text-zinc-500">
-                                    {secondaryText(item)}
+                              {showCheckboxes ? (
+                                 <span
+                                    className={clsx(
+                                       "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[10px] font-bold",
+                                       selected
+                                          ? "border-zinc-950 bg-zinc-950 text-white"
+                                          : "border-zinc-300 bg-white text-transparent",
+                                    )}
+                                 >
+                                    ✓
                                  </span>
                               ) : null}
+                              <div
+                                 className={clsx(
+                                    "min-w-0",
+                                    showCheckboxes
+                                       ? "ml-2 flex flex-col items-start gap-1"
+                                       : "flex flex-col items-start gap-1",
+                                 )}
+                              >
+                                 <span className="whitespace-nowrap leading-5">
+                                    {item.label || item.name || item.categoryName || item.categoryCode}
+                                 </span>
+                                 {secondaryText ? (
+                                    <span className="whitespace-nowrap text-xs text-zinc-500">
+                                       {secondaryText(item)}
+                                    </span>
+                                 ) : null}
+                              </div>
                            </button>
                         </li>
                      );
@@ -538,6 +571,7 @@ function HostingAccountRow({ account, selected, onClick }) {
 
 export default function FlowmerceStudioPanel() {
    const router = useRouter();
+   const collectionWorkspaceRequestIdRef = useRef(0);
 
    const [session, setSession] = useState(null);
    const [profile, setProfile] = useState(null);
@@ -611,7 +645,15 @@ export default function FlowmerceStudioPanel() {
       const rawSites = Array.isArray(session?.sites) ? session.sites.filter(Boolean) : [];
       const allowedSites = rawSites.includes("ALL") ? ALL_SITES : rawSites.filter((site) => site !== "ALL");
 
-      return PROGRAM_SITE_ORDER.filter((site) => allowedSites.includes(site));
+      return [...allowedSites].sort((left, right) => {
+         const labelCompare = getSiteLabel(left).localeCompare(getSiteLabel(right), "ko");
+
+         if (labelCompare !== 0) {
+            return labelCompare;
+         }
+
+         return PROGRAM_SITE_ORDER.indexOf(left) - PROGRAM_SITE_ORDER.indexOf(right);
+      });
    }, [session?.sites]);
 
    const activeAccount = useMemo(
@@ -839,28 +881,46 @@ export default function FlowmerceStudioPanel() {
          }
 
          const { keepCollection = false } = options;
+         const requestId = ++collectionWorkspaceRequestIdRef.current;
+         const requestCustomId = session.customId;
+         const requestAccountPlatform = selectedAccountPlatform;
+         const requestBrand = selectedBrand;
 
          setLoadingCollection(true);
 
          try {
             const requests = [
-               fetchWorkspaceHostingCategories(session.customId, selectedAccountPlatform),
-               fetchWorkspaceSourceCategories(selectedBrand),
+               fetchWorkspaceHostingCategories(requestCustomId, requestAccountPlatform),
+               fetchWorkspaceSourceCategories(requestBrand),
                fetchWorkspaceMappedCategories(
-                  selectedBrand,
-                  session.customId,
-                  selectedAccountPlatform,
+                  requestBrand,
+                  requestCustomId,
+                  requestAccountPlatform,
+               ),
+               fetchWorkspaceCollectionMappings(
+                  requestBrand,
+                  requestCustomId,
+                  requestAccountPlatform,
                ),
             ];
 
-            if (selectedBrand === "Farfetch" || selectedBrand === "Cettire") {
-               requests.push(fetchWorkspaceDesignerOptions(selectedBrand));
+            if (requestBrand === "Farfetch" || requestBrand === "Cettire") {
+               requests.push(fetchWorkspaceDesignerOptions(requestBrand));
             } else {
                requests.push(Promise.resolve([]));
             }
 
-            const [hostingDetail, nextSourceCategories, nextMappedCategories, nextDesignerItems] =
-               await Promise.all(requests);
+            const [
+               hostingDetail,
+               nextSourceCategories,
+               nextMappedCategories,
+               nextCollectionCategories,
+               nextDesignerItems,
+            ] = await Promise.all(requests);
+
+            if (collectionWorkspaceRequestIdRef.current !== requestId) {
+               return;
+            }
 
             syncHostingAccountDetail(hostingDetail);
             setSourceCategories(
@@ -873,6 +933,13 @@ export default function FlowmerceStudioPanel() {
                   ? nextMappedCategories.map(normalizeMappedCategory).filter((item) => item.key)
                   : [],
             );
+            setCollectionCategories(
+               Array.isArray(nextCollectionCategories)
+                  ? nextCollectionCategories
+                       .map(normalizeMappedCategory)
+                       .filter((item) => item.key)
+                  : [],
+            );
             setDesignerItems(
                Array.isArray(nextDesignerItems)
                   ? nextDesignerItems.map(normalizeDesignerItem).filter((item) => item.key)
@@ -880,16 +947,21 @@ export default function FlowmerceStudioPanel() {
             );
 
             if (!keepCollection) {
-               setCollectionCategories([]);
                setSelectedCollectionKeys([]);
             }
          } catch (error) {
+            if (collectionWorkspaceRequestIdRef.current !== requestId) {
+               return;
+            }
+
             setCollectionMessage({
                tone: "error",
                text: error.message || "상품수집 화면 데이터를 불러오지 못했습니다.",
             });
          } finally {
-            setLoadingCollection(false);
+            if (collectionWorkspaceRequestIdRef.current === requestId) {
+               setLoadingCollection(false);
+            }
          }
       },
       [selectedAccountPlatform, selectedBrand, session?.customId, syncHostingAccountDetail],
@@ -900,10 +972,18 @@ export default function FlowmerceStudioPanel() {
          return;
       }
 
+      collectionWorkspaceRequestIdRef.current += 1;
       setSelectedDesignerKeys([]);
       setSelectedSourceKeys([]);
       setSelectedMallKey("");
       setSelectedMappedKeys([]);
+      setSelectedCollectionKeys([]);
+      setDesignerItems([]);
+      setSourceCategories([]);
+      setMallCategories([]);
+      setMappedCategories([]);
+      setCollectionCategories([]);
+      setCollectionMessage({ tone: "neutral", text: "" });
       void loadCollectionWorkspace();
    }, [loadCollectionWorkspace, selectedAccountPlatform, selectedBrand, session?.customId]);
 
@@ -947,6 +1027,34 @@ export default function FlowmerceStudioPanel() {
    const handleSelectMallCategory = useCallback((item) => {
       setSelectedMallKey((current) => (current === item.key ? "" : item.key));
    }, []);
+
+   const handleSelectSourceCategory = useCallback((item) => {
+      setSelectedSourceKeys((current) => (current[0] === item.key ? [] : [item.key]));
+   }, []);
+
+   const allMappedSelected = useMemo(
+      () =>
+         mappedCategories.length > 0 &&
+         mappedCategories.every((item) => selectedMappedKeys.includes(item.key)),
+      [mappedCategories, selectedMappedKeys],
+   );
+
+   const allCollectionSelected = useMemo(
+      () =>
+         collectionCategories.length > 0 &&
+         collectionCategories.every((item) => selectedCollectionKeys.includes(item.key)),
+      [collectionCategories, selectedCollectionKeys],
+   );
+
+   const handleToggleAllMapped = useCallback(() => {
+      setSelectedMappedKeys(allMappedSelected ? [] : mappedCategories.map((item) => item.key));
+   }, [allMappedSelected, mappedCategories]);
+
+   const handleToggleAllCollection = useCallback(() => {
+      setSelectedCollectionKeys(
+         allCollectionSelected ? [] : collectionCategories.map((item) => item.key),
+      );
+   }, [allCollectionSelected, collectionCategories]);
 
    const handleSelectHostingAccount = useCallback(
       (account) => {
@@ -1675,8 +1783,7 @@ export default function FlowmerceStudioPanel() {
                      수집 작업 공간
                   </h1>
                   <p className="mt-2 text-sm leading-6 text-zinc-600">
-                     프로그램에서 하던 수집, 매핑, 마진, 치환 작업을 웹에서 바로 이어갈 수 있게
-                     옮겨둔 화면입니다.
+                     이용자의 특별한 공간, 상품 수집부터 마진 치환까지 한번에 해결할 수 있습니다.
                   </p>
                </div>
 
@@ -1715,16 +1822,35 @@ export default function FlowmerceStudioPanel() {
          </section>
 
          <section className="border border-zinc-200 bg-white px-5 py-4 sm:px-6">
-            <div className="flex flex-wrap gap-2">
-               {TABS.map((tab) => (
-                  <TabButton
-                     key={tab.id}
-                     active={activeTab === tab.id}
-                     onClick={() => setActiveTab(tab.id)}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+               <div className="flex flex-wrap gap-2">
+                  {TABS.map((tab) => (
+                     <TabButton
+                        key={tab.id}
+                        active={activeTab === tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                     >
+                        {tab.label}
+                     </TabButton>
+                  ))}
+               </div>
+               <Link
+                  href="/program"
+                  className="inline-flex items-center gap-2 rounded-md border border-zinc-300 bg-white px-4 py-2.5 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+               >
+                  <svg
+                     aria-hidden="true"
+                     viewBox="0 0 20 20"
+                     className="h-4 w-4"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="1.6"
                   >
-                     {tab.label}
-                  </TabButton>
-               ))}
+                     <path d="M4.5 3.5h8a3 3 0 0 1 3 3v9h-8a3 3 0 0 0-3 3v-15Z" />
+                     <path d="M15.5 15.5h-8a3 3 0 0 0-3 3" />
+                  </svg>
+                  <span>사용 메뉴얼</span>
+               </Link>
             </div>
          </section>
 
@@ -1739,7 +1865,7 @@ export default function FlowmerceStudioPanel() {
                            className={clsx(
                               "px-3 py-2 text-xs sm:text-sm",
                               selectedBrand === site &&
-                                 "border-zinc-950 bg-zinc-950 text-white hover:bg-[#8c6333]",
+                                 "!border-zinc-950 !bg-zinc-950 !text-white hover:!border-zinc-950 hover:!bg-zinc-950 hover:!text-white active:!border-zinc-950 active:!bg-zinc-950 active:!text-white focus-visible:!border-zinc-950 focus-visible:!bg-zinc-950 focus-visible:!text-white",
                            )}
                         >
                            {getSiteLabel(site)}
@@ -1765,12 +1891,22 @@ export default function FlowmerceStudioPanel() {
                            <SecondaryButton
                               onClick={handleSaveDesigners}
                               disabled={selectedBrand !== "Farfetch" && selectedBrand !== "Cettire"}
+                              title={
+                                 selectedBrand !== "Farfetch" && selectedBrand !== "Cettire"
+                                    ? "Farfetch, Cettire 전용 버튼"
+                                    : undefined
+                              }
                            >
                               저장
                            </SecondaryButton>
                            <SecondaryButton
                               onClick={handleLoadDesigners}
                               disabled={selectedBrand !== "Farfetch" && selectedBrand !== "Cettire"}
+                              title={
+                                 selectedBrand !== "Farfetch" && selectedBrand !== "Cettire"
+                                    ? "Farfetch, Cettire 전용 버튼"
+                                    : undefined
+                              }
                            >
                               불러오기
                            </SecondaryButton>
@@ -1780,11 +1916,24 @@ export default function FlowmerceStudioPanel() {
                         <SecondaryButton
                            onClick={handleFilterCettire}
                            disabled={selectedBrand !== "Cettire"}
+                           title={
+                              selectedBrand !== "Cettire" ? "Cettire 전용 버튼" : undefined
+                           }
                         >
                            필터링
                         </SecondaryButton>
                      ) : null}
 
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-500">
+                     {canSaveAndLoadDesigners &&
+                     selectedBrand !== "Farfetch" &&
+                     selectedBrand !== "Cettire" ? (
+                        <span>저장, 불러오기는 Farfetch, Cettire 전용 버튼입니다.</span>
+                     ) : null}
+                     {canFilter && selectedBrand !== "Cettire" ? (
+                        <span>필터링은 Cettire 전용 버튼입니다.</span>
+                     ) : null}
                   </div>
 
                   {showHostingPanel ? (
@@ -2012,12 +2161,13 @@ export default function FlowmerceStudioPanel() {
                               categoryNumbers: item.categoryNumbers,
                            }))}
                            selectedKeys={selectedSourceKeys}
-                           onToggle={toggleSelection(setSelectedSourceKeys)}
+                           onToggle={handleSelectSourceCategory}
                            emptyText={
                               loadingCollection
                                  ? "카테고리를 불러오는 중입니다."
                                  : "브랜드 카테고리가 없습니다."
                            }
+                           multi={false}
                         />
 
                         <ProgramListView
@@ -2043,6 +2193,9 @@ export default function FlowmerceStudioPanel() {
                            selectedKeys={selectedMappedKeys}
                            onToggle={toggleSelection(setSelectedMappedKeys)}
                            emptyText="저장된 매핑이 없습니다."
+                           showCheckboxes
+                           onToggleAll={handleToggleAllMapped}
+                           allSelected={allMappedSelected}
                         />
 
                         <ProgramListView
@@ -2053,7 +2206,10 @@ export default function FlowmerceStudioPanel() {
                            }))}
                            selectedKeys={selectedCollectionKeys}
                            onToggle={toggleSelection(setSelectedCollectionKeys)}
-                           emptyText="수집 버튼을 눌러 매핑된 카테고리를 불러와 주세요."
+                           emptyText="매핑된 수집 카테고리가 없습니다."
+                           showCheckboxes
+                           onToggleAll={handleToggleAllCollection}
+                           allSelected={allCollectionSelected}
                         />
                      </div>
                   </div>

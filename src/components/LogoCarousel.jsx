@@ -10,6 +10,16 @@ export default function LogoCarousel() {
       { name: "11번가", logo: "/platforms/11st-slide.png" },
       { name: "옥션", logo: "/platforms/auction-card.png" },
       { name: "G마켓", logo: "/platforms/gmarket-slide.png" },
+      {
+         name: "트렌비",
+         logo: "/platforms/trenbe-slide.jpg",
+         logoClassName: "max-h-12 w-40",
+      },
+      {
+         name: "머스트잇",
+         logo: "/platforms/mustit-card.jpg",
+         logoClassName: "max-h-10 w-32",
+      },
       { name: "쿠팡", logo: "/platforms/coupang.png" },
    ];
 
@@ -28,12 +38,12 @@ export default function LogoCarousel() {
                            <li key={`${channel.name}-${index}`}>
                               <div className="flex h-16 min-w-52 items-center justify-center rounded-md border border-black/5 bg-white px-5 py-3 shadow-sm">
                                  <Image
-                                    src={channel.logo}
-                                    alt={`${channel.name} 로고`}
-                                    width={190}
-                                    height={72}
-                                    className="max-h-10 w-auto object-contain"
-                                 />
+                                 src={channel.logo}
+                                 alt={`${channel.name} 로고`}
+                                 width={190}
+                                 height={72}
+                                 className={`${channel.logoClassName ?? "max-h-10 w-auto"} object-contain`}
+                              />
                               </div>
                            </li>
                         ))}

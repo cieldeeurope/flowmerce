@@ -8,6 +8,8 @@ export default function robots() {
             allow: "/",
             disallow: [
                "/admin",
+               "/admin-flowmerce",
+               "/flowmerce-studio",
                "/mypage",
                "/login",
                "/signin",
@@ -20,12 +22,12 @@ export default function robots() {
          {
             userAgent: ["Googlebot", "Googlebot-Image", "Googlebot-News"],
             allow: "/",
-            disallow: ["/admin", "/mypage", "/request", "/api/"],
+            disallow: ["/admin", "/admin-flowmerce", "/flowmerce-studio", "/mypage", "/request", "/api/"],
          },
          {
             userAgent: ["Yeti", "NaverBot", "Ads-Naver", "Daumoa"],
             allow: ["/", "/favicon.ico"],
-            disallow: ["/admin", "/mypage", "/request", "/api/"],
+            disallow: ["/admin", "/admin-flowmerce", "/flowmerce-studio", "/mypage", "/request", "/api/"],
             crawlDelay: 5,
          },
       ],

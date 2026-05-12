@@ -31,6 +31,12 @@ const initialLoginForm = {
    password: "",
 };
 
+const initialSignupAgreements = {
+   terms: false,
+   privacy: false,
+   subscription: false,
+};
+
 function formatPhoneInput(value) {
    const digits = String(value || "")
       .replace(/\D/g, "")
@@ -69,6 +75,9 @@ export default function AuthForm({ mode }) {
    const [error, setError] = useState("");
    const [submitting, setSubmitting] = useState(false);
    const [signupForm, setSignupForm] = useState(initialSignupForm);
+   const [signupAgreements, setSignupAgreements] = useState(
+      initialSignupAgreements,
+   );
    const [loginForm, setLoginForm] = useState(initialLoginForm);
    const [idCheck, setIdCheck] = useState({
       status: "idle",
@@ -205,6 +214,10 @@ export default function AuthForm({ mode }) {
 
             if (!/^\d{3}-\d{4}-\d{4}$/.test(signupForm.phone)) {
                throw new Error("연락처 형식이 아닙니다.");
+            }
+
+            if (!Object.values(signupAgreements).every(Boolean)) {
+               throw new Error("필수 동의 사항을 모두 확인해주세요.");
             }
 
             await signUp(signupForm);
@@ -420,8 +433,92 @@ export default function AuthForm({ mode }) {
                            />
                         </div>
                      </div>
+
+                     <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                        <p className="text-sm font-medium text-zinc-800">
+                           가입 전 필수 확인
+                        </p>
+                        <div className="mt-3 space-y-3">
+                           <label className="flex items-start gap-3 text-sm leading-6 text-zinc-600">
+                              <input
+                                 type="checkbox"
+                                 checked={signupAgreements.terms}
+                                 onChange={(event) =>
+                                    setSignupAgreements((current) => ({
+                                       ...current,
+                                       terms: event.target.checked,
+                                    }))
+                                 }
+                                 className="mt-1 h-4 w-4 rounded border-zinc-300 text-emerald-600"
+                              />
+                              <span>
+                                 <Link
+                                    href="/terms"
+                                    target="_blank"
+                                    className="font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4"
+                                 >
+                                    이용약관
+                                 </Link>
+                                 을 확인하고 동의합니다.
+                              </span>
+                           </label>
+
+                           <label className="flex items-start gap-3 text-sm leading-6 text-zinc-600">
+                              <input
+                                 type="checkbox"
+                                 checked={signupAgreements.privacy}
+                                 onChange={(event) =>
+                                    setSignupAgreements((current) => ({
+                                       ...current,
+                                       privacy: event.target.checked,
+                                    }))
+                                 }
+                                 className="mt-1 h-4 w-4 rounded border-zinc-300 text-emerald-600"
+                              />
+                              <span>
+                                 <Link
+                                    href="/privacy"
+                                    target="_blank"
+                                    className="font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4"
+                                 >
+                                    개인정보처리방침
+                                 </Link>
+                                 을 확인하고 동의합니다.
+                              </span>
+                           </label>
+
+                           <label className="flex items-start gap-3 text-sm leading-6 text-zinc-600">
+                              <input
+                                 type="checkbox"
+                                 checked={signupAgreements.subscription}
+                                 onChange={(event) =>
+                                    setSignupAgreements((current) => ({
+                                       ...current,
+                                       subscription: event.target.checked,
+                                    }))
+                                 }
+                                 className="mt-1 h-4 w-4 rounded border-zinc-300 text-emerald-600"
+                              />
+                              <span>
+                                 <Link
+                                    href="/subscription-agreement"
+                                    target="_blank"
+                                    className="font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4"
+                                 >
+                                    구독 및 운영 동의서
+                                 </Link>
+                                 와 구독 종료 후 상품 삭제 기준을 확인했습니다.
+                              </span>
+                           </label>
+                        </div>
+
+                        <p className="mt-3 text-xs leading-6 text-zinc-500">
+                           회원가입은 계정 생성 단계이며, 실제 구독 전에는 가격 페이지에서 운영 기준과
+                           환불/데이터 정책을 다시 확인할 수 있습니다.
+                        </p>
+                     </div>
                   </>
-               )}
+                )}
 
                {!isSignup && (
                   <>

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Container from "@/components/Container";
 import Footer from "@/components/Footer";
+import GuideTrustSection from "@/components/GuideTrustSection";
 import Header from "@/components/Header";
 import { createMetadata } from "@/lib/seo";
 
@@ -209,6 +210,8 @@ export default function GuidePage() {
                         </div>
                      ))}
                   </div>
+
+                  <GuideTrustSection />
                </div>
             </section>
 

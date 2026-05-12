@@ -1,6 +1,8 @@
-import { getApiBaseUrl } from "@/lib/auth";
+import { getApiBaseUrl, getUserAuthHeaders, signOut } from "@/lib/auth";
 
 const API_BASE_URL = getApiBaseUrl();
+const USER_SESSION_EXPIRED_MESSAGE =
+   "로그인 정보가 만료되었습니다. 다시 로그인해주세요.";
 
 async function readApiResponseBody(response) {
    const text = await response.text().catch(() => "");
@@ -32,8 +34,16 @@ function isMissingRouteResponse(response, data) {
    );
 }
 
-async function parseApiResponse(response, fallbackMessage) {
+async function parseApiResponse(response, fallbackMessage, options = {}) {
    const data = await readApiResponseBody(response);
+
+   if (
+      options.signOutOnUnauthorized &&
+      (response.status === 401 || response.status === 403)
+   ) {
+      signOut();
+      throw new Error(USER_SESSION_EXPIRED_MESSAGE);
+   }
 
    if (!response.ok) {
       throw new Error(getApiErrorMessage(data, fallbackMessage));
@@ -92,33 +102,52 @@ async function fetchJson(path, options = {}, fallbackMessage) {
    const response = await fetch(`${API_BASE_URL}${path}`, {
       cache: "no-store",
       ...options,
+      headers: getUserAuthHeaders(options.headers || {}),
    });
 
-   return parseApiResponse(response, fallbackMessage);
+   return parseApiResponse(response, fallbackMessage, {
+      signOutOnUnauthorized: true,
+   });
 }
 
 export async function fetchWorkspaceHostingAccounts(customId) {
    const detailResponse = await fetch(
       `${API_BASE_URL}/hosting/accounts/detail?customId=${encodeURIComponent(customId)}`,
-      { cache: "no-store" },
+      {
+         headers: getUserAuthHeaders(),
+         cache: "no-store",
+      },
    );
 
    if (detailResponse.ok) {
-      const data = await parseApiResponse(detailResponse);
+      const data = await parseApiResponse(detailResponse, undefined, {
+         signOutOnUnauthorized: true,
+      });
       return normalizeListResponse(data, "accounts");
    }
 
    const detailError = await readApiResponseBody(detailResponse);
+
+   if (detailResponse.status === 401 || detailResponse.status === 403) {
+      signOut();
+      throw new Error(USER_SESSION_EXPIRED_MESSAGE);
+   }
+
    if (!isMissingRouteResponse(detailResponse, detailError)) {
       throw new Error(getApiErrorMessage(detailError));
    }
 
    const fallbackResponse = await fetch(
       `${API_BASE_URL}/hosting/accounts?customId=${encodeURIComponent(customId)}`,
-      { cache: "no-store" },
+      {
+         headers: getUserAuthHeaders(),
+         cache: "no-store",
+      },
    );
 
-   const fallbackData = await parseApiResponse(fallbackResponse);
+   const fallbackData = await parseApiResponse(fallbackResponse, undefined, {
+      signOutOnUnauthorized: true,
+   });
    const accountPlatforms = normalizeListResponse(fallbackData, "accounts");
 
    return accountPlatforms.map((accountPlatform) => ({
@@ -138,25 +167,31 @@ export async function fetchWorkspaceHostingAccounts(customId) {
 }
 
 export async function saveWorkspaceHostingAccount(payload) {
-   const hasId = payload.id !== undefined && payload.id !== null && String(payload.id).trim() !== "";
+   const hasId =
+      payload.id !== undefined && payload.id !== null && String(payload.id).trim() !== "";
    const endpoint = hasId
       ? `${API_BASE_URL}/hosting/accounts/${payload.id}`
       : `${API_BASE_URL}/hosting/accounts`;
 
    const response = await fetch(endpoint, {
       method: hasId ? "PUT" : "POST",
-      headers: {
+      headers: getUserAuthHeaders({
          "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify(payload),
    });
 
    if (!response.ok) {
       const data = await readApiResponseBody(response);
 
+      if (response.status === 401 || response.status === 403) {
+         signOut();
+         throw new Error(USER_SESSION_EXPIRED_MESSAGE);
+      }
+
       if (isMissingRouteResponse(response, data)) {
          throw new Error(
-            "현재 서버에는 고객용 호스팅 저장 API가 아직 반영되지 않았습니다. 관리자 화면이나 기존 프로그램에서 먼저 설정해 주세요.",
+            "현재 서버에는 고객용 호스팅 계정 저장 API가 아직 반영되지 않았습니다. 관리자 화면이나 기존 프로그램에서 먼저 설정해주세요.",
          );
       }
 
@@ -331,11 +366,17 @@ export async function createWorkspaceSchedule(payload) {
 export async function fetchWorkspaceSchedules(customId, accountPlatform, status = "active") {
    const query = buildQuery({ customId, accountPlatform, status });
    const response = await fetch(`${API_BASE_URL}/schedule/list?${query}`, {
+      headers: getUserAuthHeaders(),
       cache: "no-store",
    });
 
    if (!response.ok) {
       const data = await readApiResponseBody(response);
+
+      if (response.status === 401 || response.status === 403) {
+         signOut();
+         throw new Error(USER_SESSION_EXPIRED_MESSAGE);
+      }
 
       if (isMissingRouteResponse(response, data)) {
          return [];
@@ -351,18 +392,23 @@ export async function fetchWorkspaceSchedules(customId, accountPlatform, status 
 export async function deleteWorkspaceSchedules(ids) {
    const response = await fetch(`${API_BASE_URL}/schedule/delete-user`, {
       method: "POST",
-      headers: {
+      headers: getUserAuthHeaders({
          "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify({ ids }),
    });
 
    if (!response.ok) {
       const data = await readApiResponseBody(response);
 
+      if (response.status === 401 || response.status === 403) {
+         signOut();
+         throw new Error(USER_SESSION_EXPIRED_MESSAGE);
+      }
+
       if (isMissingRouteResponse(response, data)) {
          throw new Error(
-            "현재 서버에는 고객용 예약 삭제 API가 아직 없습니다. 관리자 화면에서 예약을 정리해 주세요.",
+            "현재 서버에는 고객용 예약 삭제 API가 아직 없습니다. 관리자 화면에서 예약을 정리해주세요.",
          );
       }
 
@@ -379,6 +425,7 @@ export async function fetchWorkspaceCafe24AuthorizeUrl({ mallId, state }) {
    });
 
    const response = await fetch(`${API_BASE_URL}/cafe24/authorize-url?${query}`, {
+      headers: getUserAuthHeaders(),
       cache: "no-store",
    });
 
@@ -386,8 +433,13 @@ export async function fetchWorkspaceCafe24AuthorizeUrl({ mallId, state }) {
       const data = await readApiResponseBody(response);
 
       if (response.status === 401 || response.status === 403) {
+         signOut();
+         throw new Error(USER_SESSION_EXPIRED_MESSAGE);
+      }
+
+      if (isMissingRouteResponse(response, data)) {
          throw new Error(
-            "현재 운영 서버에는 고객용 Cafe24 연동 API가 아직 열려 있지 않습니다. 관리자 화면에서 먼저 연동해 주세요.",
+            "현재 운영 서버에는 고객용 Cafe24 연동 API가 아직 열려 있지 않습니다. 관리자 화면에서 먼저 연동해주세요.",
          );
       }
 
@@ -400,9 +452,9 @@ export async function fetchWorkspaceCafe24AuthorizeUrl({ mallId, state }) {
 export async function exchangeWorkspaceCafe24AccessToken(payload) {
    const response = await fetch(`${API_BASE_URL}/cafe24/token/exchange`, {
       method: "POST",
-      headers: {
+      headers: getUserAuthHeaders({
          "Content-Type": "application/json",
-      },
+      }),
       body: JSON.stringify(payload),
    });
 
@@ -410,6 +462,11 @@ export async function exchangeWorkspaceCafe24AccessToken(payload) {
       const data = await readApiResponseBody(response);
 
       if (response.status === 401 || response.status === 403) {
+         signOut();
+         throw new Error(USER_SESSION_EXPIRED_MESSAGE);
+      }
+
+      if (isMissingRouteResponse(response, data)) {
          throw new Error(
             "현재 운영 서버에는 고객용 Cafe24 토큰 교환 API가 아직 열려 있지 않습니다.",
          );

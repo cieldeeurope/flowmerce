@@ -3,28 +3,34 @@ import Container from "./Container";
 
 const points = [
    {
-      title: "현지 사이트 기준 상품 수집",
-      description: "국내보다 빠르게 상품 흐름을 확인하고 먼저 운영에 반영할 수 있습니다.",
+      title: "요청 주문 대응",
+      description:
+         "국내에 없는 상품이나 빠르게 확인해야 하는 요청 주문 흐름까지 운영 기준으로 이어갈 수 있습니다.",
    },
    {
-      title: "품절·미입고 상품 대응",
-      description: "국내에 없는 상품이나 이미 빠진 상품 흐름까지 함께 관리할 수 있습니다.",
+      title: "품절 · 가격 변동 관리",
+      description:
+         "등록 이후에 더 중요한 품절과 가격 변경을 놓치지 않도록 재고관리 흐름까지 함께 설계했습니다.",
    },
    {
-      title: "마진 구조를 반영한 운영",
-      description: "금액 구간별 마진, 환율, 거래처 할인율 기준을 실제 운영 방식에 맞춰 설정합니다.",
+      title: "마진 구조 반영",
+      description:
+         "금액 구간별 마진, 수수료, 거래처 할인 기준까지 실제 운영 방식에 맞춰 세밀하게 설정할 수 있습니다.",
    },
    {
-      title: "하이엔드 브랜드 확장",
-      description: "명품 판매자에게 중요한 브랜드 폭과 운영 속도를 함께 고려합니다.",
+      title: "하이엔드 사이트 확장",
+      description:
+         "보안 레벨이 높은 브랜드 사이트와 확장 채널까지 고려해 명품 셀러 관점으로 흐름을 설계했습니다.",
    },
    {
-      title: "설치형이 아닌 웹 운영",
-      description: "운영 PC 환경이나 프로그램 설치 여부에 덜 묶이고, 브라우저에서 바로 이어집니다.",
+      title: "설치 없는 운영 경험",
+      description:
+         "별도 프로그램 설치 대신 브라우저에서 바로 이어져, 운영 PC 환경 부담을 크게 줄여줍니다.",
    },
    {
-      title: "셋업과 상담 지원",
-      description: "호스팅 연결과 기본 흐름은 함께 안내하고, 필요한 경우 컨설팅까지 이어갈 수 있습니다.",
+      title: "운영 지원 포함",
+      description:
+         "정책 확인, 세팅 진행, 사이트 확정, 문의 동선까지 한 흐름으로 이어지는 운영형 서비스입니다.",
    },
 ];
 
@@ -39,24 +45,24 @@ export default function IdentityGuide() {
                         Why Flowmerce
                      </span>
                      <h2 className="mt-4 text-3xl font-semibold leading-tight md:text-4xl md:leading-tight">
-                        명품 판매 운영에서
+                        명품 셀러가 실제로 막히는 지점까지
                         <br />
-                        자주 놓치기 쉬운 기준까지 함께 봅니다
+                        운영 기준으로 설계했습니다
                      </h2>
                      <div className="mt-5 space-y-4 text-base leading-8 text-zinc-600">
                         <p className="font-semibold text-zinc-950">
-                           플로우머스는 상품만 올리는 도구보다는, 실제 운영에서
-                           자주 반복되는 관리 업무를 줄이는 쪽에 더 가깝습니다.
+                           플로우머스는 상품을 많이 긁어오는 도구보다, 운영자가 반복적으로
+                           막히는 구간을 줄이는 쪽에 더 가깝습니다.
                         </p>
                         <p>
-                           재고와 품절, 가격 변경, 카테고리 매핑, 마진 설정,
-                           상품 문구 정리, 수집 예약처럼 판매자가 계속 손대게 되는
-                           작업을 한 흐름으로 이어지게 만드는 것이 핵심입니다.
+                           요청 주문 대응, 품절과 가격 변동 확인, 카테고리 매핑, 마진 설정,
+                           문구 정리와 수집 예약처럼 명품 셀러가 계속 손대야 하는 작업을
+                           하나의 운영 흐름으로 이어주는 것이 핵심입니다.
                         </p>
                         <p>
-                           특히 명품 판매는 단순 수집보다 상품 흐름을 빠르게
-                           확인하고, 품절과 가격 변동을 놓치지 않는 쪽이 운영
-                           리스크를 줄이는 데 더 중요합니다.
+                           브랜드와 채널이 늘어날수록 중요한 것은 등록 속도보다 운영 누수
+                           관리입니다. 그래서 플로우머스는 설치형 툴보다 브라우저 기반
+                           스튜디오와 실제 운영 지원 경험에 집중합니다.
                         </p>
                      </div>
                      <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center">
@@ -70,7 +76,7 @@ export default function IdentityGuide() {
                            href="/consulting"
                            className="inline-flex justify-center rounded-md border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-50 sm:min-w-44"
                         >
-                           컨설팅 알아보기
+                           상담 문의하기
                         </Link>
                      </div>
                   </div>

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Container from "./Container";
+import FeaturesComparisonSection from "./FeaturesComparisonSection";
 
 const workflow = [
    {
@@ -64,14 +65,14 @@ const directUsePoints = [
 ];
 
 const comparisonRows = [
-   ["프로그램 설치", "설치 없이 바로 사용", "설치가 필요한 경우가 많음"],
-   ["자동 재고관리", "수집 흐름과 함께 자동 반영", "직접 확인하거나 별도 요청이 필요함"],
-   ["실시간 상품 업데이트", "방문 상품 기준으로 가격·재고 재확인", "고정 정보 노출이 많음"],
+   ["프로그램 설치", "설치 셋팅 없이 바로 사용", "압축 프로그램 다운 및 셋팅"],
+   ["자동 재고관리", "수집 흐름과 함께 자동화", "직접 확인하거나 별도 요청 필요"],
+   ["실시간 상품 업데이트", "방문 상품 기준으로 가격·재고 재확인", "지원 안함"],
    ["상품 매핑 방식", "카테고리 클릭 중심으로 바로 매핑", "항목별 수동 확인이 많은 편"],
-   ["상세페이지 구성", "AI 기반으로 상품 특성에 맞춰 조정", "모든 고객이 거의 동일한 구성"],
-   ["SEO 고려", "상품명·치환·구조까지 함께 고려", "운영자 수동 보정 비중이 큼"],
-   ["호스팅 계정 전환", "계정 선택 후 즉시 전환", "환경별로 따로 관리되기 쉬움"],
-   ["문의 대응", "카카오톡 24시간 접수와 유선 상담 연계", "운영사마다 대응 방식이 다름"],
+   ["상세페이지 구성", "AI 기반으로 상품 특성에 맞춰 조정", "모든 고객이 동일한 구성"],
+   ["SEO 고려", "상품명·치환·구조까지 함께 고려", "SEO 고려 X"],
+   ["호스팅 계정 전환", "계정 선택 후 즉시 전환", "수동 입력 또는 재실행"],
+   ["문의 대응", "카카오톡 24시간 접수와 유선 상담 연계", "이메일 또는 제한된 영업 시간"],
 ];
 
 export default function Features() {
@@ -136,7 +137,7 @@ export default function Features() {
                         href="/program"
                         className="inline-flex h-11 items-center justify-center rounded-md border border-zinc-300 bg-white px-5 text-sm font-semibold text-zinc-900 transition hover:bg-zinc-50"
                      >
-                        운영 화면 자세히 보기
+                        사용 메뉴얼 보기
                      </Link>
                   </div>
 
@@ -195,52 +196,7 @@ export default function Features() {
                   </div>
                </section>
 
-               <section className="rounded-md border border-black/5 bg-white p-6 shadow-sm md:p-8">
-                  <p className="text-sm font-semibold text-amber-900">
-                     왜 플로우머스인가
-                  </p>
-                  <h3 className="mt-2 text-2xl font-semibold leading-tight text-zinc-950 md:text-3xl">
-                     플로우머스를 써야 하는 이유
-                  </h3>
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-zinc-600">
-                     단순히 상품을 긁어오는 프로그램이 아니라, 고객이 직접 매핑하고
-                     수집 요청을 넣고, 재고·가격·상세페이지까지 운영 흐름을 이어갈 수
-                     있는 쪽에 초점을 맞췄습니다.
-                  </p>
-                  <div className="mt-6 overflow-hidden rounded-md border border-black/5">
-                     <div className="grid grid-cols-[0.82fr_1.08fr_0.86fr] bg-[#fbf7ef] text-sm font-semibold text-zinc-950">
-                        <div className="border-r border-black/5 px-4 py-3">
-                           항목
-                        </div>
-                        <div className="bg-[#1c1917] px-4 py-3 text-white">
-                           플로우머스
-                        </div>
-                        <div className="border-l border-black/5 px-4 py-3">
-                           타사 프로그램
-                        </div>
-                     </div>
-                     <div className="divide-y divide-black/5 bg-white">
-                        {comparisonRows.map(([label, flowmerce, legacy]) => (
-                           <div
-                              key={label}
-                              className="grid grid-cols-[0.82fr_1.08fr_0.86fr] text-sm text-zinc-600"
-                           >
-                              <div className="border-r border-black/5 px-4 py-4 font-semibold text-zinc-950">
-                                 {label}
-                              </div>
-                              <div className="border-r border-[#8c6333] border-l-2 bg-[#fcf8f1] px-4 py-4 font-medium leading-6 text-zinc-900">
-                                 {flowmerce}
-                              </div>
-                              <div className="px-4 py-4 leading-6">{legacy}</div>
-                           </div>
-                        ))}
-                     </div>
-                  </div>
-                  <p className="mt-4 text-sm leading-7 text-zinc-500">
-                     명품 운영 기준으로 고객이 실제로 체감하는 차이를 중심으로 정리한
-                     비교입니다.
-                  </p>
-               </section>
+               <FeaturesComparisonSection rows={comparisonRows} />
             </div>
          </Container>
       </section>
