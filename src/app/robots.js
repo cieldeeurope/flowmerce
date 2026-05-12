@@ -26,7 +26,7 @@ export default function robots() {
          },
          {
             userAgent: ["Yeti", "NaverBot", "Ads-Naver", "Daumoa"],
-            allow: ["/", "/favicon.ico"],
+            allow: "/",
             disallow: ["/admin", "/admin-flowmerce", "/flowmerce-studio", "/mypage", "/request", "/api/"],
             crawlDelay: 5,
          },

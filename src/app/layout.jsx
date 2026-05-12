@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/next-script-for-ga */
 import "./globals.css";
 import UserSessionManager from "@/components/UserSessionManager";
 import {
@@ -8,8 +9,10 @@ import {
    siteUrl,
 } from "@/lib/seo";
 
-const faviconUrl = `${siteUrl}/favicon.ico`;
-const appleIconUrl = `${siteUrl}/brand/silver-symbol.png`;
+const primaryIconUrl = `${siteUrl}/favicon.png`;
+const gtmId = "GTM-N5K69TV3";
+const metaPixelId = "955733247288496";
+const naverAnalyticsId = "c937c450f32000";
 
 export const metadata = {
    metadataBase: new URL(siteUrl),
@@ -36,10 +39,10 @@ export const metadata = {
       description: defaultDescription,
       images: [
          {
-            url: "/icon.png",
-            width: 768,
-            height: 768,
-            alt: `${siteName} 대표 이미지`,
+            url: "/favicon.png",
+            width: 1200,
+            height: 1200,
+            alt: `${siteName} 대표 아이콘`,
          },
       ],
    },
@@ -47,7 +50,7 @@ export const metadata = {
       card: "summary_large_image",
       title: defaultTitle,
       description: defaultDescription,
-      images: ["/icon.png"],
+      images: ["/favicon.png"],
    },
    robots: {
       index: true,
@@ -60,12 +63,12 @@ export const metadata = {
          "max-video-preview": -1,
       },
    },
-   themeColor: "#10b981",
+   themeColor: "#1e3aff",
    manifest: "/manifest.webmanifest",
    icons: {
-      icon: [{ url: faviconUrl, sizes: "any" }],
-      shortcut: [faviconUrl],
-      apple: [{ url: appleIconUrl, type: "image/png" }],
+      icon: [{ url: primaryIconUrl, sizes: "768x768", type: "image/png" }],
+      shortcut: [{ url: primaryIconUrl, sizes: "768x768", type: "image/png" }],
+      apple: [{ url: primaryIconUrl, sizes: "768x768", type: "image/png" }],
    },
 };
 
@@ -84,9 +87,8 @@ export default function RootLayout({ children }) {
                name="naver-site-verification"
                content="aff30bb4569645b6f75ec1c2922ebe54a12b8a94"
             />
-            <link rel="shortcut icon" href={faviconUrl} />
-            <link rel="icon" href={faviconUrl} sizes="any" />
-            <link rel="apple-touch-icon" href={appleIconUrl} />
+            <link rel="icon" href={primaryIconUrl} sizes="768x768" type="image/png" />
+            <link rel="apple-touch-icon" href={primaryIconUrl} sizes="768x768" />
             <link
                rel="preconnect"
                href="https://cdn.jsdelivr.net"
@@ -96,8 +98,66 @@ export default function RootLayout({ children }) {
                rel="stylesheet"
                href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
             />
+
+            <script
+               dangerouslySetInnerHTML={{
+                  __html: `
+                     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+                     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+                     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+                     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+                     })(window,document,'script','dataLayer','${gtmId}');
+                  `,
+               }}
+            />
+            <script async src="https://wcs.pstatic.net/wcslog.js" />
+            <script
+               dangerouslySetInnerHTML={{
+                  __html: `
+                     if(!window.wcs_add) window.wcs_add = {};
+                     window.wcs_add["wa"] = "${naverAnalyticsId}";
+                     if(window.wcs) {
+                       wcs_do();
+                     }
+                  `,
+               }}
+            />
+            <script
+               dangerouslySetInnerHTML={{
+                  __html: `
+                     !function(f,b,e,v,n,t,s)
+                     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+                     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+                     if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+                     n.queue=[];t=b.createElement(e);t.async=!0;
+                     t.src=v;s=b.getElementsByTagName(e)[0];
+                     s.parentNode.insertBefore(t,s)}(window, document,'script',
+                     'https://connect.facebook.net/en_US/fbevents.js');
+                     fbq('init', '${metaPixelId}');
+                     fbq('track', 'PageView');
+                  `,
+               }}
+            />
          </head>
          <body className="flex h-full flex-col">
+            <noscript>
+               <iframe
+                  src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+                  height="0"
+                  width="0"
+                  style={{ display: "none", visibility: "hidden" }}
+               />
+            </noscript>
+            <noscript>
+               {/* eslint-disable-next-line @next/next/no-img-element */}
+               <img
+                  height="1"
+                  width="1"
+                  style={{ display: "none" }}
+                  src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
+                  alt=""
+               />
+            </noscript>
             <UserSessionManager />
             {children}
          </body>
