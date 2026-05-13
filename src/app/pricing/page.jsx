@@ -178,17 +178,16 @@ export default function PricingPage() {
                         재고관리 과정에서 새 상품이 발견되어 등록되면 그 수량도 요청량에 추가됩니다.
                      </p>
                      <p className="mt-5 text-base leading-8 text-zinc-600">
-                        하이엔드 사이트는 두 가지 기준으로 분류합니다. Dior, Lv처럼 브랜드 자체가 하이엔드인 경우도 있고,
-                        Fendi, Brunello, Jacquemus처럼 브랜드 가치와 별개로 사이트 보안 레벨과 수집 난이도가 높아
-                        하이엔드로 분류되는 경우도 있습니다. 플로우머스는 브랜드 인지도뿐 아니라 접근 안정성,
-                        보안 레벨, 수집 난이도까지 함께 기준으로 봅니다. 현재 가능한
+                        하이엔드 그룹은 브랜드 인지도뿐 아니라 접근 안정성, 보안 레벨,
+                        수집 난이도까지 함께 기준으로 분류합니다. 공개 페이지에서는 실제
+                        사이트명을 비공개로 유지하고, 현재 가능한
                         <a
                            href="#supported-sites"
                            className="mx-1 font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4 hover:decoration-zinc-950"
                         >
-                           하이엔드 사이트 목록 보기
+                           운영 범위 보기
                         </a>
-                        에서 브랜드별로 분류된 목록을 확인할 수 있습니다.
+                        에서 비식별 처리된 지원 범위를 확인하실 수 있습니다.
                      </p>
                   </div>
                </Container>
@@ -262,8 +261,10 @@ export default function PricingPage() {
                            현재 운영 가능한 사이트 목록
                         </h2>
                         <p className="mt-3 text-sm leading-7 text-zinc-600">
-                           아래 목록 외에도 사이트 요청과 플랫폼 구축 요청을 받을 수 있습니다.
-                           보안 레벨이 높은 사이트는 별도 검토 후 플랜에 맞춰 안내합니다.
+                           운영 가능한 소싱처는 계속 확장되고 있지만, 공개 페이지에서는
+                           세부 사이트명을 비공개로 유지합니다. 상세 목록은 플랜 구독자
+                           전용 화면에서 확인하실 수 있으며, 아래에는 현재 운영 범위를
+                           비식별 처리한 형태로만 안내합니다.
                         </p>
                      </div>
 
@@ -271,13 +272,15 @@ export default function PricingPage() {
                         <SiteGroup
                            title="하이엔드 사이트"
                            description="보안 레벨과 수집 난이도가 높은 사이트"
-                           sites={highEndSites}
+                           siteCount={highEndSites.length}
+                           previewPrefix="Premium source"
                            highlighted
                         />
                         <SiteGroup
                            title="핵심 소싱 사이트"
                            description="운영 효율이 높은 주요 명품 소싱 사이트"
-                           sites={coreSourcingSites}
+                           siteCount={coreSourcingSites.length}
+                           previewPrefix="Core source"
                         />
                      </div>
                   </div>
@@ -289,7 +292,15 @@ export default function PricingPage() {
    );
 }
 
-function SiteGroup({ title, description, sites, highlighted = false }) {
+function SiteGroup({
+   title,
+   description,
+   siteCount,
+   previewPrefix,
+   highlighted = false,
+}) {
+   const previewCount = Math.min(siteCount, highlighted ? 9 : 15);
+
    return (
       <div
          className={clsx(
@@ -299,14 +310,28 @@ function SiteGroup({ title, description, sites, highlighted = false }) {
       >
          <h3 className="text-lg font-semibold">{title}</h3>
          <p className="mt-1 text-sm text-zinc-600">{description}</p>
-         <div className="mt-5 flex flex-wrap gap-2">
-            {sites.map((site) => (
-               <span
-                  key={site}
-                  className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 shadow-sm"
+
+         <div className="mt-5 rounded-2xl border border-white/70 bg-white/80 p-4 shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
+               현재 운영 범위
+            </p>
+            <p className="mt-2 text-3xl font-semibold text-zinc-950">{siteCount}+</p>
+            <p className="mt-2 text-sm leading-7 text-zinc-600">
+               상세 사이트명은 플랜 구독자 전용 화면에서만 확인하실 수 있습니다.
+            </p>
+         </div>
+
+         <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: previewCount }, (_, index) => (
+               <div
+                  key={`${title}-${index + 1}`}
+                  className="relative overflow-hidden rounded-full border border-white/70 bg-white px-4 py-2.5 shadow-sm"
                >
-                  {site}
-               </span>
+                  <span className="block select-none text-center text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500 blur-[3.6px]">
+                     {previewPrefix} {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/10 via-white/55 to-white/10" />
+               </div>
             ))}
          </div>
       </div>

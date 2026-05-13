@@ -5,6 +5,7 @@ import Link from "next/link";
 import Container from "@/components/Container";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import ProgramFlowVideo from "@/components/ProgramFlowVideo";
 import { createMetadata } from "@/lib/seo";
 
 export const metadata = createMetadata({
@@ -1026,6 +1027,72 @@ function UploadedProductShowcaseSection() {
    );
 }
 
+const programFlowVideoCues = [
+   {
+      start: 0,
+      end: 3,
+      lines: ["마이페이지에서 플로우머스 대시보드를 클릭합니다."],
+   },
+   {
+      start: 3,
+      end: 9,
+      lines: ["구독한 사이트를 클릭합니다."],
+   },
+   {
+      start: 9,
+      end: 12,
+      lines: ["구독한 사이트의 카테고리와", "내 쇼핑몰 카테고리가 노출됩니다."],
+   },
+   {
+      start: 12,
+      end: 16,
+      lines: ["두 사이트의 카테고리를 선택하고", "매핑 버튼을 클릭합니다."],
+   },
+   {
+      start: 16,
+      end: 18,
+      lines: ["매핑한 카테고리와 수집 카테고리에 자동 등록됩니다."],
+   },
+   {
+      start: 18,
+      end: 21,
+      lines: ["수집 카테고리에서 원하는 항목을 체크한 뒤", "수집 예약을 클릭합니다."],
+   },
+   {
+      start: 21,
+      end: 26,
+      lines: ["예약 성공이 나오면 완료입니다.", "(수집 시작 시 카카오톡 알림이 전송됩니다.)"],
+   },
+   {
+      start: 26,
+      end: 33,
+      lines: ["내 쇼핑몰에서 등록된 상품을 확인할 수 있습니다."],
+   },
+   {
+      start: 33,
+      end: 39,
+      lines: ["등록되고 있는 상품입니다.", "상품 하나를 확인해보겠습니다."],
+   },
+   {
+      start: 39,
+      end: 47,
+      lines: ["상품이 잘 등록되었습니다.", "(쇼핑몰에 따라 노출되는 디자인은 다를 수 있습니다.)"],
+   },
+   {
+      start: 47,
+      end: 53,
+      lines: [
+         "상세페이지를 확인하시면 됩니다.",
+         "(세팅 시 원하시는 홍보 이미지를 상세페이지 상하단에 넣어드릴 수 있습니다.)",
+      ],
+   },
+   {
+      start: 53,
+      end: 60,
+      lines: ["이후 작업부터는 매핑할 필요 없이", "수집 예약 버튼만 클릭하면 됩니다."],
+   },
+];
+
 function ProgramDemoSection() {
    const demoVideoSrc = "/program/flowmerce-demo.mp4";
    const hasDemoVideo = fs.existsSync(
@@ -1037,73 +1104,44 @@ function ProgramDemoSection() {
          <div className="mx-auto max-w-[1500px] px-4 sm:px-6 xl:px-8">
             <div className="mx-auto max-w-4xl text-center">
                <span className="inline-flex rounded-md border border-amber-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-amber-900">
-                  실제 사용 흐름 영상
+                  실제 사용 영상
                </span>
                <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
-                  실제 상품 등록이 어떻게 돌아가는지
+                  실제 상품 수집부터 쇼핑몰 등록 확인까지
                   <br />
-                  영상으로 바로 확인할 수 있습니다
+                  단 1분이면 마스터 합니다.
                </h2>
                <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-zinc-600">
-                  플로우머스 대시보드에서 로그인, 선택 된 호스팅 드롭다운, 사이트 버튼,
-                  수집 카테고리 체크, 실제 쇼핑몰 등록 결과까지 한 흐름으로 보여주는
-                  영역입니다. 영상 파일이 준비되면 바로 노출되고, 아직 준비 전이면 실제
-                  등록 화면 예시로 먼저 안내합니다.
+                  플로우머스 대시보드에서 사이트 선택, 카테고리 매핑, 수집 예약,
+                  실제 쇼핑몰 등록 결과 확인까지 한 번에 확인하실 수 있습니다. 실제
+                  상품 수집부터 상품 확인까지 단 1분이면 전체 사용 방법을 바로
+                  따라가실 수 있습니다.
                </p>
             </div>
 
-            <div className="mx-auto mt-10 max-w-6xl overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm">
+            <div className="mx-auto mt-10 max-w-6xl overflow-hidden rounded-[28px] border border-zinc-200 bg-white p-3 shadow-sm sm:p-4">
                {hasDemoVideo ? (
-                  <MaskedPreviewFrame label="Brand Masked">
-                     <video
-                        controls
-                        preload="metadata"
-                        className="block aspect-video w-full bg-black"
-                        poster="/program/product-upload-smartstore.png"
-                     >
-                        <source src={demoVideoSrc} type="video/mp4" />
-                     </video>
-                  </MaskedPreviewFrame>
+                  <ProgramFlowVideo
+                     src={demoVideoSrc}
+                     poster="/program/product-upload-smartstore.png"
+                     cues={programFlowVideoCues}
+                  />
                ) : (
-                  <div className="grid gap-0 lg:grid-cols-2">
-                     <div className="border-b border-zinc-200 bg-white p-3 lg:border-b-0 lg:border-r">
-                        <MaskedPreviewFrame label="Brand Masked">
-                           <Image
-                              src="/program/product-upload-godomall.png"
-                           alt="고도몰 상품 등록 화면 예시"
-                           width={1600}
-                           height={900}
-                              className="h-auto w-full rounded-lg border border-zinc-200"
-                           />
-                        </MaskedPreviewFrame>
-                     </div>
-                     <div className="bg-white p-3">
-                        <MaskedPreviewFrame label="Brand Masked">
-                           <Image
-                              src="/program/product-upload-smartstore.png"
-                           alt="스마트스토어 상품 등록 화면 예시"
-                           width={1600}
-                           height={900}
-                              className="h-auto w-full rounded-lg border border-zinc-200"
-                           />
-                        </MaskedPreviewFrame>
-                     </div>
+                  <div className="rounded-[24px] border border-dashed border-zinc-300 bg-[#f7f4ef] px-6 py-10 text-center">
+                     <p className="text-base font-semibold text-zinc-950">
+                        실제 사용 영상이 곧 업데이트됩니다
+                     </p>
+                     <p className="mt-3 text-sm leading-7 text-zinc-600">
+                        현재는 아래 기능 소개와 등록 예시 화면을 통해 전체 운영 방법을
+                        먼저 확인하실 수 있습니다.
+                     </p>
                   </div>
                )}
-            </div>
-
-            <div className="mx-auto mt-6 max-w-6xl rounded-lg border border-zinc-200 bg-white p-5 text-sm leading-7 text-zinc-600 shadow-sm">
-               <p className="font-semibold text-zinc-950">영상 파일 연결 방법</p>
-               <p className="mt-2">
-                  실제 녹화본을 준비한 뒤 <code className="rounded bg-zinc-100 px-1.5 py-0.5">public/program/flowmerce-demo.mp4</code>{" "}
-                  경로에 넣으면 이 영역에서 바로 재생됩니다.
-               </p>
             </div>
          </div>
       </section>
    );
 }
-
 function WordReplacementFeatureSection() {
    const examples = [
       ["스니커즈", "운동화"],

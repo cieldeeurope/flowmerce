@@ -1,4 +1,5 @@
 import Contacts from "@/components/Contacts";
+import CustomerOrderStories from "@/components/CustomerOrderStories";
 import Faqs from "@/components/Faqs";
 import Features from "@/components/Features";
 import Footer from "@/components/Footer";
@@ -146,6 +147,7 @@ export default function Home() {
             <Platforms />
             <SalesProof />
             <IdentityGuide />
+            <CustomerOrderStories />
             <Testimonials />
             <Pricing />
             <Faqs />
