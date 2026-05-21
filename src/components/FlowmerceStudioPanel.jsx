@@ -328,6 +328,36 @@ function normalizeMappedCategory(item) {
    };
 }
 
+function appendQueryParams(rawUrl, params) {
+   try {
+      const nextUrl = new URL(String(rawUrl || ""));
+
+      Object.entries(params || {}).forEach(([key, value]) => {
+         if (value === undefined || value === null || value === "") {
+            return;
+         }
+
+         nextUrl.searchParams.set(key, String(value));
+      });
+
+      return nextUrl.toString();
+   } catch {
+      const query = Object.entries(params || {})
+         .filter(([, value]) => value !== undefined && value !== null && value !== "")
+         .map(
+            ([key, value]) =>
+               `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`,
+         )
+         .join("&");
+
+      if (!query) {
+         return String(rawUrl || "");
+      }
+
+      return `${rawUrl}${String(rawUrl || "").includes("?") ? "&" : "?"}${query}`;
+   }
+}
+
 function getCafe24TokenStatus(account) {
    if (!account || account.platform !== "cafe24") {
       return null;
@@ -1024,13 +1054,29 @@ export default function FlowmerceStudioPanel() {
       };
    }, []);
 
+   const allowMultipleSourceSelection =
+      selectedBrand === "Farfetch" || selectedBrand === "Cettire";
+   const canRefreshMallCategoryButton =
+      String(session?.customId || "").trim() === "bcm499";
+
    const handleSelectMallCategory = useCallback((item) => {
       setSelectedMallKey((current) => (current === item.key ? "" : item.key));
    }, []);
 
-   const handleSelectSourceCategory = useCallback((item) => {
-      setSelectedSourceKeys((current) => (current[0] === item.key ? [] : [item.key]));
-   }, []);
+   const handleSelectSourceCategory = useCallback(
+      (item, multi = false) => {
+         setSelectedSourceKeys((current) => {
+            if (!(multi && allowMultipleSourceSelection)) {
+               return current[0] === item.key ? [] : [item.key];
+            }
+
+            return current.includes(item.key)
+               ? current.filter((key) => key !== item.key)
+               : [...current, item.key];
+         });
+      },
+      [allowMultipleSourceSelection],
+   );
 
    const allMappedSelected = useMemo(
       () =>
@@ -1228,6 +1274,14 @@ export default function FlowmerceStudioPanel() {
          return;
       }
 
+      if (!canRefreshMallCategoryButton) {
+         setCollectionMessage({
+            tone: "error",
+            text: "관리자 전용 버튼입니다.",
+         });
+         return;
+      }
+
       try {
          await refreshWorkspaceSourceCategories(selectedBrand);
          await loadCollectionWorkspace({ keepCollection: true });
@@ -1241,7 +1295,7 @@ export default function FlowmerceStudioPanel() {
             text: error.message || "브랜드 카테고리를 새로고침하지 못했습니다.",
          });
       }
-   }, [loadCollectionWorkspace, selectedBrand]);
+   }, [canRefreshMallCategoryButton, loadCollectionWorkspace, selectedBrand]);
 
    const handleFetchCollectionCategories = useCallback(async () => {
       if (!session?.customId || !selectedAccountPlatform || !selectedBrand) {
@@ -1402,47 +1456,89 @@ export default function FlowmerceStudioPanel() {
                throw new Error("Farfetch는 디자이너와 카테고리를 함께 선택해야 합니다.");
             }
 
-            const baseUrl = selectedCategories[0]?.url;
-            const categoryPart = selectedCategories
-               .map((item) => item.categoryNumbers)
-               .filter(Boolean)
-               .join("%7C");
-            const designerPart = selectedDesigners
+            const designerCodes = selectedDesigners
                .map((item) => item.code)
-               .filter(Boolean)
-               .join("%7C");
+               .filter(Boolean);
+            const designerPart = designerCodes.join("|");
+            const categoriesWithNumbers = selectedCategories.filter(
+               (item) => item.categoryNumbers,
+            );
+            const directCategories = selectedCategories.filter(
+               (item) => !item.categoryNumbers,
+            );
+            const saveTasks = [];
 
-            const siteUrl = `${baseUrl}?page=1&category=${categoryPart}&designer=${designerPart}`;
+            if (categoriesWithNumbers.length > 0) {
+               const baseUrl = categoriesWithNumbers[0]?.url;
+               const categoryPart = categoriesWithNumbers
+                  .map((item) => item.categoryNumbers)
+                  .filter(Boolean)
+                  .join("|");
 
-            await saveWorkspaceMapping(selectedBrand, {
-               siteUrl,
-               categoryName: selectedCategories.map((item) => item.categoryName).join(","),
-               categoryTitle: selectedDesigners.map((item) => item.name).join(","),
-               godoMallCategoryCode: selectedMallCategory.categoryCode,
-               godoMallCategoryName: selectedMallCategory.categoryName,
-               designers: selectedDesigners.map((item) => item.code),
-               customId: session.customId,
-               accountPlatform: selectedAccountPlatform,
+               saveTasks.push(
+                  saveWorkspaceMapping(selectedBrand, {
+                     siteUrl: appendQueryParams(baseUrl, {
+                        page: 1,
+                        category: categoryPart,
+                        designer: designerPart,
+                     }),
+                     categoryName: categoriesWithNumbers
+                        .map((item) => item.categoryName)
+                        .join(","),
+                     categoryTitle: selectedDesigners.map((item) => item.name).join(","),
+                     godoMallCategoryCode: selectedMallCategory.categoryCode,
+                     godoMallCategoryName: selectedMallCategory.categoryName,
+                     designers: designerCodes,
+                     customId: session.customId,
+                     accountPlatform: selectedAccountPlatform,
+                  }),
+               );
+            }
+
+            directCategories.forEach((source) => {
+               saveTasks.push(
+                  saveWorkspaceMapping(selectedBrand, {
+                     siteUrl: appendQueryParams(source.url, {
+                        page: 1,
+                        designer: designerPart,
+                     }),
+                     categoryName: source.categoryName,
+                     categoryTitle: selectedDesigners.map((item) => item.name).join(","),
+                     godoMallCategoryCode: selectedMallCategory.categoryCode,
+                     godoMallCategoryName: selectedMallCategory.categoryName,
+                     designers: designerCodes,
+                     customId: session.customId,
+                     accountPlatform: selectedAccountPlatform,
+                  }),
+               );
             });
+
+            await Promise.all(saveTasks);
          } else if (selectedBrand === "Cettire") {
-            const source = sourceCategories.find((item) => selectedSourceKeys.includes(item.key));
+            const selectedSources = sourceCategories.filter((item) =>
+               selectedSourceKeys.includes(item.key),
+            );
             const selectedDesigners = designerItems.filter((item) =>
                selectedDesignerKeys.includes(item.key),
             );
 
-            if (!source) {
+            if (selectedSources.length === 0) {
                throw new Error("Cettire 카테고리를 먼저 선택해 주세요.");
             }
 
-            await saveWorkspaceMapping(selectedBrand, {
-               siteUrl: source.url,
-               categoryName: source.categoryName,
-               godoMallCategoryCode: selectedMallCategory.categoryCode,
-               godoMallCategoryName: selectedMallCategory.categoryName,
-               designers: selectedDesigners.map((item) => item.name),
-               customId: session.customId,
-               accountPlatform: selectedAccountPlatform,
-            });
+            await Promise.all(
+               selectedSources.map((source) =>
+                  saveWorkspaceMapping(selectedBrand, {
+                     siteUrl: source.url,
+                     categoryName: source.categoryName,
+                     godoMallCategoryCode: selectedMallCategory.categoryCode,
+                     godoMallCategoryName: selectedMallCategory.categoryName,
+                     designers: selectedDesigners.map((item) => item.name),
+                     customId: session.customId,
+                     accountPlatform: selectedAccountPlatform,
+                  }),
+               ),
+            );
          } else {
             const source = sourceCategories.find((item) => selectedSourceKeys.includes(item.key));
 
@@ -1479,6 +1575,8 @@ export default function FlowmerceStudioPanel() {
                ? nextCollection.map(normalizeMappedCategory).filter((item) => item.key)
                : [],
          );
+         setSelectedSourceKeys([]);
+         setSelectedMallKey("");
          setCollectionMessage({
             tone: "success",
             text: "카테고리 매핑을 저장했습니다.",
@@ -1680,7 +1778,7 @@ export default function FlowmerceStudioPanel() {
             tone: "success",
             text: "마진 규칙을 저장했습니다.",
          });
-         setMarginForm(createEmptyMarginForm(selectedBrand));
+         setMarginForm(createEmptyMarginForm(marginForm.site || selectedBrand));
          setSelectedMarginId("");
          await loadMargins();
       } catch (error) {
@@ -1702,7 +1800,7 @@ export default function FlowmerceStudioPanel() {
             tone: "success",
             text: "선택한 마진 규칙을 삭제했습니다.",
          });
-         setMarginForm(createEmptyMarginForm(selectedBrand));
+         setMarginForm(createEmptyMarginForm(marginForm.site || selectedBrand));
          setSelectedMarginId("");
          await loadMargins();
       } catch (error) {
@@ -1711,7 +1809,7 @@ export default function FlowmerceStudioPanel() {
             text: error.message || "마진 규칙을 삭제하지 못했습니다.",
          });
       }
-   }, [loadMargins, selectedMarginId, selectedBrand]);
+   }, [loadMargins, marginForm.site, selectedMarginId, selectedBrand]);
 
    const handleSaveReplacement = useCallback(async () => {
       if (!session?.customId) {
@@ -2167,7 +2265,7 @@ export default function FlowmerceStudioPanel() {
                                  ? "카테고리를 불러오는 중입니다."
                                  : "브랜드 카테고리가 없습니다."
                            }
-                           multi={false}
+                           multi={allowMultipleSourceSelection}
                         />
 
                         <ProgramListView
@@ -2215,7 +2313,15 @@ export default function FlowmerceStudioPanel() {
                   </div>
 
                   <div className="flex flex-wrap justify-center gap-3">
-                     <SecondaryButton onClick={handleRefreshSourceCategories}>
+                     <SecondaryButton
+                        onClick={handleRefreshSourceCategories}
+                        disabled={!canRefreshMallCategoryButton}
+                        title={
+                           !canRefreshMallCategoryButton
+                              ? "관리자 전용 버튼"
+                              : undefined
+                        }
+                     >
                         쇼핑몰 카테고리
                      </SecondaryButton>
                      <SecondaryButton onClick={handleSaveMapping}>매핑</SecondaryButton>

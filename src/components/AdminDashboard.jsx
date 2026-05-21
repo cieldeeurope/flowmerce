@@ -8,6 +8,7 @@ import {
    fetchCafe24AuthorizeUrl,
    fetchAdminHostingAccounts,
    fetchAdminUsers,
+   generateAdminSitemap,
    updateAdminHostingAccount,
    updateAdminUser,
 } from "@/lib/admin";
@@ -15,6 +16,7 @@ import {
    deleteSchedules,
    fetchScheduledAccountPlatforms,
    fetchScheduledCustomIds,
+   fetchScheduledSites,
    fetchSchedules,
    runSchedules,
 } from "@/lib/schedules";
@@ -24,6 +26,7 @@ const tabs = [
    { id: "schedules", label: "수집예약" },
    { id: "users", label: "User" },
    { id: "hosting", label: "Hosting" },
+   { id: "sitemap", label: "사이트맵" },
 ];
 
 const scheduleSubtabs = [
@@ -35,6 +38,277 @@ const planOptions = ["none", "boutique", "basic", "pro", "enterprise"];
 const platformOptions = ["smartstore", "godomall", "cafe24", "makeshop"];
 const CAFE24_OAUTH_STATE_KEY = "flowmerce_cafe24_oauth_state";
 const CAFE24_REFRESH_WARNING_MS = 3 * 24 * 60 * 60 * 1000;
+const hostingPolicyManuals = {
+   godomall: {
+      title: "고도몰 정책 메뉴얼",
+      description:
+         "고도몰은 배송/환불/교환/AS 안내를 직접 문구로 넣는 방식이 아니라, 관리자에 이미 등록된 정책 번호와 안내 코드로 연결합니다.",
+      sourceNote:
+         "Flowmerce 고도몰 XML 연동 코드 기준입니다. 고도몰 관리자에서 등록된 정책 번호/코드를 그대로 입력합니다.",
+      fields: [
+         {
+            label: "고도몰 배송정책 번호",
+            key: "deliverySno",
+            valueType: "숫자",
+            examples: ["2"],
+            help: "고도몰 관리자에 등록된 배송정책 번호입니다. 배송정책 자체를 선택하는 값입니다.",
+         },
+         {
+            label: "고도몰 배송 안내 코드",
+            key: "detailInfoDeliveryCode",
+            valueType: "코드",
+            examples: ["002001"],
+            help: "배송 안내 문구 자체가 아니라, 고도몰 관리자에 저장된 배송 안내 코드값을 넣습니다.",
+         },
+         {
+            label: "고도몰 AS 안내 코드",
+            key: "detailInfoAsCode",
+            valueType: "코드",
+            examples: ["003001"],
+            help: "AS 안내 문구가 아닌 코드값입니다. 고도몰 XML에서 detailInfoAS로 들어갑니다.",
+         },
+         {
+            label: "고도몰 환불 안내 코드",
+            key: "detailInfoRefundCode",
+            valueType: "코드",
+            examples: ["004001"],
+            help: "환불 안내 문구가 아니라 코드값입니다.",
+         },
+         {
+            label: "고도몰 교환 안내 코드",
+            key: "detailInfoExchangeCode",
+            valueType: "코드",
+            examples: ["005001"],
+            help: "교환 안내 문구가 아니라 코드값입니다.",
+         },
+      ],
+      links: [],
+   },
+   smartstore: {
+      title: "스마트스토어 정책 메뉴얼",
+      description:
+         "스마트스토어는 배송 정보, 반품/교환 배송비, AS 안내/연락처를 API payload에 직접 넣습니다.",
+      sourceNote:
+         "네이버 커머스API 원상품 정보 구조체와 현재 Flowmerce 스마트스토어 등록 로직 기준입니다.",
+      fields: [
+         {
+            label: "스마트스토어 배송 유형",
+            key: "deliveryType",
+            valueType: "코드",
+            examples: ["DELIVERY", "DIRECT"],
+            help: "DELIVERY는 택배/소포/등기, DIRECT는 직접배송(화물배달)입니다.",
+         },
+         {
+            label: "스마트스토어 배송 속성",
+            key: "deliveryAttributeType",
+            valueType: "코드",
+            examples: ["NORMAL", "TODAY", "OPTION_TODAY", "HOPE", "ARRIVAL_GUARANTEE"],
+            help: "일반 배송은 NORMAL입니다. 오늘출발/TODAY, 희망일배송/HOPE 등 판매자 설정에 따라 허용값이 달라질 수 있습니다.",
+         },
+         {
+            label: "스마트스토어 택배사",
+            key: "deliveryCompany",
+            valueType: "코드",
+            examples: ["EPOST"],
+            help: "예시는 우체국(EPOST)입니다. 실제로는 판매자 계정에 연결된 택배사 코드에 맞춰 입력합니다.",
+         },
+         {
+            label: "스마트스토어 배송비 유형",
+            key: "deliveryFeeType",
+            valueType: "코드",
+            examples: ["FREE", "CONDITIONAL_FREE", "PAID", "UNIT_QUANTITY_PAID"],
+            help: "FREE는 무료배송, CONDITIONAL_FREE는 조건부 무료, PAID는 유료배송입니다.",
+         },
+         {
+            label: "스마트스토어 반품 택배 우선순위",
+            key: "returnDeliveryCompanyPriorityType",
+            valueType: "코드",
+            examples: ["PRIMARY", "SECONDARY_1"],
+            help: "반품/교환 택배사 우선순위입니다. 보통 PRIMARY를 사용합니다.",
+         },
+         {
+            label: "스마트스토어 반품 배송비",
+            key: "returnDeliveryFee",
+            valueType: "숫자",
+            examples: ["50000"],
+            help: "원화 숫자만 입력합니다. 쉼표 없이 입력합니다.",
+         },
+         {
+            label: "스마트스토어 교환 배송비",
+            key: "exchangeDeliveryFee",
+            valueType: "숫자",
+            examples: ["100000"],
+            help: "원화 숫자만 입력합니다. 왕복 기준 운영값을 넣습니다.",
+         },
+         {
+            label: "스마트스토어 AS 안내",
+            key: "asGuideContent",
+            valueType: "문구",
+            examples: ["상품상세 참조"],
+            help: "상품 문의/AS 안내 문구입니다. 짧은 텍스트를 넣으면 됩니다.",
+         },
+         {
+            label: "스마트스토어 AS 연락처",
+            key: "asPhone",
+            valueType: "전화번호",
+            examples: ["070-8098-3779"],
+            help: "A/S 전화번호입니다. 현재 Flowmerce 스마트스토어 로직에서 실제로 사용합니다.",
+         },
+      ],
+      links: [
+         {
+            label: "네이버 원상품 정보 구조체",
+            href: "https://apicenter.commerce.naver.com/docs/commerce-api/current/schemas/%EC%9B%90%EC%83%81%ED%92%88-%EC%A0%95%EB%B3%B4-%EA%B5%AC%EC%A1%B0%EC%B2%B4",
+         },
+         {
+            label: "네이버 상품 배송 정보",
+            href: "https://apicenter.commerce.naver.com/docs/commerce-api/current/%EC%83%81%ED%92%88-%EB%B0%B0%EC%86%A1-%EC%A0%95%EB%B3%B4",
+         },
+      ],
+   },
+   cafe24: {
+      title: "카페24 정책 메뉴얼",
+      description:
+         "카페24는 배송 방법/배송 범위/배송 기간과 배송·교환·서비스 안내 문구를 API로 직접 전송합니다.",
+      sourceNote:
+         "Cafe24 Admin Product API와 현재 Flowmerce Cafe24 상품 생성 payload 기준입니다.",
+      fields: [
+         {
+            label: "카페24 배송 구분",
+            key: "shippingType",
+            valueType: "코드",
+            examples: ["C"],
+            help: "현재 Flowmerce payload에서는 직접 사용하지 않는 보관용 값입니다. 실제 적용 핵심은 배송 범위/배송비/배송기간입니다.",
+         },
+         {
+            label: "카페24 배송 방법",
+            key: "shippingMethod",
+            valueType: "코드",
+            examples: ["01", "04", "08"],
+            help: "01=택배, 04=직접배송, 08=매장직접수령 등입니다.",
+         },
+         {
+            label: "카페24 배송 시작일 / 종료일",
+            key: "shippingPeriod",
+            valueType: "숫자",
+            examples: ["7", "14"],
+            help: "숫자만 입력합니다. 예: 7~14일.",
+         },
+         {
+            label: "카페24 배송 가능 지역",
+            key: "shippingArea",
+            valueType: "문구",
+            examples: ["해외배송"],
+            help: "문구 텍스트입니다. 예: 해외배송, 전세계 배송 가능.",
+         },
+         {
+            label: "카페24 배송비 유형",
+            key: "shippingFeeType",
+            valueType: "코드",
+            examples: ["T", "R", "M", "C"],
+            help: "T=무료배송, R=고정 배송비, M=금액별, C=수량별입니다.",
+         },
+         {
+            label: "카페24 배송비",
+            key: "shippingFee",
+            valueType: "숫자",
+            examples: ["0", "3000"],
+            help: "원화 숫자입니다. 무료배송이면 보통 0입니다.",
+         },
+         {
+            label: "카페24 선결제 배송비",
+            key: "prepaidShippingFee",
+            valueType: "코드",
+            examples: ["P", "C", "B"],
+            help: "P=선결제, C=착불, B=선결제/착불 선택입니다.",
+         },
+         {
+            label: "카페24 상품 배송 타입",
+            key: "productShippingType",
+            valueType: "코드",
+            examples: ["D", "C", "E"],
+            help: "D=사입배송, C=직접배송, E=기타(창고/위탁)입니다.",
+         },
+         {
+            label: "카페24 상품별 배송비 사용",
+            key: "shippingFeeByProduct",
+            valueType: "코드",
+            examples: ["T", "F"],
+            help: "T=개별배송, F=기본 배송정책 사용입니다.",
+         },
+         {
+            label: "카페24 배송 범위",
+            key: "shippingScope",
+            valueType: "코드",
+            examples: ["A", "B", "C"],
+            help: "A=국내배송, B=국내/해외배송, C=해외배송입니다.",
+         },
+         {
+            label: "카페24 상품별 안내 사용 여부",
+            key: "shippingInfoByProduct/exchangeInfoByProduct/serviceInfoByProduct",
+            valueType: "코드",
+            examples: ["T", "F"],
+            help: "T=이 상품에 입력한 문구 사용, F=기본 안내 정책 사용입니다.",
+         },
+         {
+            label: "카페24 배송/교환/AS 안내 문구",
+            key: "shippingInfo/exchangeInfo/serviceInfo",
+            valueType: "문구",
+            examples: [
+               "해외 배송 상품으로 주문 후 7~14일 이내 발송됩니다.",
+               "상품 수령 후 7일 이내 교환 접수 가능합니다.",
+            ],
+            help: "실제 텍스트를 넣는 칸입니다. 고도몰처럼 코드가 아니라 문구 자체가 저장됩니다.",
+         },
+         {
+            label: "카페24 통관 분류 코드",
+            key: "clearanceCategoryCode",
+            valueType: "자동 처리",
+            examples: ["입력칸 없음"],
+            help: "Flowmerce에서는 shipping_calculation을 A(자동계산)로 보내 통관 분류 코드를 직접 입력하지 않도록 처리합니다.",
+         },
+      ],
+      links: [
+         {
+            label: "Cafe24 상품 생성 API",
+            href: "https://developers.cafe24.com/docs/ko/api/admin/?version=2024-12-01",
+         },
+      ],
+   },
+   makeshop: {
+      title: "메이크샵 정책 메뉴얼",
+      description:
+         "현재 Flowmerce 메이크샵 연동에서는 배송비와 배송 방식 위주로 사용합니다.",
+      sourceNote:
+         "Makeshop 상품 등록 API와 공식 Open API 공통 가이드의 deli_type 코드 기준입니다.",
+      fields: [
+         {
+            label: "메이크샵 배송비",
+            key: "deliveryFee",
+            valueType: "숫자",
+            examples: ["0", "3000"],
+            help: "원화 숫자만 입력합니다. 무료배송이면 0을 사용합니다.",
+         },
+         {
+            label: "메이크샵 배송 방식",
+            key: "deliveryType",
+            valueType: "코드",
+            examples: ["KOR", "EMS", "HAND"],
+            help: "KOR=국내배송, EMS=해외배송, HAND=직접수령입니다.",
+         },
+      ],
+      links: [
+         {
+            label: "메이크샵 상품 등록 API",
+            href: "https://developer.makeshop.co.kr/docs/api/product/post-product-create",
+         },
+         {
+            label: "메이크샵 Open API 코드 가이드",
+            href: "https://openapi.makeshop.co.kr/",
+         },
+      ],
+   },
+};
 const requestLimitByPlan = {
    none: null,
    boutique: 100000,
@@ -131,6 +405,239 @@ function parseNullableInteger(value) {
 
    const parsed = Number.parseInt(String(value), 10);
    return Number.isNaN(parsed) ? null : parsed;
+}
+
+function createEmptyMarketplacePolicyForm() {
+   return {
+      commonShippingDaysMin: "",
+      commonShippingDaysMax: "",
+      commonDeliveryNoticeHtml: "",
+      commonRefundNoticeHtml: "",
+      commonExchangeNoticeHtml: "",
+      commonAsNoticeHtml: "",
+      commonAsPhone: "",
+      commonReturnFee: "",
+      commonExchangeFee: "",
+      godomallDeliverySno: "",
+      godomallDetailInfoDeliveryCode: "",
+      godomallDetailInfoAsCode: "",
+      godomallDetailInfoRefundCode: "",
+      godomallDetailInfoExchangeCode: "",
+      smartstoreDeliveryType: "",
+      smartstoreDeliveryAttributeType: "",
+      smartstoreDeliveryCompany: "",
+      smartstoreDeliveryFeeType: "",
+      smartstoreReturnDeliveryCompanyPriorityType: "",
+      smartstoreReturnDeliveryFee: "",
+      smartstoreExchangeDeliveryFee: "",
+      smartstoreAsGuideContent: "",
+      smartstoreAsPhone: "",
+      cafe24ShippingType: "",
+      cafe24ShippingMethod: "",
+      cafe24ShippingPeriodMin: "",
+      cafe24ShippingPeriodMax: "",
+      cafe24ShippingArea: "",
+      cafe24ShippingInfo: "",
+      cafe24ExchangeInfo: "",
+      cafe24ServiceInfo: "",
+      cafe24ShippingFeeType: "",
+      cafe24ShippingFee: "",
+      cafe24PrepaidShippingFee: "",
+      cafe24ProductShippingType: "",
+      cafe24ShippingFeeByProduct: "",
+      cafe24ShippingScope: "",
+      cafe24ClearanceCategoryCode: "",
+      cafe24ShippingInfoByProduct: "",
+      cafe24ExchangeInfoByProduct: "",
+      cafe24ServiceInfoByProduct: "",
+      makeshopDeliveryFee: "",
+      makeshopDeliveryType: "",
+   };
+}
+
+function buildHostingPolicyForm(policy) {
+   return {
+      ...createEmptyMarketplacePolicyForm(),
+      commonShippingDaysMin: String(policy?.common?.shippingDaysMin ?? ""),
+      commonShippingDaysMax: String(policy?.common?.shippingDaysMax ?? ""),
+      commonDeliveryNoticeHtml: policy?.common?.deliveryNoticeHtml || "",
+      commonRefundNoticeHtml: policy?.common?.refundNoticeHtml || "",
+      commonExchangeNoticeHtml: policy?.common?.exchangeNoticeHtml || "",
+      commonAsNoticeHtml: policy?.common?.asNoticeHtml || "",
+      commonAsPhone: policy?.common?.asPhone || "",
+      commonReturnFee: String(policy?.common?.returnFee ?? ""),
+      commonExchangeFee: String(policy?.common?.exchangeFee ?? ""),
+      godomallDeliverySno: policy?.godomall?.deliverySno || "",
+      godomallDetailInfoDeliveryCode:
+         policy?.godomall?.detailInfoDeliveryCode || "",
+      godomallDetailInfoAsCode: policy?.godomall?.detailInfoAsCode || "",
+      godomallDetailInfoRefundCode:
+         policy?.godomall?.detailInfoRefundCode || "",
+      godomallDetailInfoExchangeCode:
+         policy?.godomall?.detailInfoExchangeCode || "",
+      smartstoreDeliveryType: policy?.smartstore?.deliveryType || "",
+      smartstoreDeliveryAttributeType:
+         policy?.smartstore?.deliveryAttributeType || "",
+      smartstoreDeliveryCompany: policy?.smartstore?.deliveryCompany || "",
+      smartstoreDeliveryFeeType: policy?.smartstore?.deliveryFeeType || "",
+      smartstoreReturnDeliveryCompanyPriorityType:
+         policy?.smartstore?.returnDeliveryCompanyPriorityType || "",
+      smartstoreReturnDeliveryFee: String(
+         policy?.smartstore?.returnDeliveryFee ?? policy?.common?.returnFee ?? "",
+      ),
+      smartstoreExchangeDeliveryFee: String(
+         policy?.smartstore?.exchangeDeliveryFee ??
+            policy?.common?.exchangeFee ??
+            "",
+      ),
+      smartstoreAsGuideContent: policy?.smartstore?.asGuideContent || "",
+      smartstoreAsPhone:
+         policy?.smartstore?.asPhone || policy?.common?.asPhone || "",
+      cafe24ShippingType: policy?.cafe24?.shippingType || "",
+      cafe24ShippingMethod: policy?.cafe24?.shippingMethod || "",
+      cafe24ShippingPeriodMin: String(
+         policy?.cafe24?.shippingPeriodMin ??
+            policy?.common?.shippingDaysMin ??
+            "",
+      ),
+      cafe24ShippingPeriodMax: String(
+         policy?.cafe24?.shippingPeriodMax ??
+            policy?.common?.shippingDaysMax ??
+            "",
+      ),
+      cafe24ShippingArea: policy?.cafe24?.shippingArea || "",
+      cafe24ShippingInfo:
+         policy?.cafe24?.shippingInfo || policy?.common?.deliveryNoticeHtml || "",
+      cafe24ExchangeInfo:
+         policy?.cafe24?.exchangeInfo || policy?.common?.exchangeNoticeHtml || "",
+      cafe24ServiceInfo:
+         policy?.cafe24?.serviceInfo || policy?.common?.asNoticeHtml || "",
+      cafe24ShippingFeeType: policy?.cafe24?.shippingFeeType || "",
+      cafe24ShippingFee: String(policy?.cafe24?.shippingFee ?? ""),
+      cafe24PrepaidShippingFee: policy?.cafe24?.prepaidShippingFee || "",
+      cafe24ProductShippingType: policy?.cafe24?.productShippingType || "",
+      cafe24ShippingFeeByProduct: policy?.cafe24?.shippingFeeByProduct || "",
+      cafe24ShippingScope: policy?.cafe24?.shippingScope || "",
+      cafe24ClearanceCategoryCode:
+         policy?.cafe24?.clearanceCategoryCode || "",
+      cafe24ShippingInfoByProduct:
+         policy?.cafe24?.shippingInfoByProduct || "",
+      cafe24ExchangeInfoByProduct:
+         policy?.cafe24?.exchangeInfoByProduct || "",
+      cafe24ServiceInfoByProduct:
+         policy?.cafe24?.serviceInfoByProduct || "",
+      makeshopDeliveryFee: String(policy?.makeshop?.deliveryFee ?? ""),
+      makeshopDeliveryType: policy?.makeshop?.deliveryType || "",
+   };
+}
+
+function buildMarketplacePolicyPayload(form) {
+   const smartstoreReturnDeliveryFee = parseNullableInteger(
+      form.smartstoreReturnDeliveryFee,
+   );
+   const smartstoreExchangeDeliveryFee = parseNullableInteger(
+      form.smartstoreExchangeDeliveryFee,
+   );
+   const cafe24ShippingPeriodMin = parseNullableInteger(
+      form.cafe24ShippingPeriodMin,
+   );
+   const cafe24ShippingPeriodMax = parseNullableInteger(
+      form.cafe24ShippingPeriodMax,
+   );
+
+   const commonByPlatform =
+      form.platform === "smartstore"
+         ? {
+              shippingDaysMin: null,
+              shippingDaysMax: null,
+              deliveryNoticeHtml: null,
+              refundNoticeHtml: null,
+              exchangeNoticeHtml: null,
+              asNoticeHtml: null,
+              asPhone: form.smartstoreAsPhone.trim() || null,
+              returnFee: smartstoreReturnDeliveryFee,
+              exchangeFee: smartstoreExchangeDeliveryFee,
+           }
+         : form.platform === "cafe24"
+           ? {
+                shippingDaysMin: cafe24ShippingPeriodMin,
+                shippingDaysMax: cafe24ShippingPeriodMax,
+                deliveryNoticeHtml: form.cafe24ShippingInfo.trim() || null,
+                refundNoticeHtml: null,
+                exchangeNoticeHtml: form.cafe24ExchangeInfo.trim() || null,
+                asNoticeHtml: form.cafe24ServiceInfo.trim() || null,
+                asPhone: null,
+                returnFee: null,
+                exchangeFee: null,
+             }
+           : {
+                shippingDaysMin: null,
+                shippingDaysMax: null,
+                deliveryNoticeHtml: null,
+                refundNoticeHtml: null,
+                exchangeNoticeHtml: null,
+                asNoticeHtml: null,
+                asPhone: null,
+                returnFee: null,
+                exchangeFee: null,
+             };
+
+   return {
+      common: commonByPlatform,
+      godomall: {
+         deliverySno: form.godomallDeliverySno.trim() || null,
+         detailInfoDeliveryCode:
+            form.godomallDetailInfoDeliveryCode.trim() || null,
+         detailInfoAsCode: form.godomallDetailInfoAsCode.trim() || null,
+         detailInfoRefundCode:
+            form.godomallDetailInfoRefundCode.trim() || null,
+         detailInfoExchangeCode:
+            form.godomallDetailInfoExchangeCode.trim() || null,
+      },
+      smartstore: {
+         deliveryType: form.smartstoreDeliveryType.trim() || null,
+         deliveryAttributeType:
+            form.smartstoreDeliveryAttributeType.trim() || null,
+         deliveryCompany: form.smartstoreDeliveryCompany.trim() || null,
+         deliveryFeeType: form.smartstoreDeliveryFeeType.trim() || null,
+         returnDeliveryCompanyPriorityType:
+            form.smartstoreReturnDeliveryCompanyPriorityType.trim() || null,
+         returnDeliveryFee: smartstoreReturnDeliveryFee,
+         exchangeDeliveryFee: smartstoreExchangeDeliveryFee,
+         asGuideContent: form.smartstoreAsGuideContent.trim() || null,
+         asPhone: form.smartstoreAsPhone.trim() || null,
+      },
+      cafe24: {
+         shippingType: form.cafe24ShippingType.trim() || null,
+         shippingMethod: form.cafe24ShippingMethod.trim() || null,
+         shippingPeriodMin: cafe24ShippingPeriodMin,
+         shippingPeriodMax: cafe24ShippingPeriodMax,
+         shippingArea: form.cafe24ShippingArea.trim() || null,
+         shippingInfo: form.cafe24ShippingInfo.trim() || null,
+         exchangeInfo: form.cafe24ExchangeInfo.trim() || null,
+         serviceInfo: form.cafe24ServiceInfo.trim() || null,
+         shippingFeeType: form.cafe24ShippingFeeType.trim() || null,
+         shippingFee: parseNullableInteger(form.cafe24ShippingFee),
+         prepaidShippingFee: form.cafe24PrepaidShippingFee.trim() || null,
+         productShippingType:
+            form.cafe24ProductShippingType.trim() || null,
+         shippingFeeByProduct:
+            form.cafe24ShippingFeeByProduct.trim() || null,
+         shippingScope: form.cafe24ShippingScope.trim() || null,
+         clearanceCategoryCode:
+            form.cafe24ClearanceCategoryCode.trim() || null,
+         shippingInfoByProduct:
+            form.cafe24ShippingInfoByProduct.trim() || null,
+         exchangeInfoByProduct:
+            form.cafe24ExchangeInfoByProduct.trim() || null,
+         serviceInfoByProduct:
+            form.cafe24ServiceInfoByProduct.trim() || null,
+      },
+      makeshop: {
+         deliveryFee: parseNullableInteger(form.makeshopDeliveryFee),
+         deliveryType: form.makeshopDeliveryType.trim() || null,
+      },
+   };
 }
 
 function encodeCafe24State(payload) {
@@ -324,6 +831,14 @@ function createEmptyHostingForm() {
       updatedAt: "",
       topImages: "",
       bottomImages: "",
+      ...createEmptyMarketplacePolicyForm(),
+   };
+}
+
+function createEmptySitemapForm() {
+   return {
+      partnerKey: "",
+      apiKey: "",
    };
 }
 
@@ -370,6 +885,53 @@ function SectionHeader({ title, description, action }) {
             <p className="mt-2 text-sm leading-6 text-zinc-600">{description}</p>
          </div>
          {action}
+      </div>
+   );
+}
+
+function SitemapForm({ form, onChange, onGenerate, onReset, generating }) {
+   return (
+      <div className="mt-7 max-w-2xl rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
+         <div className="grid gap-5">
+            <label className="block">
+               <span className="text-sm font-medium text-zinc-600">partnerKey</span>
+               <input
+                  value={form.partnerKey}
+                  onChange={(event) => onChange("partnerKey", event.target.value)}
+                  className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none"
+                  placeholder="partnerKey를 입력하세요"
+               />
+            </label>
+
+            <label className="block">
+               <span className="text-sm font-medium text-zinc-600">apiKey</span>
+               <input
+                  value={form.apiKey}
+                  onChange={(event) => onChange("apiKey", event.target.value)}
+                  className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none"
+                  placeholder="apiKey를 입력하세요"
+               />
+            </label>
+         </div>
+
+         <div className="mt-6 flex flex-wrap gap-3">
+            <button
+               type="button"
+               onClick={onGenerate}
+               disabled={generating}
+               className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+               {generating ? "생성 중..." : "사이트맵 생성"}
+            </button>
+            <button
+               type="button"
+               onClick={onReset}
+               disabled={generating}
+               className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+               초기화
+            </button>
+         </div>
       </div>
    );
 }
@@ -740,6 +1302,105 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
    );
 }
 
+function HostingPolicyManualModal({ manual, onClose }) {
+   if (!manual) {
+      return null;
+   }
+
+   return (
+      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-zinc-950/45 px-5 py-8">
+         <button
+            type="button"
+            aria-label="닫기"
+            onClick={onClose}
+            className="absolute inset-0"
+         />
+         <div className="relative z-10 flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-6 py-5">
+               <div className="max-w-3xl">
+                  <h3 className="text-xl font-semibold text-zinc-950">
+                     {manual.title}
+                  </h3>
+                  <p className="mt-2 text-sm leading-6 text-zinc-600">
+                     {manual.description}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-zinc-500">
+                     {manual.sourceNote}
+                  </p>
+               </div>
+               <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+               >
+                  닫기
+               </button>
+            </div>
+
+            <div className="overflow-y-auto px-6 py-5">
+               {manual.links?.length ? (
+                  <div className="mb-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                     <p className="text-sm font-semibold text-zinc-900">참고 문서</p>
+                     <ul className="mt-3 space-y-2 text-sm text-zinc-700">
+                        {manual.links.map((link) => (
+                           <li key={link.href}>
+                              <a
+                                 href={link.href}
+                                 target="_blank"
+                                 rel="noreferrer"
+                                 className="text-emerald-700 underline underline-offset-2 hover:text-emerald-800"
+                              >
+                                 {link.label}
+                              </a>
+                           </li>
+                        ))}
+                     </ul>
+                  </div>
+               ) : null}
+
+               <div className="space-y-4">
+                  {manual.fields.map((field) => (
+                     <div
+                        key={field.key}
+                        className="rounded-xl border border-zinc-200 bg-white p-4"
+                     >
+                        <div className="flex flex-wrap items-center gap-2">
+                           <h4 className="text-sm font-semibold text-zinc-950">
+                              {field.label}
+                           </h4>
+                           <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] font-semibold text-zinc-600">
+                              {field.valueType}
+                           </span>
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-zinc-700">
+                           {field.help}
+                        </p>
+                        {field.examples?.length ? (
+                           <div className="mt-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                 예시 값
+                              </p>
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                 {field.examples.map((example) => (
+                                    <code
+                                       key={example}
+                                       className="rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-800"
+                                    >
+                                       {example}
+                                    </code>
+                                 ))}
+                              </div>
+                           </div>
+                        ) : null}
+                     </div>
+                  ))}
+               </div>
+            </div>
+         </div>
+      </div>
+   );
+}
+
 function HostingForm({
    form,
    onChange,
@@ -749,6 +1410,7 @@ function HostingForm({
    saving,
    connectingCafe24,
 }) {
+   const [openedPolicyManualPlatform, setOpenedPolicyManualPlatform] = useState(null);
    const isCafe24 = form.platform === "cafe24";
    const partnerKeyLabel = isCafe24
       ? "mallId (필수)"
@@ -759,6 +1421,62 @@ function HostingForm({
    const availabilityText = isCafe24
       ? "mallId, accessToken, refreshToken이 채워지면 사용 가능으로 표시됩니다."
       : "partnerKey와 apiKey가 모두 채워지면 사용 가능으로 표시됩니다.";
+   const platformPolicyLabel =
+      {
+         godomall: "고도몰",
+         smartstore: "스마트스토어",
+         cafe24: "카페24",
+         makeshop: "메이크샵",
+      }[form.platform] || form.platform;
+   const renderPolicyFieldLabel = (label, required = false) => (
+      <span className="flex flex-wrap items-center gap-2 text-sm font-medium text-zinc-600">
+         <span>{label}</span>
+         <span
+            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+               required
+                  ? "bg-rose-100 text-rose-700"
+                  : "bg-zinc-100 text-zinc-600"
+            }`}
+         >
+            {required ? "필수" : "선택"}
+         </span>
+      </span>
+   );
+   const policyFieldPlaceholders = {
+      godomallDeliverySno: "예: 2",
+      godomallDetailInfoDeliveryCode: "예: 002001",
+      godomallDetailInfoAsCode: "예: 003001",
+      godomallDetailInfoRefundCode: "예: 004001",
+      godomallDetailInfoExchangeCode: "예: 005001",
+      smartstoreDeliveryType: "예: DELIVERY",
+      smartstoreDeliveryAttributeType: "예: NORMAL",
+      smartstoreDeliveryCompany: "예: EPOST",
+      smartstoreDeliveryFeeType: "예: FREE",
+      smartstoreReturnDeliveryCompanyPriorityType: "예: PRIMARY",
+      smartstoreReturnDeliveryFee: "예: 50000",
+      smartstoreExchangeDeliveryFee: "예: 100000",
+      smartstoreAsGuideContent: "예: 상품상세 참조",
+      smartstoreAsPhone: "예: 070-8098-3779",
+      cafe24ShippingType: "예: C",
+      cafe24ShippingMethod: "예: 01",
+      cafe24ShippingPeriodMin: "예: 7",
+      cafe24ShippingPeriodMax: "예: 14",
+      cafe24ShippingArea: "예: 해외배송",
+      cafe24ShippingFeeType: "예: T",
+      cafe24ShippingFee: "예: 0",
+      cafe24PrepaidShippingFee: "예: P",
+      cafe24ProductShippingType: "예: D",
+      cafe24ShippingFeeByProduct: "예: T",
+      cafe24ShippingScope: "예: C",
+      cafe24ClearanceCategoryCode: "예: ACAB0000",
+      cafe24ShippingInfoByProduct: "예: T",
+      cafe24ExchangeInfoByProduct: "예: T",
+      cafe24ServiceInfoByProduct: "예: T",
+      makeshopDeliveryFee: "예: 0",
+      makeshopDeliveryType: "예: EMS",
+   };
+   const activePolicyManual =
+      hostingPolicyManuals[openedPolicyManualPlatform] || null;
 
    return (
       <div className="space-y-4 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
@@ -880,7 +1598,7 @@ function HostingForm({
          <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
                <span className="text-sm font-medium text-zinc-600">
-                  topImages (선택)
+                  상단 이미지 목록 (선택)
                </span>
                <textarea
                   value={form.topImages}
@@ -902,6 +1620,289 @@ function HostingForm({
                   className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
                />
             </label>
+         </div>
+
+         <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-5">
+            <div>
+               <h4 className="text-base font-semibold text-zinc-950">
+                  마켓 정책 설정
+               </h4>
+               <p className="mt-1 text-sm leading-6 text-zinc-600">
+                  현재 선택한 {platformPolicyLabel} 계정에 필요한 항목만 표시합니다. 연락처는 API에서 실제로 사용하는 플랫폼에만 보이며, 비워두면 내부 기본값이 적용됩니다.
+               </p>
+               <p className="mt-2 text-xs leading-5 text-zinc-500">
+                  필수/선택 표시는 안내용이며, 입력값이 비어 있어도 저장 버튼을 막지 않습니다.
+               </p>
+            </div>
+
+            {form.platform === "godomall" ? (
+               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                     <div>
+                        <h5 className="text-sm font-semibold text-zinc-950">
+                           고도몰 전용 코드 설정
+                        </h5>
+                        <p className="mt-1 text-xs leading-5 text-zinc-500">
+                           고도몰은 배송/환불/교환/AS 문구를 텍스트가 아니라 안내 코드로 연결합니다. 별도 AS 연락처 입력 칸은 사용하지 않습니다.
+                        </p>
+                     </div>
+                     <button
+                        type="button"
+                        onClick={() => setOpenedPolicyManualPlatform("godomall")}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+                     >
+                        메뉴얼 보기
+                     </button>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                     {[
+                        ["godomallDeliverySno", "고도몰 배송정책 번호", true],
+                        [
+                           "godomallDetailInfoDeliveryCode",
+                           "고도몰 배송 안내 코드",
+                           true,
+                        ],
+                        ["godomallDetailInfoAsCode", "고도몰 AS 안내 코드", true],
+                        [
+                           "godomallDetailInfoRefundCode",
+                           "고도몰 환불 안내 코드",
+                           true,
+                        ],
+                        [
+                           "godomallDetailInfoExchangeCode",
+                           "고도몰 교환 안내 코드",
+                           true,
+                        ],
+                     ].map(([field, label, required]) => (
+                        <label key={field} className="block">
+                           {renderPolicyFieldLabel(label, required)}
+                           <input
+                              value={form[field]}
+                              onChange={(event) => onChange(field, event.target.value)}
+                              placeholder={policyFieldPlaceholders[field] || ""}
+                              className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                           />
+                        </label>
+                     ))}
+                  </div>
+               </div>
+            ) : null}
+
+            {form.platform === "smartstore" ? (
+               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                     <div>
+                        <h5 className="text-sm font-semibold text-zinc-950">
+                           스마트스토어 전용 설정
+                        </h5>
+                        <p className="mt-1 text-xs leading-5 text-zinc-500">
+                           스마트스토어는 배송 유형, 반품/교환 배송비, A/S 안내와 A/S 전화번호를 직접 저장합니다.
+                        </p>
+                     </div>
+                     <button
+                        type="button"
+                        onClick={() => setOpenedPolicyManualPlatform("smartstore")}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+                     >
+                        메뉴얼 보기
+                     </button>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                     {[
+                        ["smartstoreDeliveryType", "스마트스토어 배송 유형", true],
+                        [
+                           "smartstoreDeliveryAttributeType",
+                           "스마트스토어 배송 속성",
+                           true,
+                        ],
+                        ["smartstoreDeliveryCompany", "스마트스토어 택배사", true],
+                        ["smartstoreDeliveryFeeType", "스마트스토어 배송비 유형", true],
+                        [
+                           "smartstoreReturnDeliveryCompanyPriorityType",
+                           "스마트스토어 반품 택배 우선순위",
+                           true,
+                        ],
+                        [
+                           "smartstoreReturnDeliveryFee",
+                           "스마트스토어 반품 배송비",
+                           true,
+                        ],
+                        [
+                           "smartstoreExchangeDeliveryFee",
+                           "스마트스토어 교환 배송비",
+                           true,
+                        ],
+                        ["smartstoreAsGuideContent", "스마트스토어 AS 안내", true],
+                        ["smartstoreAsPhone", "스마트스토어 AS 연락처", true],
+                     ].map(([field, label, required]) => (
+                        <label
+                           key={field}
+                           className={`block ${
+                              field === "smartstoreAsGuideContent" ||
+                              field === "smartstoreAsPhone"
+                                 ? "md:col-span-2"
+                                 : ""
+                           }`}
+                        >
+                           {renderPolicyFieldLabel(label, required)}
+                           <input
+                              value={form[field]}
+                              onChange={(event) => onChange(field, event.target.value)}
+                              placeholder={policyFieldPlaceholders[field] || ""}
+                              className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                           />
+                        </label>
+                     ))}
+                  </div>
+               </div>
+            ) : null}
+
+            {form.platform === "cafe24" ? (
+               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                     <div>
+                        <h5 className="text-sm font-semibold text-zinc-950">
+                           카페24 전용 설정
+                        </h5>
+                        <p className="mt-1 text-xs leading-5 text-zinc-500">
+                           카페24는 배송 기간, 배송 범위, 배송비와 배송/교환/AS 안내 문구를 직접 텍스트로 저장합니다. 별도 AS 연락처 입력 칸은 사용하지 않습니다.
+                        </p>
+                     </div>
+                     <button
+                        type="button"
+                        onClick={() => setOpenedPolicyManualPlatform("cafe24")}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+                     >
+                        메뉴얼 보기
+                     </button>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                     {[
+                        ["cafe24ShippingType", "카페24 배송 구분", false],
+                        ["cafe24ShippingMethod", "카페24 배송 방법", true],
+                        ["cafe24ShippingPeriodMin", "카페24 배송 시작일", true],
+                        ["cafe24ShippingPeriodMax", "카페24 배송 종료일", true],
+                        ["cafe24ShippingArea", "카페24 배송 가능 지역", true],
+                        ["cafe24ShippingFeeType", "카페24 배송비 유형", true],
+                        ["cafe24ShippingFee", "카페24 배송비", false],
+                        ["cafe24PrepaidShippingFee", "카페24 선결제 배송비", true],
+                        [
+                           "cafe24ProductShippingType",
+                           "카페24 상품 배송 타입",
+                           true,
+                        ],
+                        ["cafe24ShippingFeeByProduct", "카페24 상품별 배송비 사용", true],
+                        ["cafe24ShippingScope", "카페24 배송 범위", true],
+                        [
+                           "cafe24ShippingInfoByProduct",
+                           "카페24 상품별 배송 안내 사용",
+                           false,
+                        ],
+                        [
+                           "cafe24ExchangeInfoByProduct",
+                           "카페24 상품별 교환 안내 사용",
+                           false,
+                        ],
+                        [
+                           "cafe24ServiceInfoByProduct",
+                           "카페24 상품별 AS 안내 사용",
+                           false,
+                        ],
+                     ].map(([field, label, required]) => (
+                        <label key={field} className="block">
+                           {renderPolicyFieldLabel(label, required)}
+                           <input
+                              value={form[field]}
+                              onChange={(event) => onChange(field, event.target.value)}
+                              placeholder={policyFieldPlaceholders[field] || ""}
+                              className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                           />
+                        </label>
+                     ))}
+                     <label className="block md:col-span-2">
+                        {renderPolicyFieldLabel("카페24 배송 안내 문구", false)}
+                        <textarea
+                           value={form.cafe24ShippingInfo}
+                           onChange={(event) =>
+                              onChange("cafe24ShippingInfo", event.target.value)
+                           }
+                           placeholder="예: 해외 배송 상품으로 주문 후 7~14일 이내 발송됩니다."
+                           rows={3}
+                           className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                        />
+                     </label>
+                     <label className="block md:col-span-2">
+                        {renderPolicyFieldLabel("카페24 교환 안내 문구", false)}
+                        <textarea
+                           value={form.cafe24ExchangeInfo}
+                           onChange={(event) =>
+                              onChange("cafe24ExchangeInfo", event.target.value)
+                           }
+                           placeholder="예: 상품 수령 후 7일 이내 교환 접수 가능하며 왕복 배송비는 고객 부담입니다."
+                           rows={3}
+                           className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                        />
+                     </label>
+                     <label className="block md:col-span-2">
+                        {renderPolicyFieldLabel("카페24 AS 안내 문구", false)}
+                        <textarea
+                           value={form.cafe24ServiceInfo}
+                           onChange={(event) =>
+                              onChange("cafe24ServiceInfo", event.target.value)
+                           }
+                           placeholder="예: AS 및 상품 문의는 고객센터로 문의해 주세요."
+                           rows={3}
+                           className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                        />
+                     </label>
+                  </div>
+               </div>
+            ) : null}
+
+            {form.platform === "makeshop" ? (
+               <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                  <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                     <h5 className="text-sm font-semibold text-zinc-950">
+                        메이크샵 전용 설정
+                     </h5>
+                     <p className="mt-1 text-xs leading-5 text-zinc-500">
+                        메이크샵 상품 등록 API 기준으로 현재는 배송비와 배송 방식 위주로 저장합니다. 별도 AS 연락처 입력 칸은 사용하지 않습니다.
+                     </p>
+                     <button
+                        type="button"
+                        onClick={() => setOpenedPolicyManualPlatform("makeshop")}
+                        className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
+                     >
+                        메뉴얼 보기
+                     </button>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                     <label className="block">
+                        {renderPolicyFieldLabel("메이크샵 배송비", true)}
+                        <input
+                           type="number"
+                           value={form.makeshopDeliveryFee}
+                           onChange={(event) =>
+                              onChange("makeshopDeliveryFee", event.target.value)
+                           }
+                           placeholder={policyFieldPlaceholders.makeshopDeliveryFee}
+                           className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                        />
+                     </label>
+                     <label className="block">
+                        {renderPolicyFieldLabel("메이크샵 배송 방식", true)}
+                        <input
+                           value={form.makeshopDeliveryType}
+                           onChange={(event) =>
+                              onChange("makeshopDeliveryType", event.target.value)
+                           }
+                           placeholder={policyFieldPlaceholders.makeshopDeliveryType}
+                           className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+                        />
+                     </label>
+                  </div>
+               </div>
+            ) : null}
          </div>
 
          <div className="flex flex-wrap items-center gap-3">
@@ -926,6 +1927,10 @@ function HostingForm({
                </button>
             ) : null}
          </div>
+         <HostingPolicyManualModal
+            manual={activePolicyManual}
+            onClose={() => setOpenedPolicyManualPlatform(null)}
+         />
       </div>
    );
 }
@@ -942,10 +1947,13 @@ export default function AdminDashboard() {
    const [selectedCustomId, setSelectedCustomId] = useState("");
    const [availableAccountPlatforms, setAvailableAccountPlatforms] = useState([]);
    const [selectedAccountPlatform, setSelectedAccountPlatform] = useState("");
+   const [availableScheduleSites, setAvailableScheduleSites] = useState([]);
+   const [selectedScheduleSite, setSelectedScheduleSite] = useState("");
    const [schedules, setSchedules] = useState([]);
    const [selectedScheduleIds, setSelectedScheduleIds] = useState([]);
    const [loadingCustomIds, setLoadingCustomIds] = useState(true);
    const [loadingAccountPlatforms, setLoadingAccountPlatforms] = useState(false);
+   const [loadingScheduleSites, setLoadingScheduleSites] = useState(false);
    const [loadingSchedules, setLoadingSchedules] = useState(false);
    const [activeRunRequestCount, setActiveRunRequestCount] = useState(0);
    const [deletingSchedules, setDeletingSchedules] = useState(false);
@@ -971,6 +1979,12 @@ export default function AdminDashboard() {
    });
    const [hostingForm, setHostingForm] = useState(createEmptyHostingForm());
    const [connectingCafe24, setConnectingCafe24] = useState(false);
+   const [sitemapForm, setSitemapForm] = useState(createEmptySitemapForm());
+   const [generatingSitemap, setGeneratingSitemap] = useState(false);
+   const [sitemapMessage, setSitemapMessage] = useState({
+      tone: "neutral",
+      text: "",
+   });
 
    const scheduleStatus = activeScheduleSubtab === "completed" ? "done" : "active";
    const cafe24RefreshWatchAccounts = useMemo(() => {
@@ -1055,6 +2069,8 @@ export default function AdminDashboard() {
       setSelectedCustomId("");
       setAvailableAccountPlatforms([]);
       setSelectedAccountPlatform("");
+      setAvailableScheduleSites([]);
+      setSelectedScheduleSite("");
       setSchedules([]);
       setSelectedScheduleIds([]);
 
@@ -1138,6 +2154,8 @@ export default function AdminDashboard() {
       if (!selectedCustomId) {
          setAvailableAccountPlatforms([]);
          setSelectedAccountPlatform("");
+         setAvailableScheduleSites([]);
+         setSelectedScheduleSite("");
          setSchedules([]);
          setSelectedScheduleIds([]);
          return;
@@ -1150,6 +2168,8 @@ export default function AdminDashboard() {
          setScheduleMessage({ tone: "neutral", text: "" });
          setAvailableAccountPlatforms([]);
          setSelectedAccountPlatform("");
+         setAvailableScheduleSites([]);
+         setSelectedScheduleSite("");
          setSchedules([]);
          setSelectedScheduleIds([]);
 
@@ -1187,6 +2207,58 @@ export default function AdminDashboard() {
          cancelled = true;
       };
    }, [selectedCustomId, scheduleStatus]);
+
+   useEffect(() => {
+      if (!selectedCustomId || !selectedAccountPlatform) {
+         setAvailableScheduleSites([]);
+         setSelectedScheduleSite("");
+         setSchedules([]);
+         setSelectedScheduleIds([]);
+         return;
+      }
+
+      let cancelled = false;
+
+      async function loadScheduleSites() {
+         setLoadingScheduleSites(true);
+         setScheduleMessage({ tone: "neutral", text: "" });
+         setAvailableScheduleSites([]);
+         setSelectedScheduleSite("");
+         setSchedules([]);
+         setSelectedScheduleIds([]);
+
+         try {
+            const items = await fetchScheduledSites(
+               selectedCustomId,
+               selectedAccountPlatform,
+               scheduleStatus,
+            );
+
+            if (!cancelled) {
+               setAvailableScheduleSites(items);
+            }
+         } catch (loadError) {
+            if (!cancelled) {
+               setScheduleMessage({
+                  tone: "error",
+                  text:
+                     loadError.message ||
+                     "예약이 걸린 사이트 목록을 불러오지 못했습니다.",
+               });
+            }
+         } finally {
+            if (!cancelled) {
+               setLoadingScheduleSites(false);
+            }
+         }
+      }
+
+      void loadScheduleSites();
+
+      return () => {
+         cancelled = true;
+      };
+   }, [selectedAccountPlatform, selectedCustomId, scheduleStatus]);
 
    async function loadUsers() {
       setLoadingUsers(true);
@@ -1260,6 +2332,7 @@ export default function AdminDashboard() {
             selectedCustomId,
             selectedAccountPlatform,
             scheduleStatus,
+            selectedScheduleSite,
          );
          setSchedules(items);
          if (items.length === 0) {
@@ -1277,7 +2350,7 @@ export default function AdminDashboard() {
             tone: "error",
             text:
                error.message ||
-               "예약 목록을 불러오지 못했습니다. customId와 accountPlatform을 확인해주세요.",
+               "예약 목록을 불러오지 못했습니다. customId, accountPlatform, site를 확인해주세요.",
          });
       } finally {
          setLoadingSchedules(false);
@@ -1293,7 +2366,7 @@ export default function AdminDashboard() {
       setActiveRunRequestCount((current) => current + 1);
       setScheduleMessage({
          tone: "success",
-         text: `${accountPlatformLabel} 예약 ${scheduleIds.length}개 실행을 시작했습니다. 다른 accountPlatform 예약도 이어서 실행할 수 있습니다.`,
+         text: `${accountPlatformLabel} 예약 ${scheduleIds.length}개 실행 요청을 보냈습니다. 실제 수집은 서버에서 순차적으로 진행됩니다.`,
       });
       setSelectedScheduleIds([]);
 
@@ -1301,7 +2374,7 @@ export default function AdminDashboard() {
          .then(() => {
             setScheduleMessage({
                tone: "success",
-               text: `${accountPlatformLabel} 예약 ${scheduleIds.length}개 실행이 완료되었습니다.`,
+               text: `${accountPlatformLabel} 예약 ${scheduleIds.length}개 실행 요청이 정상 접수되었습니다.`,
             });
          })
          .catch((error) => {
@@ -1332,8 +2405,18 @@ export default function AdminDashboard() {
             selectedCustomId,
             selectedAccountPlatform,
             scheduleStatus,
+            selectedScheduleSite,
          );
          setSchedules(items);
+         const nextSites = await fetchScheduledSites(
+            selectedCustomId,
+            selectedAccountPlatform,
+            scheduleStatus,
+         );
+         setAvailableScheduleSites(nextSites);
+         if (selectedScheduleSite && !nextSites.includes(selectedScheduleSite)) {
+            setSelectedScheduleSite("");
+         }
          const customIds = await fetchScheduledCustomIds(scheduleStatus);
          setAvailableCustomIds(customIds);
       } catch (error) {
@@ -1362,6 +2445,13 @@ export default function AdminDashboard() {
 
    const handleHostingFieldChange = (field, value) => {
       setHostingForm((current) => ({
+         ...current,
+         [field]: value,
+      }));
+   };
+
+   const handleSitemapFieldChange = (field, value) => {
+      setSitemapForm((current) => ({
          ...current,
          [field]: value,
       }));
@@ -1420,6 +2510,7 @@ export default function AdminDashboard() {
          updatedAt: formatDateTime(account.updatedAt),
          topImages: stringifyList(account.topImages),
          bottomImages: stringifyList(account.bottomImages),
+         ...buildHostingPolicyForm(account.marketplacePolicy),
       });
    };
 
@@ -1502,6 +2593,7 @@ export default function AdminDashboard() {
       ),
       topImages: parseListText(hostingForm.topImages),
       bottomImages: parseListText(hostingForm.bottomImages),
+      marketplacePolicy: buildMarketplacePolicyPayload(hostingForm),
    });
 
    const handleSaveHostingAccount = async () => {
@@ -1659,6 +2751,49 @@ export default function AdminDashboard() {
       }
    };
 
+   const handleGenerateSitemap = async () => {
+      setGeneratingSitemap(true);
+      setSitemapMessage({ tone: "neutral", text: "" });
+
+      try {
+         if (!sitemapForm.partnerKey.trim()) {
+            throw new Error("partnerKey를 입력해주세요.");
+         }
+
+         if (!sitemapForm.apiKey.trim()) {
+            throw new Error("apiKey를 입력해주세요.");
+         }
+
+         const result = await generateAdminSitemap({
+            partnerKey: sitemapForm.partnerKey,
+            apiKey: sitemapForm.apiKey,
+         });
+         const downloadUrl = window.URL.createObjectURL(result.blob);
+         const link = document.createElement("a");
+
+         link.href = downloadUrl;
+         link.download = result.filename || "flowmerce-sitemap.xml";
+         document.body.appendChild(link);
+         link.click();
+         link.remove();
+         window.URL.revokeObjectURL(downloadUrl);
+
+         setSitemapMessage({
+            tone: "success",
+            text: "사이트맵 XML 다운로드를 시작했습니다.",
+         });
+      } catch (error) {
+         setSitemapMessage({
+            tone: "error",
+            text:
+               error.message ||
+               "사이트맵 생성에 실패했습니다. 관리자 API를 확인해주세요.",
+         });
+      } finally {
+         setGeneratingSitemap(false);
+      }
+   };
+
    return (
       <>
          <div className="space-y-8">
@@ -1760,7 +2895,7 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === "schedules" && (
-               <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
+               <section className="rounded-lg border border-zinc-200 bg-white p-7 pb-32 shadow-sm">
                   <SectionHeader
                      title="수집 예약 실행"
                      description="실행 대상 예약과 완료된 예약을 분리해서 보고, 완료 목록에서는 선택 삭제까지 할 수 있습니다."
@@ -1777,7 +2912,7 @@ export default function AdminDashboard() {
                      ))}
                   </div>
 
-                  <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr_auto]">
+                  <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
                      <label className="block">
                         <span className="text-sm font-medium text-zinc-600">
                            예약 customId
@@ -1829,6 +2964,31 @@ export default function AdminDashboard() {
                         </select>
                      </label>
 
+                     <label className="block">
+                        <span className="text-sm font-medium text-zinc-600">
+                           사이트
+                        </span>
+                        <select
+                           value={selectedScheduleSite}
+                           onChange={(event) => setSelectedScheduleSite(event.target.value)}
+                           className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none"
+                           disabled={
+                              loadingScheduleSites || availableScheduleSites.length === 0
+                           }
+                        >
+                           <option value="">
+                              {loadingScheduleSites
+                                 ? "사이트 목록을 불러오는 중입니다"
+                                 : "전체 사이트 (기본값)"}
+                           </option>
+                           {availableScheduleSites.map((site) => (
+                              <option key={site} value={site}>
+                                 {site}
+                              </option>
+                           ))}
+                        </select>
+                     </label>
+
                      <button
                         type="button"
                         onClick={handleFetchSchedules}
@@ -1838,7 +2998,7 @@ export default function AdminDashboard() {
                            !selectedAccountPlatform
                         }
                         className="mt-6 inline-flex h-[46px] items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-                     >
+                    >
                         {loadingSchedules ? "예약 조회 중..." : "예약 조회"}
                      </button>
                   </div>
@@ -1918,40 +3078,42 @@ export default function AdminDashboard() {
                      </table>
                   </div>
 
-                  <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
-                     <p className="text-sm text-zinc-600">
-                        현재 선택된 예약:{" "}
-                        <span className="font-semibold text-zinc-950">
-                           {selectedSchedules.length}개
-                        </span>
-                     </p>
+                  <div className="pointer-events-none fixed bottom-4 left-1/2 z-40 w-[calc(100%-1.5rem)] max-w-5xl -translate-x-1/2 px-1">
+                     <div className="pointer-events-auto flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-zinc-200 bg-white/95 px-4 py-4 shadow-xl backdrop-blur">
+                        <p className="text-sm text-zinc-600">
+                           현재 선택된 예약:{" "}
+                           <span className="font-semibold text-zinc-950">
+                              {selectedSchedules.length}개
+                           </span>
+                        </p>
 
-                     <div className="flex flex-wrap items-center gap-3">
-                        {activeScheduleSubtab === "active" ? (
-                           <button
-                              type="button"
-                              onClick={handleRunSchedules}
-                              disabled={selectedScheduleIds.length === 0}
-                              className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-                           >
-                              {activeRunRequestCount > 0
-                                 ? `선택한 예약 실행 (진행 중 ${activeRunRequestCount}개)`
-                                 : "선택한 예약 실행"}
-                           </button>
-                        ) : (
-                           <button
-                              type="button"
-                              onClick={handleDeleteSchedules}
-                              disabled={
-                                 deletingSchedules || selectedScheduleIds.length === 0
-                              }
-                              className="inline-flex items-center justify-center rounded-lg border border-red-700 bg-red-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
-                           >
-                              {deletingSchedules
-                                 ? "삭제 요청 중..."
-                                 : "선택한 완료 예약 삭제"}
-                           </button>
-                        )}
+                        <div className="flex flex-wrap items-center gap-3">
+                           {activeScheduleSubtab === "active" ? (
+                              <button
+                                 type="button"
+                                 onClick={handleRunSchedules}
+                                 disabled={selectedScheduleIds.length === 0}
+                                 className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                              >
+                                 {activeRunRequestCount > 0
+                                    ? `선택한 예약 실행 (진행 중 ${activeRunRequestCount}개)`
+                                    : "선택한 예약 실행"}
+                              </button>
+                           ) : (
+                              <button
+                                 type="button"
+                                 onClick={handleDeleteSchedules}
+                                 disabled={
+                                    deletingSchedules || selectedScheduleIds.length === 0
+                                 }
+                                 className="inline-flex items-center justify-center rounded-lg border border-red-700 bg-red-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70"
+                              >
+                                 {deletingSchedules
+                                    ? "삭제 요청 중..."
+                                    : "선택한 완료 예약 삭제"}
+                              </button>
+                           )}
+                        </div>
                      </div>
                   </div>
                </section>
@@ -2163,6 +3325,30 @@ export default function AdminDashboard() {
                         />
                      </div>
                   </div>
+               </section>
+            )}
+
+            {activeTab === "sitemap" && (
+               <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
+                  <SectionHeader
+                     title="사이트맵 생성"
+                     description="partnerKey와 apiKey로 상품 사이트맵 XML을 생성하고, 현재 브라우저에서 바로 다운로드합니다."
+                  />
+
+                  <div className="mt-5">
+                     <StatusMessage message={sitemapMessage} />
+                  </div>
+
+                  <SitemapForm
+                     form={sitemapForm}
+                     onChange={handleSitemapFieldChange}
+                     onGenerate={handleGenerateSitemap}
+                     onReset={() => {
+                        setSitemapForm(createEmptySitemapForm());
+                        setSitemapMessage({ tone: "neutral", text: "" });
+                     }}
+                     generating={generatingSitemap}
+                  />
                </section>
             )}
          </div>

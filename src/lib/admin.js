@@ -111,6 +111,99 @@ export async function fetchCafe24AuthorizeUrl({ mallId, state }) {
    return parseApiResponse(response);
 }
 
+function resolveFilenameFromDisposition(disposition) {
+   const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(
+      disposition || "",
+   );
+
+   if (!match) {
+      return "";
+   }
+
+   return decodeURIComponent(match[1] || match[2] || "");
+}
+
+function resolveSitemapXmlFromJson(data) {
+   return (
+      data?.xml ||
+      data?.sitemapXml ||
+      data?.sitemap ||
+      data?.content ||
+      data?.data?.xml ||
+      data?.data?.sitemapXml ||
+      data?.data?.sitemap ||
+      ""
+   );
+}
+
+export async function generateAdminSitemap({ partnerKey, apiKey }) {
+   const normalizedPartnerKey = String(partnerKey || "").trim();
+   const normalizedApiKey = String(apiKey || "").trim();
+
+   const response = await fetch(`${API_BASE_URL}/update/generate-sitemap`, {
+      method: "POST",
+      headers: getAdminAuthHeaders({
+         "Content-Type": "application/json",
+      }),
+      body: JSON.stringify({
+         partnerKey: normalizedPartnerKey,
+         siteName: normalizedPartnerKey,
+         apiKey: normalizedApiKey,
+      }),
+   });
+
+   const contentType = response.headers.get("content-type") || "";
+   const fallbackFilename = `flowmerce-sitemap-${normalizedPartnerKey || "products"}.xml`;
+   const filename =
+      resolveFilenameFromDisposition(response.headers.get("content-disposition")) ||
+      fallbackFilename;
+
+   if (contentType.includes("application/json")) {
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 401 || response.status === 403) {
+         signOutAdmin();
+         throw new Error("관리자 인증이 만료되었습니다. 다시 로그인해주세요.");
+      }
+
+      if (!response.ok || data?.success === false) {
+         throw new Error(data.message || "사이트맵 생성에 실패했습니다.");
+      }
+
+      const xml = resolveSitemapXmlFromJson(data);
+
+      if (!xml) {
+         throw new Error(
+            data.message ||
+               "사이트맵 생성 요청은 완료됐지만 다운로드할 XML 응답이 없습니다.",
+         );
+      }
+
+      return {
+         blob: new Blob([xml], { type: "application/xml;charset=utf-8" }),
+         filename,
+      };
+   }
+
+   const body = await response.text();
+
+   if (response.status === 401 || response.status === 403) {
+      signOutAdmin();
+      throw new Error("관리자 인증이 만료되었습니다. 다시 로그인해주세요.");
+   }
+
+   if (!response.ok) {
+      throw new Error(body || "사이트맵 생성에 실패했습니다.");
+   }
+
+   return {
+      blob: new Blob([body], {
+         type: contentType || "application/xml;charset=utf-8",
+      }),
+      filename,
+   };
+}
+
 export async function exchangeCafe24AccessToken(payload) {
    const response = await fetch(`${API_BASE_URL}/cafe24/token/exchange`, {
       method: "POST",

@@ -6,7 +6,7 @@ export default function manifest() {
       short_name: "플로우머스",
       description: defaultDescription,
       start_url: "/",
-      display: "standalone",
+      display: "browser",
       background_color: "#ffffff",
       theme_color: "#1e3aff",
       icons: [

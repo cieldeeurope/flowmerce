@@ -97,7 +97,7 @@ export async function fetchScheduledAccountPlatforms(
    return [];
 }
 
-export async function fetchSchedules(
+export async function fetchScheduledSites(
    customId,
    accountPlatform,
    status = "active",
@@ -106,15 +106,58 @@ export async function fetchSchedules(
    const normalizedAccountPlatform = accountPlatform.trim();
 
    if (!normalizedCustomId || !normalizedAccountPlatform) {
+      throw new Error("customId와 accountPlatform을 모두 선택해주세요.");
+   }
+
+   const response = await fetch(
+      `${API_BASE_URL}/schedule/sites?customId=${encodeURIComponent(
+         normalizedCustomId,
+      )}&accountPlatform=${encodeURIComponent(
+         normalizedAccountPlatform,
+      )}&status=${encodeURIComponent(status)}`,
+      {
+         headers: getAdminAuthHeaders(),
+         cache: "no-store",
+      },
+   );
+
+   const data = await parseApiResponse(response);
+
+   if (Array.isArray(data)) {
+      return data;
+   }
+
+   if (Array.isArray(data.sites)) {
+      return data.sites;
+   }
+
+   return [];
+}
+
+export async function fetchSchedules(
+   customId,
+   accountPlatform,
+   status = "active",
+   site = "",
+) {
+   const normalizedCustomId = customId.trim();
+   const normalizedAccountPlatform = accountPlatform.trim();
+   const normalizedSite = site.trim();
+
+   if (!normalizedCustomId || !normalizedAccountPlatform) {
       throw new Error("customId와 accountPlatform을 모두 입력해주세요.");
    }
+
+   const siteQuery = normalizedSite
+      ? `&site=${encodeURIComponent(normalizedSite)}`
+      : "";
 
    const response = await fetch(
       `${API_BASE_URL}/schedule?customId=${encodeURIComponent(
          normalizedCustomId,
       )}&accountPlatform=${encodeURIComponent(
          normalizedAccountPlatform,
-      )}&status=${encodeURIComponent(status)}`,
+      )}&status=${encodeURIComponent(status)}${siteQuery}`,
       {
          headers: getAdminAuthHeaders(),
          cache: "no-store",
@@ -153,7 +196,18 @@ export async function runSchedules(scheduleIds) {
             },
          );
 
-         await parseApiResponse(response);
+         const data = await parseApiResponse(response);
+
+         if (
+            data?.accepted === false ||
+            (typeof data?.message === "string" &&
+               data.message.includes("지원하지 않는 사이트"))
+         ) {
+            throw new Error(
+               data?.message || `예약 실행에 실패했습니다. (scheduleId=${id})`,
+            );
+         }
+
          console.log("[runSchedules] request:done", {
             index: index + 1,
             total,
