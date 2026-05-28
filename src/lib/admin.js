@@ -3,15 +3,29 @@ import { getAdminAuthHeaders, getApiBaseUrl, signOutAdmin } from "@/lib/auth";
 const API_BASE_URL = getApiBaseUrl();
 
 async function parseApiResponse(response) {
-   const data = await response.json().catch(() => ({}));
+   const rawText = await response.text().catch(() => "");
+   let data = {};
+
+   if (rawText) {
+      try {
+         data = JSON.parse(rawText);
+      } catch {
+         data = { rawText };
+      }
+   }
 
    if (response.status === 401 || response.status === 403) {
       signOutAdmin();
       throw new Error("관리자 인증이 만료되었습니다. 다시 로그인해주세요.");
    }
 
-   if (!response.ok) {
-      throw new Error(data.message || "잠시 후 다시 시도해주세요.");
+   if (!response.ok || data?.success === false) {
+      throw new Error(
+         data.message ||
+            data.error ||
+            data.rawText ||
+            `관리자 API 요청에 실패했습니다. (HTTP ${response.status})`,
+      );
    }
 
    return data;
@@ -136,8 +150,8 @@ function resolveSitemapXmlFromJson(data) {
    );
 }
 
-export async function generateAdminSitemap({ partnerKey, apiKey }) {
-   const normalizedPartnerKey = String(partnerKey || "").trim();
+export async function generateAdminSitemap({ site, apiKey }) {
+   const normalizedSite = String(site || "").trim();
    const normalizedApiKey = String(apiKey || "").trim();
 
    const response = await fetch(`${API_BASE_URL}/update/generate-sitemap`, {
@@ -146,14 +160,13 @@ export async function generateAdminSitemap({ partnerKey, apiKey }) {
          "Content-Type": "application/json",
       }),
       body: JSON.stringify({
-         partnerKey: normalizedPartnerKey,
-         siteName: normalizedPartnerKey,
+         siteName: normalizedSite,
          apiKey: normalizedApiKey,
       }),
    });
 
    const contentType = response.headers.get("content-type") || "";
-   const fallbackFilename = `flowmerce-sitemap-${normalizedPartnerKey || "products"}.xml`;
+   const fallbackFilename = `sitemap-index-${normalizedApiKey || normalizedSite || "products"}.xml`;
    const filename =
       resolveFilenameFromDisposition(response.headers.get("content-disposition")) ||
       fallbackFilename;
@@ -173,19 +186,21 @@ export async function generateAdminSitemap({ partnerKey, apiKey }) {
       const xml = resolveSitemapXmlFromJson(data);
 
       if (!xml) {
-         throw new Error(
-            data.message ||
-               "사이트맵 생성 요청은 완료됐지만 다운로드할 XML 응답이 없습니다.",
-         );
+         return {
+            blob: null,
+            filename,
+            message:
+               data.message ||
+               `${normalizedSite || "사이트"} sitemap 생성 요청이 완료되었습니다.`,
+         };
       }
 
       return {
          blob: new Blob([xml], { type: "application/xml;charset=utf-8" }),
          filename,
+         message: data.message || "",
       };
    }
-
-   const body = await response.text();
 
    if (response.status === 401 || response.status === 403) {
       signOutAdmin();
@@ -193,14 +208,14 @@ export async function generateAdminSitemap({ partnerKey, apiKey }) {
    }
 
    if (!response.ok) {
+      const body = await response.text().catch(() => "");
       throw new Error(body || "사이트맵 생성에 실패했습니다.");
    }
 
    return {
-      blob: new Blob([body], {
-         type: contentType || "application/xml;charset=utf-8",
-      }),
+      blob: await response.blob(),
       filename,
+      message: "",
    };
 }
 

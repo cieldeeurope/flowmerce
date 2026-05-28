@@ -1,0 +1,25 @@
+INSERT INTO mapping (
+  site,
+  "siteUrl",
+  "categoryName",
+  "godoMallCategoryName",
+  "godoMallCategoryCode",
+  designers,
+  "afterDesigners",
+  "customId",
+  "accountPlatform"
+) VALUES
+('Polene', 'https://nl.polene-paris.com/collections/belt-bags', 'BAGS - Bags by category - Belt bags', '패션잡화>여성가방>힙색/슬링백', '50000645', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/category-handbags', 'BAGS - Bags by category - Handbags', '패션잡화>여성가방>토트백', '50000640', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/crossbody', 'BAGS - Bags by category - Crossbody', '패션잡화>여성가방>크로스백', '50000641', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/shoulder-bags', 'BAGS - Bags by category - Shoulder bags', '패션잡화>여성가방>숄더백', '50000639', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/tote-bags', 'BAGS - Bags by category - Tote bags', '패션잡화>여성가방>토트백', '50000640', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/category-pouch', 'BAGS - Bags by category - Pouch', '패션잡화>여성가방>파우치', '50000643', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/earrings', 'JEWELLERY - Jewellery bu category - Earrings', '패션잡화>주얼리>귀걸이>패션귀걸이', '50004164', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/bracelets', 'JEWELLERY - Jewellery bu category - Bracelets', '패션잡화>주얼리>팔찌>패션팔찌', '50004194', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/rings', 'JEWELLERY - Jewellery bu category - Rings', '패션잡화>주얼리>반지>패션반지', '50004155', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/necklaces', 'JEWELLERY - Jewellery bu category - Necklaces', '패션잡화>주얼리>목걸이>패션목걸이', '50004174', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/wallets', 'ACCESSORIES - Small leather goods - Wallets', '패션잡화>지갑>여성지갑>반지갑', '50003982', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/card-holder-and-purse', 'ACCESSORIES - Small leather goods - Card holder & purse', '패션잡화>지갑>카드/명함지갑', '50000662', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/pouch', 'ACCESSORIES - Small leather goods - Pouch', '패션잡화>여성가방>파우치', '50000643', NULL, NULL, 'bcm499', 'smartstore_2'),
+('Polene', 'https://nl.polene-paris.com/collections/belts', 'ACCESSORIES - Small leather goods - Belts', '패션잡화>벨트>여성벨트', '50000539', NULL, NULL, 'bcm499', 'smartstore_2');

@@ -36,6 +36,7 @@ const scheduleSubtabs = [
 
 const planOptions = ["none", "boutique", "basic", "pro", "enterprise"];
 const platformOptions = ["smartstore", "godomall", "cafe24", "makeshop"];
+const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/;
 const CAFE24_OAUTH_STATE_KEY = "flowmerce_cafe24_oauth_state";
 const CAFE24_REFRESH_WARNING_MS = 3 * 24 * 60 * 60 * 1000;
 const hostingPolicyManuals = {
@@ -837,7 +838,7 @@ function createEmptyHostingForm() {
 
 function createEmptySitemapForm() {
    return {
-      partnerKey: "",
+      site: "",
       apiKey: "",
    };
 }
@@ -894,12 +895,12 @@ function SitemapForm({ form, onChange, onGenerate, onReset, generating }) {
       <div className="mt-7 max-w-2xl rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
          <div className="grid gap-5">
             <label className="block">
-               <span className="text-sm font-medium text-zinc-600">partnerKey</span>
+               <span className="text-sm font-medium text-zinc-600">site</span>
                <input
-                  value={form.partnerKey}
-                  onChange={(event) => onChange("partnerKey", event.target.value)}
+                  value={form.site}
+                  onChange={(event) => onChange("site", event.target.value)}
                   className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none"
-                  placeholder="partnerKey를 입력하세요"
+                  placeholder="cieldeeurope"
                />
             </label>
 
@@ -2520,16 +2521,34 @@ export default function AdminDashboard() {
 
       try {
          const normalizedPhone = formatPhoneInput(userForm.phone || "");
+         const normalizedName = userForm.name.trim();
+         const normalizedLoginId = userForm.loginId.trim();
+         const normalizedCustomId = userForm.customId.trim();
+         const normalizedPassword = userForm.password || "";
+
+         if (!normalizedName || !normalizedLoginId || !normalizedCustomId) {
+            throw new Error("name, loginId, customId는 필수입니다.");
+         }
+
+         if (!userForm.id && !normalizedPassword) {
+            throw new Error("새 User 생성 시 password는 필수입니다.");
+         }
+
+         if (normalizedPassword && !PASSWORD_REGEX.test(normalizedPassword)) {
+            throw new Error(
+               "password는 영문, 숫자, 특수문자를 포함한 8자리 이상이어야 합니다.",
+            );
+         }
 
          if (!/^\d{3}-\d{4}-\d{4}$/.test(normalizedPhone)) {
             throw new Error("연락처 형식이 올바르지 않습니다.");
          }
 
          const payload = {
-            name: userForm.name.trim(),
-            loginId: userForm.loginId.trim(),
-            password: userForm.password || undefined,
-            customId: userForm.customId.trim(),
+            name: normalizedName,
+            loginId: normalizedLoginId,
+            password: normalizedPassword || undefined,
+            customId: normalizedCustomId,
             phone: normalizedPhone,
             isApproved: userForm.isApproved,
             plan: userForm.plan,
@@ -2756,8 +2775,8 @@ export default function AdminDashboard() {
       setSitemapMessage({ tone: "neutral", text: "" });
 
       try {
-         if (!sitemapForm.partnerKey.trim()) {
-            throw new Error("partnerKey를 입력해주세요.");
+         if (!sitemapForm.site.trim()) {
+            throw new Error("site를 입력해주세요.");
          }
 
          if (!sitemapForm.apiKey.trim()) {
@@ -2765,22 +2784,27 @@ export default function AdminDashboard() {
          }
 
          const result = await generateAdminSitemap({
-            partnerKey: sitemapForm.partnerKey,
+            site: sitemapForm.site,
             apiKey: sitemapForm.apiKey,
          });
-         const downloadUrl = window.URL.createObjectURL(result.blob);
-         const link = document.createElement("a");
 
-         link.href = downloadUrl;
-         link.download = result.filename || "flowmerce-sitemap.xml";
-         document.body.appendChild(link);
-         link.click();
-         link.remove();
-         window.URL.revokeObjectURL(downloadUrl);
+         if (result.blob) {
+            const downloadUrl = window.URL.createObjectURL(result.blob);
+            const link = document.createElement("a");
+
+            link.href = downloadUrl;
+            link.download = result.filename || "flowmerce-sitemap.xml";
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+         }
 
          setSitemapMessage({
             tone: "success",
-            text: "사이트맵 XML 다운로드를 시작했습니다.",
+            text: result.blob
+               ? "사이트맵 XML 다운로드를 시작했습니다."
+               : result.message || "사이트맵 생성 요청이 완료되었습니다.",
          });
       } catch (error) {
          setSitemapMessage({
@@ -3214,6 +3238,7 @@ export default function AdminDashboard() {
                            onReset={() => setUserForm(createEmptyUserForm())}
                            saving={savingUser}
                         />
+                        <StatusMessage message={userMessage} />
                      </div>
                   </div>
                </section>
@@ -3332,7 +3357,7 @@ export default function AdminDashboard() {
                <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                   <SectionHeader
                      title="사이트맵 생성"
-                     description="partnerKey와 apiKey로 상품 사이트맵 XML을 생성하고, 현재 브라우저에서 바로 다운로드합니다."
+                     description="site와 apiKey로 고도몰 상품 사이트맵 생성을 요청합니다."
                   />
 
                   <div className="mt-5">
