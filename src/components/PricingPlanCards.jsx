@@ -5,6 +5,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import { plans } from "@/lib/pricingData";
 import { CheckIcon } from "./icons/CheckIcon";
+import TossBasicPaymentButton from "./TossBasicPaymentButton";
 
 export default function PricingPlanCards({
    ctaHref = "/signup",
@@ -144,17 +145,25 @@ export default function PricingPlanCards({
                      ))}
                   </ul>
 
-                  <Link
-                     href={ctaHref}
-                  className={clsx(
-                        isLuxuryTone
-                           ? "inline-flex w-full justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white shadow-sm duration-150 hover:bg-[#8c6333]"
-                           : "inline-flex w-full justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700",
-                        compact ? "mt-auto" : "mt-7",
-                     )}
-                  >
-                     플랜 구독하기
-                  </Link>
+                  {plan.name === "Basic" ? (
+                     <TossBasicPaymentButton
+                        billing={billing}
+                        compact={compact}
+                        isLuxuryTone={isLuxuryTone}
+                     />
+                  ) : (
+                     <Link
+                        href={ctaHref}
+                        className={clsx(
+                           isLuxuryTone
+                              ? "inline-flex w-full justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white shadow-sm duration-150 hover:bg-[#8c6333]"
+                              : "inline-flex w-full justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm duration-150 hover:bg-emerald-700",
+                           compact ? "mt-auto" : "mt-7",
+                        )}
+                     >
+                        플랜 구독하기
+                     </Link>
+                  )}
 
                   {compact && (
                      <div className="mt-4 min-h-[36px]">
