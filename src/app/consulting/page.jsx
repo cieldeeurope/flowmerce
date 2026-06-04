@@ -1,7 +1,9 @@
 import Container from "@/components/Container";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import TossBasicPaymentButton from "@/components/TossBasicPaymentButton";
 import { createMetadata } from "@/lib/seo";
+import { getConsultingPayment } from "@/lib/tossPlans";
 
 const kakaoUrl = "https://pf.kakao.com/_hPdjX/chat";
 
@@ -183,6 +185,14 @@ export default function ConsultingPage() {
                         >
                            컨설팅 신청하기
                         </a>
+                        <TossBasicPaymentButton
+                           paymentInfo={getConsultingPayment()}
+                           orderIdPrefix="CONSULTING"
+                           label="컨설팅 결제하기"
+                           containerClassName="w-full sm:w-auto"
+                           className="px-6 py-3"
+                           isLuxuryTone
+                        />
                         <p className="text-sm font-medium text-zinc-600">
                            운영 방향, 소싱, 마진, 통관, 세무 흐름까지 한 번에 정리
                         </p>
@@ -405,14 +415,24 @@ export default function ConsultingPage() {
                                  일반 6개월 구독 할인 5%보다 더 크게 적용되는 컨설팅 전용 혜택입니다.
                               </p>
                            </div>
-                           <a
-                              href={kakaoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-7 inline-flex w-full justify-center rounded-lg border border-[#8c6333] bg-[#8c6333] px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#6b5736]"
-                           >
-                              컨설팅 신청하기
-                           </a>
+                           <div className="mt-7 grid gap-3">
+                              <a
+                                 href={kakaoUrl}
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                                 className="inline-flex w-full justify-center rounded-lg border border-[#8c6333] bg-[#8c6333] px-5 py-3 text-sm font-semibold text-white shadow-sm duration-150 hover:bg-[#6b5736]"
+                              >
+                                 컨설팅 신청하기
+                              </a>
+                              <TossBasicPaymentButton
+                                 paymentInfo={getConsultingPayment()}
+                                 orderIdPrefix="CONSULTING-BOTTOM"
+                                 label="컨설팅 결제하기"
+                                 containerClassName="m-0"
+                                 className="!border-[#f1deba] !bg-white !py-3 !text-zinc-950 hover:!bg-[#f1deba]"
+                                 isLuxuryTone
+                              />
+                           </div>
                         </div>
                      </div>
                   </div>

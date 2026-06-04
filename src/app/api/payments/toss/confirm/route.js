@@ -61,7 +61,7 @@ export async function POST(request) {
             message:
                data.message ||
                data.rawText ||
-               `토스페이먼츠 결제 승인에 실패했습니다. (HTTP ${response.status})`,
+               `결제 승인에 실패했습니다. (HTTP ${response.status})`,
             code: data.code || null,
          },
          { status: response.status },

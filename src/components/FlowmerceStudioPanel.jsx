@@ -29,6 +29,7 @@ import {
    saveWorkspaceMargin,
    saveWorkspaceReplacement,
    saveWorkspaceSelectedDesigners,
+   sendWorkspaceCollectionStartedNotification,
 } from "@/lib/workspace";
 
 const TABS = [
@@ -631,6 +632,8 @@ export default function FlowmerceStudioPanel() {
    const [selectedCollectionKeys, setSelectedCollectionKeys] = useState([]);
 
    const [loadingCollection, setLoadingCollection] = useState(false);
+   const [sendingCollectionStartedNotification, setSendingCollectionStartedNotification] =
+      useState(false);
    const [collectionMessage, setCollectionMessage] = useState({ tone: "neutral", text: "" });
 
    const [margins, setMargins] = useState([]);
@@ -1693,7 +1696,6 @@ export default function FlowmerceStudioPanel() {
                   apiKey,
                   customId: session.customId,
                   accountPlatform: selectedAccountPlatform,
-                  notifyCustomerReservation: true,
                }),
             ),
          );
@@ -1754,6 +1756,47 @@ export default function FlowmerceStudioPanel() {
       selectedCollectionItems,
       session?.customId,
    ]);
+
+   const handleSendCollectionStartedNotification = useCallback(async () => {
+      if (!session?.customId || !selectedAccountPlatform) {
+         return;
+      }
+
+      const confirmed = window.confirm(
+         "선택한 고객에게 수집 시작 알림톡을 발송할까요?",
+      );
+
+      if (!confirmed) {
+         return;
+      }
+
+      setSendingCollectionStartedNotification(true);
+
+      try {
+         const result = await sendWorkspaceCollectionStartedNotification({
+            customId: session.customId,
+            accountPlatform: selectedAccountPlatform,
+         });
+         const message = result?.message || "수집 시작 알림톡을 발송했습니다.";
+
+         setCollectionMessage({
+            tone: result?.sent === false ? "neutral" : "success",
+            text: message,
+         });
+         window.alert(message);
+      } catch (error) {
+         const message =
+            error.message || "수집 시작 알림톡을 발송하지 못했습니다.";
+
+         setCollectionMessage({
+            tone: "error",
+            text: message,
+         });
+         window.alert(message);
+      } finally {
+         setSendingCollectionStartedNotification(false);
+      }
+   }, [selectedAccountPlatform, session?.customId]);
 
    const handleSaveMargin = useCallback(async () => {
       if (!session?.customId || !selectedAccountPlatform) {
@@ -2364,12 +2407,27 @@ export default function FlowmerceStudioPanel() {
                      </div>
                   </div>
 
-                  <PrimaryButton
-                     onClick={handleCreateSchedule}
-                     className="w-full py-4 text-base"
-                  >
-                     수집예약
-                  </PrimaryButton>
+                  <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+                     <PrimaryButton
+                        onClick={handleCreateSchedule}
+                        className="w-full py-4 text-base"
+                     >
+                        수집예약
+                     </PrimaryButton>
+                     <SecondaryButton
+                        onClick={handleSendCollectionStartedNotification}
+                        disabled={
+                           sendingCollectionStartedNotification ||
+                           !session?.customId ||
+                           !selectedAccountPlatform
+                        }
+                        className="w-full py-4 text-base sm:w-auto sm:px-6"
+                     >
+                        {sendingCollectionStartedNotification
+                           ? "알림톡 발송 중..."
+                           : "시작 알림톡"}
+                     </SecondaryButton>
+                  </div>
                </div>
             </section>
          ) : null}

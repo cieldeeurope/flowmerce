@@ -99,9 +99,9 @@ export const plans = [
    },
    {
       name: "Enterprise",
-      price: "월 110만원부터",
-      sixMonthPrice: "627만원부터",
-      annualPrice: "1,188만원부터",
+      price: "월 110만원 ~",
+      sixMonthPrice: "627만원 ~",
+      annualPrice: "1,188만원 ~",
       priceNote: "VAT 포함, 서버 비용 포함",
       description: "모든 하이엔드 사이트와 대규모 상품등록이 가능하며 매출 영향에 최적화로 운영이 가능합니다.",
       features: [
@@ -115,7 +115,7 @@ export const plans = [
 ];
 
 export const comparison = [
-   ["월 이용료", "55만원", "19만원", "49만원", "110만원부터"],
+   ["월 이용료", "55만원", "19만원", "49만원", "110만원 ~"],
    ["VAT", "포함", "포함", "포함", "포함"],
    ["서버 비용", "포함", "포함", "포함", "포함"],
    ["대상 사이트", "대형 부티크 플랫폼", "공식 홈페이지", "공식 홈페이지", "전체+맞춤"],

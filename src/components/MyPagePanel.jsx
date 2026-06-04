@@ -14,7 +14,17 @@ import {
    validatePassword,
 } from "@/lib/auth";
 import { coreSourcingSites, highEndSites, plans } from "@/lib/pricingData";
+import {
+   calculateRemainingDays,
+   calculateUpgradePayment,
+   formatKrw,
+   getPlanDisplayPrice,
+   getTossPlanPayment,
+   tossBillingOptions,
+   tossBillingPaymentLabels,
+} from "@/lib/tossPlans";
 import { CheckIcon } from "./icons/CheckIcon";
+import TossBasicPaymentButton from "./TossBasicPaymentButton";
 
 const boutiqueSites = ["Farfetch", "Cettire"];
 const kakaoChatUrl = "https://pf.kakao.com/_hPdjX/chat";
@@ -23,6 +33,21 @@ const emptyPasswordForm = {
    newPassword: "",
    newPasswordConfirm: "",
 };
+
+function renderPlanFeature(feature) {
+   if (feature.startsWith("추가 비용")) {
+      const [, detail = ""] = feature.split(":");
+
+      return (
+         <span>
+            <strong className="font-semibold text-zinc-950">추가 비용</strong>
+            {detail ? ` : ${detail.trim()}` : ""}
+         </span>
+      );
+   }
+
+   return feature;
+}
 
 const planMeta = {
    none: {
@@ -227,8 +252,153 @@ function SiteBadge({ label, removable = false, onRemove }) {
    );
 }
 
-function PlanModal({ mode, options, onClose }) {
+function normalizePlanPeriodItem(item, index) {
+   if (!item || typeof item !== "object") {
+      return null;
+   }
+
+   const planValue = String(
+      item.plan || item.planName || item.name || item.type || "",
+   ).toLowerCase();
+   const meta = planMeta[planValue];
+   const planName = item.planName || item.name || meta?.label || item.plan || "";
+
+   if (!planName) {
+      return null;
+   }
+
+   return {
+      key: `${planName}-${index}`,
+      name: planName,
+      startAt:
+         item.subscriptionStartAt ||
+         item.startAt ||
+         item.startedAt ||
+         item.createdAt ||
+         null,
+      endAt:
+         item.subscriptionEndAt ||
+         item.endAt ||
+         item.endsAt ||
+         item.expiredAt ||
+         null,
+   };
+}
+
+function getAccountPlanPeriods(account, currentPlan, currentPlanMeta) {
+   const planArrays = [
+      account?.planSubscriptions,
+      account?.subscriptions,
+      account?.activePlans,
+      account?.additionalPlans,
+      account?.extraPlans,
+   ];
+   const normalizedPeriods = planArrays
+      .filter(Array.isArray)
+      .flatMap((items) => items.map(normalizePlanPeriodItem))
+      .filter(Boolean);
+
+   if (normalizedPeriods.length > 0) {
+      return normalizedPeriods;
+   }
+
+   if (currentPlan === "none") {
+      return [];
+   }
+
+   return [
+      {
+         key: currentPlan,
+         name: currentPlanMeta.label,
+         startAt: account?.subscriptionStartAt || null,
+         endAt: account?.subscriptionEndAt || null,
+      },
+   ];
+}
+
+function BillingSelector({ value, onChange }) {
+   return (
+      <div className="inline-flex rounded-lg border border-zinc-200 bg-white p-1 shadow-sm">
+         {tossBillingOptions.map((option) => (
+            <button
+               key={option.id}
+               type="button"
+               onClick={() => onChange(option.id)}
+               className={clsx(
+                  value === option.id
+                     ? "bg-zinc-950 text-white"
+                     : "text-zinc-600 hover:text-zinc-950",
+                  "rounded-md px-4 py-2 text-sm font-semibold transition",
+               )}
+            >
+               {option.label}
+            </button>
+         ))}
+      </div>
+   );
+}
+
+function ExtendPaymentPanel({ planName, billing, onBillingChange, onClose }) {
+   const paymentInfo = getTossPlanPayment(planName, billing, {
+      orderNameSuffix: "연장",
+   });
+
+   if (!paymentInfo) {
+      return null;
+   }
+
+   return (
+      <div className="mt-5 rounded-lg border border-amber-200 bg-[#fbf7ef] p-5">
+         <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+               <p className="text-sm font-semibold text-amber-900">
+                  {planName} 연장 결제
+               </p>
+               <p className="mt-2 text-sm leading-6 text-zinc-700">
+                  연장 기간을 선택한 뒤 현재 플랜 기준 금액으로 바로 결제할 수 있습니다.
+                  기존 플랜의 호스팅 연동 비용은 다시 청구하지 않습니다.
+               </p>
+            </div>
+            <button
+               type="button"
+               onClick={onClose}
+               className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50"
+            >
+               닫기
+            </button>
+         </div>
+
+         <div className="mt-4">
+            <BillingSelector value={billing} onChange={onBillingChange} />
+         </div>
+
+         <div className="mt-4 rounded-lg border border-amber-200 bg-white px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+               결제 금액
+            </p>
+            <p className="mt-2 text-2xl font-semibold text-zinc-950">
+               {formatKrw(paymentInfo.amount)}
+            </p>
+            <p className="mt-1 text-sm text-zinc-500">
+               {tossBillingPaymentLabels[billing]} 기준
+            </p>
+         </div>
+
+         <TossBasicPaymentButton
+            paymentInfo={paymentInfo}
+            orderIdPrefix={`${planName}-RENEW`}
+            label="연장 결제하기"
+            containerClassName="mt-4"
+            isLuxuryTone
+         />
+      </div>
+   );
+}
+
+function PlanModal({ mode, options, subscriptionEndAt, onClose }) {
+   const [billing, setBilling] = useState("monthly");
    const isUpgrade = mode === "upgrade";
+   const remainingDays = calculateRemainingDays(subscriptionEndAt);
 
    if (!mode || options.length === 0) {
       return null;
@@ -254,8 +424,8 @@ function PlanModal({ mode, options, onClose }) {
                   </h3>
                   <p className="mt-2 text-sm leading-6 text-zinc-600">
                      {isUpgrade
-                        ? "현재 플랜보다 상위 플랜만 정리했습니다. 자세한 금액과 조건은 가격 페이지에서 바로 확인하실 수 있습니다."
-                        : "Boutique 플랜은 기존 운영 플랜과 별도로 추가할 수 있는 플랫폼 전용 플랜입니다."}
+                        ? "업그레이드는 선택 기간 기본 금액에 현재 종료일까지 남은 기간의 일할 비용을 더해서 계산합니다."
+                        : "플랜 추가는 기존 플랜 기간과 별도로 새 플랜 기간을 그대로 결제합니다."}
                   </p>
                </div>
                <button
@@ -268,65 +438,99 @@ function PlanModal({ mode, options, onClose }) {
             </div>
 
             <div className="max-h-[75vh] overflow-y-auto px-6 py-6 sm:px-8">
+               <div className="flex flex-wrap items-center justify-between gap-4">
+                  <BillingSelector value={billing} onChange={setBilling} />
+                  {isUpgrade && (
+                     <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">
+                        기본 {tossBillingPaymentLabels[billing]} 금액 + 남은 {remainingDays}일
+                        일할 비용이 적용됩니다.
+                     </p>
+                  )}
+               </div>
+
                <div
                   className={clsx(
-                     "grid gap-6",
+                     "mt-6 grid gap-6",
                      options.length === 1 ? "lg:grid-cols-1" : "lg:grid-cols-2",
                   )}
                >
-                  {options.map((plan) => (
-                     <div
-                        key={plan.name}
-                        className={clsx(
-                           plan.recommended
-                              ? "border-[#8c6333]"
-                              : "border-zinc-200",
-                           "relative flex h-full flex-col rounded-lg border bg-white p-7 shadow-sm",
-                        )}
-                     >
-                        <div className="space-y-3">
-                           <h4 className="flex min-h-[36px] items-start gap-2 text-2xl font-semibold">
-                              <span>{plan.name}</span>
-                              {plan.recommended && (
-                                 <span className="rounded border border-zinc-950 bg-zinc-950 px-2 py-1 text-xs font-semibold text-white shadow-sm">
-                                    추천
-                                 </span>
-                              )}
-                           </h4>
-                           <p className="min-h-[72px] text-sm leading-6 text-zinc-600">
-                              {plan.description}
-                           </p>
-                        </div>
+                  {options.map((plan) => {
+                     const paymentInfo = isUpgrade
+                        ? calculateUpgradePayment({
+                             targetPlanName: plan.name,
+                             billing,
+                             subscriptionEndAt,
+                          })
+                        : getTossPlanPayment(plan.name, billing, {
+                             includeHostingFee: false,
+                          });
+                     const displayedFeatures = isUpgrade
+                        ? plan.features
+                        : plan.features.filter(
+                             (feature) => !feature.startsWith("추가 비용"),
+                          );
 
-                        <div className="mt-2 flex min-h-[88px] flex-col justify-center">
-                           <p className="text-3xl font-semibold text-zinc-950">
-                              {plan.price}
-                           </p>
-                           <p className="mt-1 text-sm font-medium text-zinc-500">
-                              {plan.priceNote}
-                           </p>
-                        </div>
-
-                        <ul className="mt-7 flex-1 space-y-3.5">
-                           {plan.features.map((feature) => (
-                              <li
-                                 key={feature}
-                                 className="flex items-center gap-x-2 text-sm text-zinc-600"
-                              >
-                                 <CheckIcon className="h-5 w-5 shrink-0 text-amber-900" />
-                                 {feature}
-                              </li>
-                           ))}
-                        </ul>
-
-                        <Link
-                           href="/pricing"
-                           className="mt-7 inline-flex w-full justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
+                     return (
+                        <div
+                           key={plan.name}
+                           className={clsx(
+                              plan.recommended
+                                 ? "border-[#8c6333]"
+                                 : "border-zinc-200",
+                              "relative flex h-full flex-col rounded-lg border bg-white p-7 shadow-sm",
+                           )}
                         >
-                           플랜 자세히 보기
-                        </Link>
-                     </div>
-                  ))}
+                           <div className="space-y-3">
+                              <h4 className="flex min-h-[36px] items-start gap-2 text-2xl font-semibold">
+                                 <span>{plan.name}</span>
+                                 {plan.recommended && (
+                                    <span className="rounded border border-zinc-950 bg-zinc-950 px-2 py-1 text-xs font-semibold text-white shadow-sm">
+                                       추천
+                                    </span>
+                                 )}
+                              </h4>
+                              <p className="min-h-[72px] text-sm leading-6 text-zinc-600">
+                                 {plan.description}
+                              </p>
+                           </div>
+
+                           <div className="mt-2 flex min-h-[128px] flex-col justify-center">
+                              <p className="text-sm font-semibold text-zinc-500">
+                                 {getPlanDisplayPrice(plan.name, billing)}
+                              </p>
+                              <p className="mt-1 text-3xl font-semibold text-zinc-950">
+                                 {formatKrw(paymentInfo?.amount || 0)}
+                              </p>
+                              {isUpgrade && paymentInfo?.proratedAmount > 0 && (
+                                 <p className="mt-2 text-sm font-semibold text-red-700">
+                                    남은 {paymentInfo.remainingDays}일 일할 비용{" "}
+                                    {formatKrw(paymentInfo.proratedAmount)} 포함
+                                 </p>
+                              )}
+                           </div>
+
+                           <ul className="mt-7 flex-1 space-y-3.5">
+                              {displayedFeatures.map((feature) => (
+                                 <li
+                                    key={feature}
+                                    className="flex items-center gap-x-2 text-sm text-zinc-600"
+                                 >
+                                    <CheckIcon className="h-5 w-5 shrink-0 text-amber-900" />
+                                    {renderPlanFeature(feature)}
+                                 </li>
+                              ))}
+                           </ul>
+
+                           <TossBasicPaymentButton
+                              paymentInfo={paymentInfo}
+                              orderIdPrefix={`${plan.name}-${isUpgrade ? "UPGRADE" : "ADD"}`}
+                              label={isUpgrade ? "업그레이드 결제하기" : "플랜 결제하기"}
+                              containerClassName="mt-7"
+                              isLuxuryTone
+                           />
+                        </div>
+                     );
+                  })}
                </div>
             </div>
          </div>
@@ -396,6 +600,8 @@ export default function MyPagePanel() {
       text: "",
    });
    const [modalMode, setModalMode] = useState(null);
+   const [extendOpen, setExtendOpen] = useState(false);
+   const [extendBilling, setExtendBilling] = useState("monthly");
    const [siteConfirmOpen, setSiteConfirmOpen] = useState(false);
    const [isSavingSites, setIsSavingSites] = useState(false);
    const [coreSelection, setCoreSelection] = useState("");
@@ -530,23 +736,32 @@ export default function MyPagePanel() {
       void loadLinkedAccounts(session.customId);
    }, [loadLinkedAccounts, session?.customId, session?.role]);
 
-   const account = profile
-      ? {
-           ...session,
-           ...profile,
-           sites: Array.isArray(profile.sites) ? profile.sites : [],
-        }
-      : session;
+   const account = useMemo(
+      () =>
+         profile
+            ? {
+                 ...session,
+                 ...profile,
+                 sites: Array.isArray(profile.sites) ? profile.sites : [],
+              }
+            : session,
+      [profile, session],
+   );
 
    const currentPlan = (account?.plan || "none").toLowerCase();
    const hasPaidPlan = currentPlan !== "none";
    const currentPlanMeta = planMeta[currentPlan] || planMeta.none;
+   const currentPlanPaymentName = currentPlanMeta.label;
    const currentSiteConfig = sitePlanConfig[currentPlan] || sitePlanConfig.none;
    const currentSites = Array.isArray(account?.sites) ? account.sites : [];
    const allSitesApplied = currentSites.includes("ALL");
    const existingSiteGroups = splitSitesByType(currentSites);
    const siteSelectionLocked =
       currentPlan !== "enterprise" && currentSites.length > 0;
+   const activePlanPeriods = useMemo(
+      () => getAccountPlanPeriods(account, currentPlan, currentPlanMeta),
+      [account, currentPlan, currentPlanMeta],
+   );
 
    const upgradePlanOptions = useMemo(
       () =>
@@ -886,9 +1101,9 @@ export default function MyPagePanel() {
    };
 
    const handleExtendClick = () => {
-      setPlanNotice(
-         "연장 결제 기능은 준비 중입니다. 현재는 문의를 통해 연장 안내를 도와드리고 있습니다.",
-      );
+      setPlanNotice("");
+      setModalMode(null);
+      setExtendOpen((current) => !current);
    };
 
    const handleAddCoreSite = () => {
@@ -1191,27 +1406,41 @@ export default function MyPagePanel() {
                      {currentPlanMeta.description}
                   </p>
 
-                  {currentPlan !== "none" &&
-                     (account.subscriptionStartAt || account.subscriptionEndAt) && (
-                        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-                           <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                                 시작일
-                              </p>
-                              <p className="mt-2 text-sm font-medium text-zinc-950">
-                                 {formatDate(account.subscriptionStartAt)}
-                              </p>
+                  {currentPlan !== "none" && activePlanPeriods.length > 0 && (
+                     <div className="mt-6 grid gap-3">
+                        {activePlanPeriods.map((period) => (
+                           <div
+                              key={period.key}
+                              className="grid gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 sm:grid-cols-3"
+                           >
+                              <div>
+                                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                    플랜
+                                 </p>
+                                 <p className="mt-2 text-sm font-medium text-zinc-950">
+                                    {period.name}
+                                 </p>
+                              </div>
+                              <div>
+                                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                    시작일
+                                 </p>
+                                 <p className="mt-2 text-sm font-medium text-zinc-950">
+                                    {formatDate(period.startAt)}
+                                 </p>
+                              </div>
+                              <div>
+                                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                                    종료일
+                                 </p>
+                                 <p className="mt-2 text-sm font-medium text-zinc-950">
+                                    {formatDate(period.endAt)}
+                                 </p>
+                              </div>
                            </div>
-                           <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
-                              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
-                                 종료일
-                              </p>
-                              <p className="mt-2 text-sm font-medium text-zinc-950">
-                                 {formatDate(account.subscriptionEndAt)}
-                              </p>
-                           </div>
-                        </div>
-                     )}
+                        ))}
+                     </div>
+                  )}
 
                   {currentPlan !== "none" && (
                      <div className="mt-6 rounded-lg border border-zinc-200 bg-zinc-50 p-5">
@@ -1345,7 +1574,10 @@ export default function MyPagePanel() {
                            {upgradePlanOptions.length > 0 && (
                               <button
                                  type="button"
-                                 onClick={() => setModalMode("upgrade")}
+                                 onClick={() => {
+                                    setExtendOpen(false);
+                                    setModalMode("upgrade");
+                                 }}
                                  className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                               >
                                  업그레이드
@@ -1355,7 +1587,10 @@ export default function MyPagePanel() {
                            {additionalPlanOptions.length > 0 && (
                               <button
                                  type="button"
-                                 onClick={() => setModalMode("add")}
+                                 onClick={() => {
+                                    setExtendOpen(false);
+                                    setModalMode("add");
+                                 }}
                                  className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50"
                            >
                               플랜 추가하기
@@ -1373,6 +1608,15 @@ export default function MyPagePanel() {
                         </>
                      )}
                   </div>
+
+                  {extendOpen && currentPlan !== "none" && (
+                     <ExtendPaymentPanel
+                        planName={currentPlanPaymentName}
+                        billing={extendBilling}
+                        onBillingChange={setExtendBilling}
+                        onClose={() => setExtendOpen(false)}
+                     />
+                  )}
 
                   {planNotice && (
                      <p className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
@@ -1972,6 +2216,7 @@ export default function MyPagePanel() {
          <PlanModal
             mode={modalMode}
             options={activeModalOptions}
+            subscriptionEndAt={account.subscriptionEndAt}
             onClose={() => setModalMode(null)}
          />
 

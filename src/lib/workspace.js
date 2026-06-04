@@ -363,6 +363,16 @@ export async function createWorkspaceSchedule(payload) {
    });
 }
 
+export async function sendWorkspaceCollectionStartedNotification(payload) {
+   return fetchJson(`/schedule/notify-collection-started`, {
+      method: "POST",
+      headers: {
+         "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+   });
+}
+
 export async function fetchWorkspaceSchedules(customId, accountPlatform, status = "active") {
    const query = buildQuery({ customId, accountPlatform, status });
    const response = await fetch(`${API_BASE_URL}/schedule/list?${query}`, {

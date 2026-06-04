@@ -10,7 +10,7 @@ export default function PaymentSuccessPage() {
    const [status, setStatus] = useState({
       tone: "pending",
       title: "결제 승인 확인 중입니다",
-      message: "토스페이먼츠 결제 승인 요청을 처리하고 있습니다.",
+      message: "결제 승인 요청을 처리하고 있습니다.",
    });
 
    const params = useMemo(() => {
@@ -75,7 +75,7 @@ export default function PaymentSuccessPage() {
             setStatus({
                tone: "error",
                title: "결제 승인에 실패했습니다",
-               message: error.message || "토스페이먼츠 승인 API 요청에 실패했습니다.",
+               message: error.message || "결제 승인 요청에 실패했습니다.",
             });
          }
       }

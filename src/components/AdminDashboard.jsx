@@ -814,6 +814,7 @@ function createEmptyUserForm() {
       createdAt: "",
       updatedAt: "",
       email: "",
+      memo: "",
    };
 }
 
@@ -832,6 +833,7 @@ function createEmptyHostingForm() {
       updatedAt: "",
       topImages: "",
       bottomImages: "",
+      memo: "",
       ...createEmptyMarketplacePolicyForm(),
    };
 }
@@ -859,6 +861,71 @@ function StatusMessage({ message }) {
       <p className={`rounded-lg border px-4 py-3 text-sm font-medium ${toneClass}`}>
          {message.text}
       </p>
+   );
+}
+
+function MemoIndicator({ memo }) {
+   const text = String(memo || "").trim();
+   const [tooltipPosition, setTooltipPosition] = useState(null);
+
+   if (!text) {
+      return null;
+   }
+
+   const showTooltip = (event) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setTooltipPosition({
+         top: rect.bottom + 8,
+         left: rect.left + rect.width / 2,
+      });
+   };
+
+   const hideTooltip = () => {
+      setTooltipPosition(null);
+   };
+
+   return (
+      <>
+         <span
+            title={text}
+            aria-label="메모 있음"
+            tabIndex={0}
+            onMouseEnter={showTooltip}
+            onMouseLeave={hideTooltip}
+            onFocus={showTooltip}
+            onBlur={hideTooltip}
+            className="inline-flex h-6 w-6 items-center justify-center rounded-md border border-amber-200 bg-amber-50 text-amber-800 outline-none ring-amber-300 transition focus:ring-2"
+         >
+            <svg
+               viewBox="0 0 24 24"
+               aria-hidden="true"
+               className="h-3.5 w-3.5"
+               fill="none"
+               stroke="currentColor"
+               strokeWidth="1.8"
+               strokeLinecap="round"
+               strokeLinejoin="round"
+            >
+               <path d="M7 3.5h7.5L19 8v12.5H7z" />
+               <path d="M14.5 3.5V8H19" />
+               <path d="M10 12h6" />
+               <path d="M10 15.5h4" />
+               <path d="M5 6.5v14" />
+            </svg>
+         </span>
+         {tooltipPosition ? (
+            <span
+               role="tooltip"
+               className="pointer-events-none fixed z-50 max-w-xs -translate-x-1/2 whitespace-pre-wrap rounded-lg border border-zinc-200 bg-zinc-950 px-3 py-2 text-left text-xs font-medium leading-5 text-white shadow-xl"
+               style={{
+                  top: tooltipPosition.top,
+                  left: tooltipPosition.left,
+               }}
+            >
+               {text}
+            </span>
+         ) : null}
+      </>
    );
 }
 
@@ -1191,6 +1258,19 @@ function UserForm({ form, onChange, onSave, onReset, saving }) {
                />
             </label>
          </div>
+
+         <label className="block">
+            <span className="text-sm font-medium text-zinc-600">
+               memo (선택)
+            </span>
+            <textarea
+               value={form.memo}
+               onChange={(event) => onChange("memo", event.target.value)}
+               placeholder="관리자용 메모를 입력하세요."
+               rows={4}
+               className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+            />
+         </label>
 
          <label className="block">
             <span className="text-sm font-medium text-zinc-600">
@@ -1623,6 +1703,19 @@ function HostingForm({
             </label>
          </div>
 
+         <label className="block">
+            <span className="text-sm font-medium text-zinc-600">
+               memo (선택)
+            </span>
+            <textarea
+               value={form.memo}
+               onChange={(event) => onChange("memo", event.target.value)}
+               placeholder="관리자용 메모를 입력하세요."
+               rows={4}
+               className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm"
+            />
+         </label>
+
          <div className="space-y-4 rounded-lg border border-zinc-200 bg-white p-5">
             <div>
                <h4 className="text-base font-semibold text-zinc-950">
@@ -1909,6 +2002,7 @@ function HostingForm({
          <div className="flex flex-wrap items-center gap-3">
             <button
                type="button"
+               onMouseDown={(event) => event.preventDefault()}
                onClick={onSave}
                disabled={saving}
                className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
@@ -2261,6 +2355,69 @@ export default function AdminDashboard() {
       };
    }, [selectedAccountPlatform, selectedCustomId, scheduleStatus]);
 
+   useEffect(() => {
+      if (!selectedCustomId || !selectedAccountPlatform) {
+         return undefined;
+      }
+
+      let cancelled = false;
+
+      async function loadSchedulesForFilter() {
+         setScheduleMessage({ tone: "neutral", text: "" });
+         setLoadingSchedules(true);
+         setSelectedScheduleIds([]);
+         setSchedules([]);
+
+         try {
+            const items = await fetchSchedules(
+               selectedCustomId,
+               selectedAccountPlatform,
+               scheduleStatus,
+               selectedScheduleSite,
+            );
+
+            if (!cancelled) {
+               setSchedules(items);
+
+               if (items.length === 0) {
+                  setScheduleMessage({
+                     tone: "success",
+                     text:
+                        scheduleStatus === "done"
+                           ? "현재 완료된 예약이 없습니다."
+                           : "현재 실행 대상 예약이 없습니다.",
+                  });
+               }
+            }
+         } catch (error) {
+            if (!cancelled) {
+               setSchedules([]);
+               setScheduleMessage({
+                  tone: "error",
+                  text:
+                     error.message ||
+                     "예약 목록을 불러오지 못했습니다. customId, accountPlatform, site를 확인해주세요.",
+               });
+            }
+         } finally {
+            if (!cancelled) {
+               setLoadingSchedules(false);
+            }
+         }
+      }
+
+      void loadSchedulesForFilter();
+
+      return () => {
+         cancelled = true;
+      };
+   }, [
+      scheduleStatus,
+      selectedAccountPlatform,
+      selectedCustomId,
+      selectedScheduleSite,
+   ]);
+
    async function loadUsers() {
       setLoadingUsers(true);
       setUserMessage({ tone: "neutral", text: "" });
@@ -2323,48 +2480,13 @@ export default function AdminDashboard() {
       );
    };
 
-   const handleFetchSchedules = async () => {
-      setScheduleMessage({ tone: "neutral", text: "" });
-      setLoadingSchedules(true);
-      setSelectedScheduleIds([]);
-
-      try {
-         const items = await fetchSchedules(
-            selectedCustomId,
-            selectedAccountPlatform,
-            scheduleStatus,
-            selectedScheduleSite,
-         );
-         setSchedules(items);
-         if (items.length === 0) {
-            setScheduleMessage({
-               tone: "success",
-               text:
-                  activeScheduleSubtab === "completed"
-                     ? "현재 완료된 예약이 없습니다."
-                     : "현재 실행 대상 예약이 없습니다.",
-            });
-         }
-      } catch (error) {
-         setSchedules([]);
-         setScheduleMessage({
-            tone: "error",
-            text:
-               error.message ||
-               "예약 목록을 불러오지 못했습니다. customId, accountPlatform, site를 확인해주세요.",
-         });
-      } finally {
-         setLoadingSchedules(false);
-      }
-   };
-
    const handleRunSchedules = () => {
       const scheduleIds = [...selectedScheduleIds];
       const accountPlatformLabel = selectedAccountPlatform;
 
       setScheduleMessage({ tone: "neutral", text: "" });
 
-      setActiveRunRequestCount((current) => current + 1);
+      setActiveRunRequestCount((current) => current + scheduleIds.length);
       setScheduleMessage({
          tone: "success",
          text: `${accountPlatformLabel} 예약 ${scheduleIds.length}개 실행 요청을 보냈습니다. 실제 수집은 서버에서 순차적으로 진행됩니다.`,
@@ -2379,15 +2501,15 @@ export default function AdminDashboard() {
             });
          })
          .catch((error) => {
+            setActiveRunRequestCount((current) =>
+               Math.max(0, current - scheduleIds.length),
+            );
             setScheduleMessage({
                tone: "error",
                text:
                   error.message ||
                   "예약 실행 요청에 실패했습니다. 서버 상태를 확인해주세요.",
             });
-         })
-         .finally(() => {
-            setActiveRunRequestCount((current) => Math.max(0, current - 1));
          });
    };
 
@@ -2491,6 +2613,7 @@ export default function AdminDashboard() {
          createdAt: formatDateTime(user.createdAt),
          updatedAt: formatDateTime(user.updatedAt),
          email: user.email || "",
+         memo: user.memo || "",
       });
    };
 
@@ -2511,6 +2634,7 @@ export default function AdminDashboard() {
          updatedAt: formatDateTime(account.updatedAt),
          topImages: stringifyList(account.topImages),
          bottomImages: stringifyList(account.bottomImages),
+         memo: account.memo || "",
          ...buildHostingPolicyForm(account.marketplacePolicy),
       });
    };
@@ -2568,6 +2692,7 @@ export default function AdminDashboard() {
             ),
             sites: parseListText(userForm.sites),
             email: userForm.email.trim() || null,
+            memo: userForm.memo.trim() || null,
          };
 
          if (userForm.id) {
@@ -2612,6 +2737,7 @@ export default function AdminDashboard() {
       ),
       topImages: parseListText(hostingForm.topImages),
       bottomImages: parseListText(hostingForm.bottomImages),
+      memo: hostingForm.memo.trim() || null,
       marketplacePolicy: buildMarketplacePolicyPayload(hostingForm),
    });
 
@@ -2803,7 +2929,7 @@ export default function AdminDashboard() {
          setSitemapMessage({
             tone: "success",
             text: result.blob
-               ? "사이트맵 XML 다운로드를 시작했습니다."
+               ? "사이트맵 다운로드를 시작했습니다."
                : result.message || "사이트맵 생성 요청이 완료되었습니다.",
          });
       } catch (error) {
@@ -2936,7 +3062,7 @@ export default function AdminDashboard() {
                      ))}
                   </div>
 
-                  <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
+                  <div className="mt-6 grid gap-4 lg:grid-cols-3">
                      <label className="block">
                         <span className="text-sm font-medium text-zinc-600">
                            예약 customId
@@ -3013,18 +3139,6 @@ export default function AdminDashboard() {
                         </select>
                      </label>
 
-                     <button
-                        type="button"
-                        onClick={handleFetchSchedules}
-                        disabled={
-                           loadingSchedules ||
-                           !selectedCustomId ||
-                           !selectedAccountPlatform
-                        }
-                        className="mt-6 inline-flex h-[46px] items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-4 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                        {loadingSchedules ? "예약 조회 중..." : "예약 조회"}
-                     </button>
                   </div>
 
                   <div className="mt-4">
@@ -3059,7 +3173,16 @@ export default function AdminDashboard() {
                            </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-200 bg-white">
-                           {schedules.length === 0 ? (
+                           {loadingSchedules ? (
+                              <tr>
+                                 <td
+                                    colSpan={5}
+                                    className="px-5 py-8 text-center text-sm text-zinc-500"
+                                 >
+                                    예약 목록을 불러오는 중입니다...
+                                 </td>
+                              </tr>
+                           ) : schedules.length === 0 ? (
                               <tr>
                                  <td
                                     colSpan={5}
@@ -3120,7 +3243,7 @@ export default function AdminDashboard() {
                                  className="inline-flex items-center justify-center rounded-lg border border-emerald-700 bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
                               >
                                  {activeRunRequestCount > 0
-                                    ? `선택한 예약 실행 (진행 중 ${activeRunRequestCount}개)`
+                                    ? `선택한 예약 실행 (실행 요청 ${activeRunRequestCount}개)`
                                     : "선택한 예약 실행"}
                               </button>
                            ) : (
@@ -3220,7 +3343,10 @@ export default function AdminDashboard() {
                                           {user.plan || "none"}
                                        </td>
                                        <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
-                                          {user.isApproved ? "확인" : "대기"}
+                                          <span className="inline-flex items-center gap-2">
+                                             <span>{user.isApproved ? "확인" : "대기"}</span>
+                                             <MemoIndicator memo={user.memo} />
+                                          </span>
                                        </td>
                                     </tr>
                                  ))}
@@ -3326,9 +3452,14 @@ export default function AdminDashboard() {
                                           )}
                                        </td>
                                        <td className="whitespace-nowrap px-5 py-4 text-zinc-600">
-                                          {isHostingAccountReady(account)
-                                             ? "가능"
-                                             : "미완료"}
+                                          <span className="inline-flex items-center gap-2">
+                                             <span>
+                                                {isHostingAccountReady(account)
+                                                   ? "가능"
+                                                   : "미완료"}
+                                             </span>
+                                             <MemoIndicator memo={account.memo} />
+                                          </span>
                                        </td>
                                     </tr>
                                  ))}
@@ -3338,7 +3469,9 @@ export default function AdminDashboard() {
                      </div>
 
                      <div className="space-y-4">
-                        <StatusMessage message={hostingMessage} />
+                        <div className="min-h-[46px]">
+                           <StatusMessage message={hostingMessage} />
+                        </div>
                         <HostingForm
                            form={hostingForm}
                            onChange={handleHostingFieldChange}
@@ -3357,7 +3490,7 @@ export default function AdminDashboard() {
                <section className="rounded-lg border border-zinc-200 bg-white p-7 shadow-sm">
                   <SectionHeader
                      title="사이트맵 생성"
-                     description="site와 apiKey로 고도몰 상품 사이트맵 생성을 요청합니다."
+                     description="site와 apiKey로 고도몰 상품 사이트맵 ZIP 생성을 요청합니다."
                   />
 
                   <div className="mt-5">
