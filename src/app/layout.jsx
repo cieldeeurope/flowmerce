@@ -11,7 +11,7 @@ import {
 
 const primaryIconUrl = `${siteUrl}/favicon.png`;
 const gtmId = "GTM-N5K69TV3";
-const metaPixelId = "955733247288496";
+const googleAnalyticsId = "G-SW7209YYLB";
 const naverAnalyticsId = "c937c450f32000";
 
 export const metadata = {
@@ -110,6 +110,20 @@ export default function RootLayout({ children }) {
                   `,
                }}
             />
+            <script
+               async
+               src={`https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsId}`}
+            />
+            <script
+               dangerouslySetInnerHTML={{
+                  __html: `
+                     window.dataLayer = window.dataLayer || [];
+                     function gtag(){dataLayer.push(arguments);}
+                     gtag('js', new Date());
+                     gtag('config', '${googleAnalyticsId}');
+                  `,
+               }}
+            />
             <script async src="https://wcs.pstatic.net/wcslog.js" />
             <script
                dangerouslySetInnerHTML={{
@@ -122,42 +136,8 @@ export default function RootLayout({ children }) {
                   `,
                }}
             />
-            <script
-               dangerouslySetInnerHTML={{
-                  __html: `
-                     !function(f,b,e,v,n,t,s)
-                     {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-                     n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-                     if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-                     n.queue=[];t=b.createElement(e);t.async=!0;
-                     t.src=v;s=b.getElementsByTagName(e)[0];
-                     s.parentNode.insertBefore(t,s)}(window, document,'script',
-                     'https://connect.facebook.net/en_US/fbevents.js');
-                     fbq('init', '${metaPixelId}');
-                     fbq('track', 'PageView');
-                  `,
-               }}
-            />
          </head>
          <body className="flex h-full flex-col">
-            <noscript>
-               <iframe
-                  src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
-                  height="0"
-                  width="0"
-                  style={{ display: "none", visibility: "hidden" }}
-               />
-            </noscript>
-            <noscript>
-               {/* eslint-disable-next-line @next/next/no-img-element */}
-               <img
-                  height="1"
-                  width="1"
-                  style={{ display: "none" }}
-                  src={`https://www.facebook.com/tr?id=${metaPixelId}&ev=PageView&noscript=1`}
-                  alt=""
-               />
-            </noscript>
             <UserSessionManager />
             {children}
          </body>

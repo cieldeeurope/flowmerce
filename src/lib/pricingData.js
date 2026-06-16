@@ -48,6 +48,11 @@ export const coreSourcingSites = [
    "Longchamp",
    "Maisonkitsune",
    "Maje",
+   "CPcompany",
+   "Rogervivier",
+   "Alaia",
+   "Toteme",
+   "Delvaux",
 ];
 
 export const plans = [

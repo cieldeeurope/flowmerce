@@ -22,12 +22,26 @@ const securityHeaders = [
    },
 ];
 
+const apiBaseUrl = (
+   process.env.NEXT_PUBLIC_API_BASE_URL ||
+   process.env.API_BASE_URL ||
+   "https://api.flowmerce.co.kr"
+).replace(/\/$/, "");
+
 const nextConfig = {
    async headers() {
       return [
          {
             source: "/:path*",
             headers: securityHeaders,
+         },
+      ];
+   },
+   async rewrites() {
+      return [
+         {
+            source: "/categories/:path*",
+            destination: `${apiBaseUrl}/categories/:path*`,
          },
       ];
    },

@@ -18,8 +18,19 @@ async function readApiResponseBody(response) {
    }
 }
 
+function getMissingCategoryRouteMessage(data) {
+   const text = String(data?.rawText || data?.error || data?.message || "");
+   const match = text.match(/Cannot GET\s+\/categories\/([^/?\s]+)/i);
+
+   if (!match) {
+      return "";
+   }
+
+   return `${match[1]} 카테고리 조회 API가 아직 운영 서버에 반영되지 않았습니다. 백엔드 배포 후 다시 시도해주세요.`;
+}
+
 function getApiErrorMessage(data, fallback = "요청을 처리하지 못했습니다.") {
-   return data?.message || data?.error || data?.rawText || fallback;
+   return getMissingCategoryRouteMessage(data) || data?.message || data?.error || data?.rawText || fallback;
 }
 
 function isMissingRouteResponse(response, data) {
