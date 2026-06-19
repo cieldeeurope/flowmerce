@@ -294,50 +294,6 @@ export async function deleteWorkspaceMapping(payload) {
    });
 }
 
-export async function fetchWorkspacePlatformTargets() {
-   const data = await fetchJson(`/platform/targets`);
-   return normalizeListResponse(data, "platforms");
-}
-
-export async function fetchWorkspacePlatformCategories(targetPlatform) {
-   const query = buildQuery({ targetPlatform });
-   const data = await fetchJson(`/platform/categories?${query}`);
-   return normalizeListResponse(data, "categories");
-}
-
-export async function fetchWorkspacePlatformMappings(params) {
-   const query = buildQuery(params);
-   const data = await fetchJson(`/platform/mappings?${query}`);
-   return normalizeListResponse(data, "mappings");
-}
-
-export async function saveWorkspacePlatformMapping(payload) {
-   return fetchJson(`/platform/mappings`, {
-      method: "POST",
-      headers: {
-         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-   });
-}
-
-export async function deleteWorkspacePlatformMapping(id, customId) {
-   const query = buildQuery({ customId });
-   return fetchJson(`/platform/mappings/${encodeURIComponent(id)}?${query}`, {
-      method: "DELETE",
-   });
-}
-
-export async function syncWorkspacePlatformProducts(payload) {
-   return fetchJson(`/platform/sync`, {
-      method: "POST",
-      headers: {
-         "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-   });
-}
-
 export async function saveWorkspaceSelectedDesigners(payload) {
    return fetchJson(`/mapping/save`, {
       method: "POST",

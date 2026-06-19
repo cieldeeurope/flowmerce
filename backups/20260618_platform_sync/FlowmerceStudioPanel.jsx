@@ -10,7 +10,6 @@ import {
    createWorkspaceSchedule,
    deleteWorkspaceMapping,
    deleteWorkspaceMargin,
-   deleteWorkspacePlatformMapping,
    deleteWorkspaceReplacement,
    fetchWorkspaceCafe24AuthorizeUrl,
    fetchWorkspaceCollectionMappings,
@@ -19,9 +18,6 @@ import {
    fetchWorkspaceHostingCategories,
    fetchWorkspaceMappedCategories,
    fetchWorkspaceMargins,
-   fetchWorkspacePlatformCategories,
-   fetchWorkspacePlatformMappings,
-   fetchWorkspacePlatformTargets,
    fetchWorkspaceReplacements,
    fetchWorkspaceSourceCategories,
    loadWorkspaceSelectedDesigners,
@@ -31,44 +27,19 @@ import {
    saveWorkspaceHostingAccount,
    saveWorkspaceMapping,
    saveWorkspaceMargin,
-   saveWorkspacePlatformMapping,
    saveWorkspaceReplacement,
    saveWorkspaceSelectedDesigners,
    sendWorkspaceCollectionStartedNotification,
-   syncWorkspacePlatformProducts,
 } from "@/lib/workspace";
 
 const TABS = [
    { id: "collection", label: "상품수집" },
-   { id: "platformSync", label: "상품연동" },
    { id: "margin", label: "마진" },
    { id: "replacement", label: "치환" },
 ];
 
 const PLATFORM_OPTIONS = ["smartstore", "godomall", "cafe24", "makeshop"];
 const CAFE24_OAUTH_STATE_KEY = "flowmerce_cafe24_oauth_state";
-
-const PLATFORM_SYNC_TARGETS = [
-   { id: "coupang", label: "쿠팡", enabled: true },
-   { id: "11st", label: "11번가", enabled: true },
-   { id: "auction", label: "옥션", enabled: true },
-   { id: "gmarket", label: "지마켓", enabled: true },
-   { id: "lotteon", label: "롯데ON", enabled: false },
-   { id: "ssg", label: "SSG닷컴", enabled: false },
-   { id: "shinsegaemall", label: "신세계몰", enabled: false },
-   { id: "lfmall", label: "LFmall", enabled: false },
-   { id: "cjmall", label: "CJ온스타일", enabled: false },
-   { id: "feelway", label: "필웨이", enabled: false },
-   { id: "mustit", label: "머스트잇", enabled: false },
-   { id: "trenbe", label: "트렌비", enabled: false },
-   { id: "homeandshopping", label: "홈앤쇼핑", enabled: false },
-   { id: "gsshop", label: "GSSHOP", enabled: false },
-   { id: "emartmall", label: "이마트몰", enabled: false },
-   { id: "shinsegaev", label: "신세계V", enabled: false },
-   { id: "ably", label: "ABLY(에이블리)", enabled: false },
-   { id: "musinsa", label: "무신사", enabled: false },
-   { id: "lottedepartment", label: "롯데백화점", enabled: false },
-];
 
 const SITE_LABELS = {
    Farfetch: "파페치",
@@ -375,42 +346,6 @@ function normalizeMappedCategory(item) {
       site,
       customId,
       accountPlatform,
-   };
-}
-
-function normalizePlatformCategory(item) {
-   const categoryName = normalizeCategoryName(
-      item?.categoryName || item?.targetCategoryName || item?.categoryPath,
-   );
-   const categoryCode = String(item?.categoryCode || item?.targetCategoryCode || "").trim();
-   const categoryPath = normalizeCategoryName(item?.categoryPath || item?.targetCategoryPath);
-
-   return {
-      key: categoryCode || categoryPath || categoryName,
-      categoryName,
-      categoryCode,
-      categoryPath,
-      label: categoryPath || categoryName,
-   };
-}
-
-function normalizePlatformMapping(item) {
-   const id = String(item?.id || "").trim();
-   const sourceCategoryName = normalizeCategoryName(item?.sourceCategoryName);
-   const sourceSiteUrl = String(item?.sourceSiteUrl || "").trim();
-   const targetCategoryName = normalizeCategoryName(item?.targetCategoryName);
-   const targetCategoryCode = String(item?.targetCategoryCode || "").trim();
-   const targetCategoryPath = normalizeCategoryName(item?.targetCategoryPath);
-
-   return {
-      key: id || [sourceSiteUrl, targetCategoryCode, targetCategoryName].filter(Boolean).join("::"),
-      id,
-      sourceCategoryName,
-      sourceSiteUrl,
-      targetCategoryName,
-      targetCategoryCode,
-      targetCategoryPath,
-      label: `${targetCategoryPath || targetCategoryName} | ${sourceCategoryName}`,
    };
 }
 
@@ -731,20 +666,6 @@ export default function FlowmerceStudioPanel() {
       useState(false);
    const [collectionMessage, setCollectionMessage] = useState({ tone: "neutral", text: "" });
 
-   const [platformTargets, setPlatformTargets] = useState(PLATFORM_SYNC_TARGETS);
-   const [selectedPlatformTarget, setSelectedPlatformTarget] = useState("coupang");
-   const [platformCategories, setPlatformCategories] = useState([]);
-   const [platformMappings, setPlatformMappings] = useState([]);
-   const [selectedPlatformSourceKey, setSelectedPlatformSourceKey] = useState("");
-   const [selectedPlatformCategoryKey, setSelectedPlatformCategoryKey] = useState("");
-   const [selectedPlatformMappingKeys, setSelectedPlatformMappingKeys] = useState([]);
-   const [selectedPlatformWorkKeys, setSelectedPlatformWorkKeys] = useState([]);
-   const [loadingPlatformSync, setLoadingPlatformSync] = useState(false);
-   const [savingPlatformMapping, setSavingPlatformMapping] = useState(false);
-   const [deletingPlatformMapping, setDeletingPlatformMapping] = useState(false);
-   const [syncingPlatformProducts, setSyncingPlatformProducts] = useState(false);
-   const [platformMessage, setPlatformMessage] = useState({ tone: "neutral", text: "" });
-
    const [margins, setMargins] = useState([]);
    const [selectedMarginId, setSelectedMarginId] = useState("");
    const [marginForm, setMarginForm] = useState(createEmptyMarginForm());
@@ -823,45 +744,6 @@ export default function FlowmerceStudioPanel() {
    const selectedCollectionItems = useMemo(
       () => collectionCategories.filter((item) => selectedCollectionKeys.includes(item.key)),
       [collectionCategories, selectedCollectionKeys],
-   );
-
-   const resolvedTargetAccountPlatform = useMemo(
-      () => `${selectedPlatformTarget}_1`,
-      [selectedPlatformTarget],
-   );
-
-   const selectedPlatformSourceCategory = useMemo(
-      () => mappedCategories.find((item) => item.key === selectedPlatformSourceKey) || null,
-      [mappedCategories, selectedPlatformSourceKey],
-   );
-
-   const selectedPlatformCategory = useMemo(
-      () => platformCategories.find((item) => item.key === selectedPlatformCategoryKey) || null,
-      [platformCategories, selectedPlatformCategoryKey],
-   );
-
-   const selectedPlatformMappings = useMemo(
-      () => platformMappings.filter((item) => selectedPlatformMappingKeys.includes(item.key)),
-      [platformMappings, selectedPlatformMappingKeys],
-   );
-
-   const selectedPlatformWorkItems = useMemo(
-      () => platformMappings.filter((item) => selectedPlatformWorkKeys.includes(item.key)),
-      [platformMappings, selectedPlatformWorkKeys],
-   );
-
-   const allPlatformMappingsSelected = useMemo(
-      () =>
-         platformMappings.length > 0 &&
-         platformMappings.every((item) => selectedPlatformMappingKeys.includes(item.key)),
-      [platformMappings, selectedPlatformMappingKeys],
-   );
-
-   const allPlatformWorkSelected = useMemo(
-      () =>
-         platformMappings.length > 0 &&
-         platformMappings.every((item) => selectedPlatformWorkKeys.includes(item.key)),
-      [platformMappings, selectedPlatformWorkKeys],
    );
 
    const loadProfile = useCallback(async () => {
@@ -956,27 +838,6 @@ export default function FlowmerceStudioPanel() {
          setLoadingMargins(false);
       }
    }, [selectedAccountPlatform, session?.customId]);
-
-   useEffect(() => {
-      let mounted = true;
-
-      fetchWorkspacePlatformTargets()
-         .then((items) => {
-            if (!mounted || !Array.isArray(items) || items.length === 0) {
-               return;
-            }
-            setPlatformTargets(items);
-         })
-         .catch(() => {
-            if (mounted) {
-               setPlatformTargets(PLATFORM_SYNC_TARGETS);
-            }
-         });
-
-      return () => {
-         mounted = false;
-      };
-   }, []);
 
    useEffect(() => {
       if (!session?.customId) {
@@ -1208,59 +1069,6 @@ export default function FlowmerceStudioPanel() {
       [selectedAccountPlatform, selectedBrand, session?.customId, syncHostingAccountDetail],
    );
 
-   const loadPlatformSyncWorkspace = useCallback(async () => {
-      if (
-         !session?.customId ||
-         !selectedAccountPlatform ||
-         !selectedBrand ||
-         !selectedPlatformTarget
-      ) {
-         return;
-      }
-
-      setLoadingPlatformSync(true);
-
-      try {
-         const [nextCategories, nextMappings] = await Promise.all([
-            fetchWorkspacePlatformCategories(selectedPlatformTarget),
-            fetchWorkspacePlatformMappings({
-               customId: session.customId,
-               sourceAccountPlatform: selectedAccountPlatform,
-               targetPlatform: selectedPlatformTarget,
-               targetAccountPlatform: resolvedTargetAccountPlatform,
-               site: selectedBrand,
-            }),
-         ]);
-
-         setPlatformCategories(
-            Array.isArray(nextCategories)
-               ? nextCategories.map(normalizePlatformCategory).filter((item) => item.key)
-               : [],
-         );
-         setPlatformMappings(
-            Array.isArray(nextMappings)
-               ? nextMappings.map(normalizePlatformMapping).filter((item) => item.key)
-               : [],
-         );
-         setSelectedPlatformCategoryKey("");
-         setSelectedPlatformMappingKeys([]);
-         setSelectedPlatformWorkKeys([]);
-      } catch (error) {
-         setPlatformMessage({
-            tone: "error",
-            text: error.message || "상품연동 정보를 불러오지 못했습니다.",
-         });
-      } finally {
-         setLoadingPlatformSync(false);
-      }
-   }, [
-      resolvedTargetAccountPlatform,
-      selectedAccountPlatform,
-      selectedBrand,
-      selectedPlatformTarget,
-      session?.customId,
-   ]);
-
    useEffect(() => {
       if (!session?.customId || !selectedAccountPlatform || !selectedBrand) {
          return;
@@ -1280,15 +1088,6 @@ export default function FlowmerceStudioPanel() {
       setCollectionMessage({ tone: "neutral", text: "" });
       void loadCollectionWorkspace();
    }, [loadCollectionWorkspace, selectedAccountPlatform, selectedBrand, session?.customId]);
-
-   useEffect(() => {
-      if (activeTab !== "platformSync") {
-         return;
-      }
-
-      void loadCollectionWorkspace({ keepCollection: true });
-      void loadPlatformSyncWorkspace();
-   }, [activeTab, loadCollectionWorkspace, loadPlatformSyncWorkspace]);
 
    useEffect(() => {
       const handleMessage = (event) => {
@@ -1374,181 +1173,6 @@ export default function FlowmerceStudioPanel() {
          allCollectionSelected ? [] : collectionCategories.map((item) => item.key),
       );
    }, [allCollectionSelected, collectionCategories]);
-
-   const handleToggleAllPlatformMappings = useCallback(() => {
-      setSelectedPlatformMappingKeys(
-         allPlatformMappingsSelected ? [] : platformMappings.map((item) => item.key),
-      );
-   }, [allPlatformMappingsSelected, platformMappings]);
-
-   const handleToggleAllPlatformWork = useCallback(() => {
-      setSelectedPlatformWorkKeys(
-         allPlatformWorkSelected ? [] : platformMappings.map((item) => item.key),
-      );
-   }, [allPlatformWorkSelected, platformMappings]);
-
-   const handleSavePlatformMapping = useCallback(async () => {
-      if (!session?.customId || !selectedAccountPlatform || !selectedBrand) {
-         return;
-      }
-
-      if (!selectedPlatformSourceCategory) {
-         setPlatformMessage({
-            tone: "error",
-            text: "연동할 카테고리를 먼저 선택해 주세요.",
-         });
-         return;
-      }
-
-      if (!selectedPlatformCategory) {
-         setPlatformMessage({
-            tone: "error",
-            text: "쇼핑몰 카테고리를 먼저 선택해 주세요.",
-         });
-         return;
-      }
-
-      setSavingPlatformMapping(true);
-      setPlatformMessage({ tone: "neutral", text: "" });
-
-      try {
-         await saveWorkspacePlatformMapping({
-            customId: session.customId,
-            sourceAccountPlatform: selectedAccountPlatform,
-            targetPlatform: selectedPlatformTarget,
-            targetAccountPlatform: resolvedTargetAccountPlatform,
-            site: selectedBrand,
-            sourceCategoryName: selectedPlatformSourceCategory.categoryName,
-            sourceSiteUrl: selectedPlatformSourceCategory.siteUrl,
-            targetCategoryCode: selectedPlatformCategory.categoryCode,
-            targetCategoryName: selectedPlatformCategory.categoryName,
-            targetCategoryPath: selectedPlatformCategory.categoryPath,
-         });
-
-         await loadPlatformSyncWorkspace();
-         setSelectedPlatformSourceKey("");
-         setSelectedPlatformCategoryKey("");
-         setPlatformMessage({
-            tone: "success",
-            text: "상품연동 카테고리 매핑을 저장했습니다.",
-         });
-      } catch (error) {
-         setPlatformMessage({
-            tone: "error",
-            text: error.message || "상품연동 카테고리 매핑을 저장하지 못했습니다.",
-         });
-      } finally {
-         setSavingPlatformMapping(false);
-      }
-   }, [
-      loadPlatformSyncWorkspace,
-      resolvedTargetAccountPlatform,
-      selectedAccountPlatform,
-      selectedBrand,
-      selectedPlatformCategory,
-      selectedPlatformSourceCategory,
-      selectedPlatformTarget,
-      session?.customId,
-   ]);
-
-   const handleDeletePlatformMapping = useCallback(async () => {
-      if (!session?.customId) {
-         return;
-      }
-
-      if (selectedPlatformMappings.length === 0) {
-         setPlatformMessage({
-            tone: "error",
-            text: "삭제할 상품연동 매핑을 먼저 선택해 주세요.",
-         });
-         return;
-      }
-
-      setDeletingPlatformMapping(true);
-      setPlatformMessage({ tone: "neutral", text: "" });
-
-      try {
-         const deletableMappings = selectedPlatformMappings.filter((item) => item.id);
-
-         if (!deletableMappings.length) {
-            throw new Error("삭제할 수 있는 상품연동 매핑이 없습니다.");
-         }
-
-         await Promise.all(
-            deletableMappings.map((item) =>
-               deleteWorkspacePlatformMapping(item.id, session.customId),
-            ),
-         );
-
-         await loadPlatformSyncWorkspace();
-         setSelectedPlatformMappingKeys([]);
-         setSelectedPlatformWorkKeys([]);
-         setPlatformMessage({
-            tone: "success",
-            text: "선택한 상품연동 매핑을 삭제했습니다.",
-         });
-      } catch (error) {
-         setPlatformMessage({
-            tone: "error",
-            text: error.message || "상품연동 매핑을 삭제하지 못했습니다.",
-         });
-      } finally {
-         setDeletingPlatformMapping(false);
-      }
-   }, [loadPlatformSyncWorkspace, selectedPlatformMappings, session?.customId]);
-
-   const handleSyncPlatformProducts = useCallback(async () => {
-      if (!session?.customId || !selectedAccountPlatform || !selectedBrand) {
-         return;
-      }
-
-      const mappingsToSync =
-         selectedPlatformWorkItems.length > 0 ? selectedPlatformWorkItems : platformMappings;
-
-      if (!mappingsToSync.length) {
-         setPlatformMessage({
-            tone: "error",
-            text: "상품연동할 매핑 카테고리를 먼저 선택해 주세요.",
-         });
-         return;
-      }
-
-      setSyncingPlatformProducts(true);
-      setPlatformMessage({ tone: "neutral", text: "" });
-
-      try {
-         const result = await syncWorkspacePlatformProducts({
-            customId: session.customId,
-            sourceAccountPlatform: selectedAccountPlatform,
-            targetPlatform: selectedPlatformTarget,
-            targetAccountPlatform: resolvedTargetAccountPlatform,
-            site: selectedBrand,
-            sourceSiteUrls: mappingsToSync.map((item) => item.sourceSiteUrl).filter(Boolean),
-         });
-
-         setPlatformMessage({
-            tone: "success",
-            text: `상품연동 완료: 신규 ${result?.created || 0}개, 업데이트 ${result?.updated || 0}개, 삭제표시 ${result?.deleted || 0}개`,
-         });
-         await loadPlatformSyncWorkspace();
-      } catch (error) {
-         setPlatformMessage({
-            tone: "error",
-            text: error.message || "상품연동을 실행하지 못했습니다.",
-         });
-      } finally {
-         setSyncingPlatformProducts(false);
-      }
-   }, [
-      loadPlatformSyncWorkspace,
-      platformMappings,
-      resolvedTargetAccountPlatform,
-      selectedAccountPlatform,
-      selectedBrand,
-      selectedPlatformWorkItems,
-      selectedPlatformTarget,
-      session?.customId,
-   ]);
 
    const handleSelectHostingAccount = useCallback(
       (account) => {
@@ -2945,176 +2569,6 @@ export default function FlowmerceStudioPanel() {
                            : "시작 알림톡"}
                      </SecondaryButton>
                   </div>
-               </div>
-            </section>
-         ) : null}
-
-         {activeTab === "platformSync" ? (
-            <section className="border border-zinc-200 bg-white px-4 py-4 sm:px-5">
-               <div className="space-y-5">
-                  <div className="flex flex-wrap gap-2">
-                     {platformTargets.map((platform) => {
-                        const enabled = platform.enabled !== false;
-
-                        return (
-                           <SecondaryButton
-                              key={platform.id}
-                              onClick={() => {
-                                 if (!enabled) {
-                                    return;
-                                 }
-                                 setSelectedPlatformTarget(platform.id);
-                                 setSelectedPlatformSourceKey("");
-                                 setSelectedPlatformCategoryKey("");
-                                 setSelectedPlatformMappingKeys([]);
-                                 setSelectedPlatformWorkKeys([]);
-                                 setPlatformMessage({ tone: "neutral", text: "" });
-                              }}
-                              disabled={!enabled}
-                              title={!enabled ? "준비중" : undefined}
-                              className={clsx(
-                                 "px-3 py-2 text-xs sm:text-sm",
-                                 selectedPlatformTarget === platform.id &&
-                                    enabled &&
-                                    "!border-zinc-950 !bg-zinc-950 !text-white hover:!border-zinc-950 hover:!bg-zinc-950 hover:!text-white",
-                                 !enabled && "!border-zinc-200 !bg-zinc-100 !text-zinc-400",
-                              )}
-                           >
-                              {platform.label}
-                           </SecondaryButton>
-                        );
-                     })}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                     {subscribedSites.map((site) => (
-                        <SecondaryButton
-                           key={site}
-                           onClick={() => {
-                              setSelectedBrand(site);
-                              setSelectedPlatformSourceKey("");
-                              setSelectedPlatformCategoryKey("");
-                              setSelectedPlatformMappingKeys([]);
-                              setSelectedPlatformWorkKeys([]);
-                           }}
-                           className={clsx(
-                              "px-3 py-2 text-xs sm:text-sm",
-                              selectedBrand === site &&
-                                 "!border-zinc-950 !bg-zinc-950 !text-white hover:!border-zinc-950 hover:!bg-zinc-950 hover:!text-white",
-                           )}
-                        >
-                           {getSiteLabel(site)}
-                        </SecondaryButton>
-                     ))}
-                  </div>
-
-                  <StatusMessage message={platformMessage} />
-
-                  <div className="grid grid-cols-4 gap-3">
-                     <ProgramListView
-                        title="연동할 카테고리"
-                        items={mappedCategories.map((item) => ({
-                           key: item.key,
-                           label: item.label,
-                           categoryName: item.categoryName,
-                           siteUrl: item.siteUrl,
-                        }))}
-                        selectedKeys={selectedPlatformSourceKey ? [selectedPlatformSourceKey] : []}
-                        onToggle={(item) =>
-                           setSelectedPlatformSourceKey((current) =>
-                              current === item.key ? "" : item.key,
-                           )
-                        }
-                        emptyText={
-                           loadingCollection
-                              ? "수집 카테고리를 불러오는 중입니다."
-                              : "먼저 상품수집 탭에서 카테고리를 매핑해 주세요."
-                        }
-                        multi={false}
-                     />
-
-                     <ProgramListView
-                        title="쇼핑몰 카테고리"
-                        items={platformCategories.map((item) => ({
-                           key: item.key,
-                           label: item.label,
-                           categoryName: item.categoryName,
-                           categoryCode: item.categoryCode,
-                           categoryPath: item.categoryPath,
-                        }))}
-                        selectedKeys={
-                           selectedPlatformCategoryKey ? [selectedPlatformCategoryKey] : []
-                        }
-                        onToggle={(item) =>
-                           setSelectedPlatformCategoryKey((current) =>
-                              current === item.key ? "" : item.key,
-                           )
-                        }
-                        emptyText={
-                           loadingPlatformSync
-                              ? "쇼핑몰 카테고리를 불러오는 중입니다."
-                              : "쇼핑몰 카테고리가 없습니다."
-                        }
-                        multi={false}
-                     />
-
-                     <ProgramListView
-                        title="매핑한 카테고리"
-                        items={platformMappings.map((item) => ({
-                           key: item.key,
-                           label: item.label,
-                        }))}
-                        selectedKeys={selectedPlatformMappingKeys}
-                        onToggle={toggleSelection(setSelectedPlatformMappingKeys)}
-                        emptyText="저장된 상품연동 매핑이 없습니다."
-                        showCheckboxes
-                        onToggleAll={handleToggleAllPlatformMappings}
-                        allSelected={allPlatformMappingsSelected}
-                     />
-
-                     <ProgramListView
-                        title="작업 카테고리"
-                        items={platformMappings.map((item) => ({
-                           key: item.key,
-                           label: item.label,
-                        }))}
-                        selectedKeys={selectedPlatformWorkKeys}
-                        onToggle={toggleSelection(setSelectedPlatformWorkKeys)}
-                        emptyText="작업할 상품연동 카테고리가 없습니다."
-                        showCheckboxes
-                        onToggleAll={handleToggleAllPlatformWork}
-                        allSelected={allPlatformWorkSelected}
-                     />
-                  </div>
-
-                  <div className="flex flex-wrap justify-center gap-3">
-                     <SecondaryButton
-                        onClick={handleSavePlatformMapping}
-                        disabled={savingPlatformMapping}
-                     >
-                        {savingPlatformMapping ? "매핑 저장 중..." : "매핑 저장"}
-                     </SecondaryButton>
-                     <SecondaryButton
-                        onClick={handleDeletePlatformMapping}
-                        disabled={deletingPlatformMapping}
-                     >
-                        {deletingPlatformMapping ? "매핑삭제 중..." : "매핑삭제"}
-                     </SecondaryButton>
-                     <SecondaryButton
-                        onClick={loadPlatformSyncWorkspace}
-                        disabled={loadingPlatformSync}
-                     >
-                        새로고침
-                     </SecondaryButton>
-                  </div>
-
-                  <PrimaryButton
-                     onClick={handleSyncPlatformProducts}
-                     disabled={syncingPlatformProducts}
-                     className="w-full py-4 text-base"
-                  >
-                     {syncingPlatformProducts ? "상품연동 중..." : "상품연동"}
-                  </PrimaryButton>
                </div>
             </section>
          ) : null}

@@ -6,6 +6,8 @@ export const highEndSites = [
    "Brunello",
    "Hermes",
    "Jacquemus",
+   "Rogervivier",
+   "Berluti",
 ];
 
 export const coreSourcingSites = [
@@ -49,10 +51,13 @@ export const coreSourcingSites = [
    "Maisonkitsune",
    "Maje",
    "CPcompany",
-   "Rogervivier",
    "Alaia",
    "Toteme",
    "Delvaux",
+   "Jimmychoo",
+   "Versace",
+   "Offwhite",
+   "Etro",
 ];
 
 export const plans = [

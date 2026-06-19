@@ -3192,17 +3192,27 @@ export default function AdminDashboard() {
                                  </td>
                               </tr>
                            ) : (
-                              schedules.map((schedule) => (
-                                 <tr key={schedule.id}>
+                              schedules.map((schedule) => {
+                                 const isSelected = selectedScheduleIds.includes(
+                                    schedule.id,
+                                 );
+
+                                 return (
+                                 <tr
+                                    key={schedule.id}
+                                    onClick={() => toggleScheduleSelection(schedule.id)}
+                                    className={`cursor-pointer transition ${
+                                       isSelected
+                                          ? "bg-emerald-50"
+                                          : "hover:bg-zinc-50"
+                                    }`}
+                                 >
                                     <td className="px-4 py-4">
                                        <input
                                           type="checkbox"
-                                          checked={selectedScheduleIds.includes(
-                                             schedule.id,
-                                          )}
-                                          onChange={() =>
-                                             toggleScheduleSelection(schedule.id)
-                                          }
+                                          checked={isSelected}
+                                          onClick={(event) => event.stopPropagation()}
+                                          onChange={() => toggleScheduleSelection(schedule.id)}
                                           className="h-4 w-4 rounded border-zinc-300 text-emerald-600 focus:ring-emerald-500"
                                        />
                                     </td>
@@ -3219,7 +3229,8 @@ export default function AdminDashboard() {
                                        {schedule.status || "-"}
                                     </td>
                                  </tr>
-                              ))
+                                 );
+                              })
                            )}
                         </tbody>
                      </table>
