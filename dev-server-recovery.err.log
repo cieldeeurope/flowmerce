@@ -1,0 +1,42 @@
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Error: Cannot find module '../webpack-runtime.js'
+Require stack:
+- C:\flowmerce\.next\server\pages\_document.js
+- C:\flowmerce\node_modules\next\dist\server\require.js
+- C:\flowmerce\node_modules\next\dist\server\next-server.js
+- C:\flowmerce\node_modules\next\dist\server\dev\next-dev-server.js
+- C:\flowmerce\node_modules\next\dist\server\next.js
+- C:\flowmerce\node_modules\next\dist\server\lib\render-server.js
+- C:\flowmerce\node_modules\next\dist\compiled\jest-worker\processChild.js
+[90m    at Module._resolveFilename (node:internal/modules/cjs/loader:1145:15)[39m
+    at [90mC:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\require-hook.js:110:36
+[90m    at Module._load (node:internal/modules/cjs/loader:986:27)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1233:19)[39m
+[90m    at require (node:internal/modules/helpers:179:18)[39m
+    at [90mC:\flowmerce\[39m.next\server\pages\_document.js:120:27
+    at Object.<anonymous> [90m(C:\flowmerce\[39m.next\server\pages\_document.js:126:3[90m)[39m
+[90m    at Module._compile (node:internal/modules/cjs/loader:1358:14)[39m
+[90m    at Module._extensions..js (node:internal/modules/cjs/loader:1416:10)[39m
+[90m    at Module.load (node:internal/modules/cjs/loader:1208:32)[39m
+[90m    at Module._load (node:internal/modules/cjs/loader:1024:12)[39m
+[90m    at Module.require (node:internal/modules/cjs/loader:1233:19)[39m
+[90m    at require (node:internal/modules/helpers:179:18)[39m
+    at requirePage [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\require.js:112:75[90m)[39m
+    at [90mC:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\load-components.js:76:65
+[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
+    at async Promise.all (index 0)
+    at async loadComponentsImpl [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\load-components.js:75:33[90m)[39m
+    at async DevServer.findPageComponentsImpl [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:439:36[90m)[39m {
+  code: [32m'MODULE_NOT_FOUND'[39m,
+  requireStack: [
+    [32m'C:\\flowmerce\\.next\\server\\pages\\_document.js'[39m,
+    [32m'C:\\flowmerce\\node_modules\\next\\dist\\server\\require.js'[39m,
+    [32m'C:\\flowmerce\\node_modules\\next\\dist\\server\\next-server.js'[39m,
+    [32m'C:\\flowmerce\\node_modules\\next\\dist\\server\\dev\\next-dev-server.js'[39m,
+    [32m'C:\\flowmerce\\node_modules\\next\\dist\\server\\next.js'[39m,
+    [32m'C:\\flowmerce\\node_modules\\next\\dist\\server\\lib\\render-server.js'[39m,
+    [32m'C:\\flowmerce\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'[39m
+  ]
+}

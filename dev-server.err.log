@@ -1,37 +1,5 @@
 Browserslist: caniuse-lite is outdated. Please run:
   npx update-browserslist-db@latest
   Why you should do it regularly: https://github.com/browserslist/update-db#readme
-- [31merror[39m src\components\FlowmerceStudioPanel.jsx (842:31) @ selectedTargetAccountPlatform
-- [31merror[39m ReferenceError: selectedTargetAccountPlatform is not defined
-    at FlowmerceStudioPanel (./src/components/FlowmerceStudioPanel.jsx:894:9)
-[0m [90m 840 | [39m   [36mconst[39m resolvedTargetAccountPlatform [33m=[39m useMemo([0m
-[0m [90m 841 | [39m      () [33m=>[39m selectedTargetAccountPlatform [33m||[39m [32m`${selectedPlatformTarget}_1`[39m[33m,[39m[0m
-[0m[31m[1m>[22m[39m[90m 842 | [39m      [selectedPlatformTarget[33m,[39m selectedTargetAccountPlatform][33m,[39m[0m
-[0m [90m     | [39m                              [31m[1m^[22m[39m[0m
-[0m [90m 843 | [39m   )[33m;[39m[0m
-[0m [90m 844 | [39m[0m
-[0m [90m 845 | [39m   [36mconst[39m selectedPlatformSourceCategory [33m=[39m useMemo([0m
 - [33mwarn[39m Fast Refresh had to perform a full reload due to a runtime error.
-- [31merror[39m src\components\FlowmerceStudioPanel.jsx (842:31) @ selectedTargetAccountPlatform
-- [31merror[39m ReferenceError: selectedTargetAccountPlatform is not defined
-    at FlowmerceStudioPanel (./src/components/FlowmerceStudioPanel.jsx:894:9)
-[0m [90m 840 | [39m   [36mconst[39m resolvedTargetAccountPlatform [33m=[39m useMemo([0m
-[0m [90m 841 | [39m      () [33m=>[39m selectedTargetAccountPlatform [33m||[39m [32m`${selectedPlatformTarget}_1`[39m[33m,[39m[0m
-[0m[31m[1m>[22m[39m[90m 842 | [39m      [selectedPlatformTarget[33m,[39m selectedTargetAccountPlatform][33m,[39m[0m
-[0m [90m     | [39m                              [31m[1m^[22m[39m[0m
-[0m [90m 843 | [39m   )[33m;[39m[0m
-[0m [90m 844 | [39m[0m
-[0m [90m 845 | [39m   [36mconst[39m selectedPlatformSourceCategory [33m=[39m useMemo([0m
 - [33mwarn[39m Fast Refresh had to perform a full reload due to a runtime error.
-- [31merror[39m Error [SyntaxError]: Unexpected end of JSON input
-    at JSON.parse (<anonymous>)
-    at loadManifest [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\load-manifest.js:30:27[90m)[39m
-    at getMaybePagePath [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\require.js:63:59[90m)[39m
-    at getPagePath [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\require.js:99:22[90m)[39m
-    at requirePage [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\require.js:106:22[90m)[39m
-    at [90mC:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\load-components.js:80:84
-[90m    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)[39m
-    at async loadComponentsImpl [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\load-components.js:80:26[90m)[39m
-    at async DevServer.findPageComponentsImpl [90m(C:\flowmerce\[39mnode_modules\[4mnext[24m\dist\server\next-server.js:439:36[90m)[39m {
-  digest: [90mundefined[39m
-}

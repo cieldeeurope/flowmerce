@@ -50,40 +50,26 @@ const PLATFORM_OPTIONS = ["smartstore", "godomall", "cafe24", "makeshop"];
 const CAFE24_OAUTH_STATE_KEY = "flowmerce_cafe24_oauth_state";
 
 const PLATFORM_SYNC_TARGETS = [
-   { id: "lotteon", label: "롯데ON", enabled: true },
    { id: "coupang", label: "쿠팡", enabled: true },
    { id: "11st", label: "11번가", enabled: true },
-   { id: "auction", label: "옥션", enabled: false },
-   { id: "gmarket", label: "지마켓", enabled: false },
-   { id: "kakaoshopping", label: "카카오쇼핑", enabled: false },
+   { id: "auction", label: "옥션", enabled: true },
+   { id: "gmarket", label: "지마켓", enabled: true },
+   { id: "lotteon", label: "롯데ON", enabled: false },
    { id: "ssg", label: "SSG닷컴", enabled: false },
    { id: "shinsegaemall", label: "신세계몰", enabled: false },
-   { id: "emartmall", label: "이마트몰", enabled: false },
    { id: "lfmall", label: "LFmall", enabled: false },
-   { id: "gsshop", label: "GSSHOP", enabled: false },
-   { id: "homeandshopping", label: "홈앤쇼핑", enabled: false },
+   { id: "cjmall", label: "CJ온스타일", enabled: false },
    { id: "feelway", label: "필웨이", enabled: false },
+   { id: "mustit", label: "머스트잇", enabled: false },
+   { id: "trenbe", label: "트렌비", enabled: false },
+   { id: "homeandshopping", label: "홈앤쇼핑", enabled: false },
+   { id: "gsshop", label: "GSSHOP", enabled: false },
+   { id: "emartmall", label: "이마트몰", enabled: false },
+   { id: "shinsegaev", label: "신세계V", enabled: false },
    { id: "ably", label: "ABLY(에이블리)", enabled: false },
    { id: "musinsa", label: "무신사", enabled: false },
    { id: "lottedepartment", label: "롯데백화점", enabled: false },
-   { id: "shinsegaev", label: "신세계V", enabled: false },
-   { id: "cjmall", label: "CJ온스타일", enabled: false },
-   { id: "mustit", label: "머스트잇", enabled: false },
-   { id: "trenbe", label: "트렌비", enabled: false },
 ];
-
-function normalizePlatformTargets(targets = []) {
-   const targetById = new Map(
-      (Array.isArray(targets) ? targets : [])
-         .filter((target) => target?.id)
-         .map((target) => [target.id, target]),
-   );
-
-   return PLATFORM_SYNC_TARGETS.map((target) => ({
-      ...(targetById.get(target.id) || {}),
-      ...target,
-   }));
-}
 
 const SITE_LABELS = {
    Farfetch: "파페치",
@@ -746,7 +732,7 @@ export default function FlowmerceStudioPanel() {
       useState(false);
    const [collectionMessage, setCollectionMessage] = useState({ tone: "neutral", text: "" });
 
-   const [platformTargets, setPlatformTargets] = useState(() => normalizePlatformTargets());
+   const [platformTargets, setPlatformTargets] = useState(PLATFORM_SYNC_TARGETS);
    const [selectedPlatformTarget, setSelectedPlatformTarget] = useState("coupang");
    const [platformCategories, setPlatformCategories] = useState([]);
    const [platformMappings, setPlatformMappings] = useState([]);
@@ -980,11 +966,11 @@ export default function FlowmerceStudioPanel() {
             if (!mounted || !Array.isArray(items) || items.length === 0) {
                return;
             }
-            setPlatformTargets(normalizePlatformTargets(items));
+            setPlatformTargets(items);
          })
          .catch(() => {
             if (mounted) {
-               setPlatformTargets(normalizePlatformTargets());
+               setPlatformTargets(PLATFORM_SYNC_TARGETS);
             }
          });
 
@@ -1987,15 +1973,12 @@ export default function FlowmerceStudioPanel() {
                selectedDesignerKeys.includes(item.key),
             );
 
-            if (selectedCategories.length === 0) {
-               throw new Error("Farfetch 카테고리를 먼저 선택해 주세요.");
+            if (selectedCategories.length === 0 || selectedDesigners.length === 0) {
+               throw new Error("Farfetch는 디자이너와 카테고리를 함께 선택해야 합니다.");
             }
 
             const designerCodes = selectedDesigners
                .map((item) => item.code)
-               .filter(Boolean);
-            const designerNames = selectedDesigners
-               .map((item) => item.name)
                .filter(Boolean);
             const designerPart = designerCodes.join("|");
             const categoriesWithNumbers = selectedCategories.filter(
@@ -2023,7 +2006,7 @@ export default function FlowmerceStudioPanel() {
                      categoryName: categoriesWithNumbers
                         .map((item) => item.categoryName)
                         .join(","),
-                     categoryTitle: designerNames.join(","),
+                     categoryTitle: selectedDesigners.map((item) => item.name).join(","),
                      godoMallCategoryCode: selectedMallCategory.categoryCode,
                      godoMallCategoryName: selectedMallCategory.categoryName,
                      designers: designerCodes,
@@ -2041,7 +2024,7 @@ export default function FlowmerceStudioPanel() {
                         designer: designerPart,
                      }),
                      categoryName: source.categoryName,
-                     categoryTitle: designerNames.join(","),
+                     categoryTitle: selectedDesigners.map((item) => item.name).join(","),
                      godoMallCategoryCode: selectedMallCategory.categoryCode,
                      godoMallCategoryName: selectedMallCategory.categoryName,
                      designers: designerCodes,
@@ -3146,13 +3129,7 @@ export default function FlowmerceStudioPanel() {
                         onClick={handleRefreshPlatformCategories}
                         disabled={loadingPlatformSync}
                      >
-                        {loadingPlatformSync ? "카테고리 수집 중..." : "플랫폼 카테고리"}
-                     </SecondaryButton>
-                     <SecondaryButton
-                        onClick={handleRefreshHostingCategories}
-                        disabled={!selectedAccountPlatform}
-                     >
-                        호스팅 카테고리
+                        {loadingPlatformSync ? "카테고리 수집 중..." : "호스팅 카테고리"}
                      </SecondaryButton>
                      <SecondaryButton
                         onClick={handleSavePlatformMapping}

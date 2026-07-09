@@ -86,6 +86,7 @@ export default function Footer() {
 
                   <div className="mt-7 space-y-2 text-sm leading-6 text-zinc-600">
                      <p>{"\uc0ac\uc5c5\uc790\ub4f1\ub85d\ubc88\ud638 : 433-27-02243"}</p>
+                     <p>{"\ub300\ud45c\uc790\uba85 : \ubc15\ucc2c\ubbfc"}</p>
                      <p>
                         {"\uce74\uce74\uc624\ud1a1 \ucc44\ub110 : "}
                         <a

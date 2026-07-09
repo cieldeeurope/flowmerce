@@ -33,9 +33,6 @@ export default function PricingPlanCards({
    const [billing, setBilling] = useState("monthly");
    const isLuxuryTone = tone === "luxury";
 
-   const discount =
-      billing === "sixMonth" ? "-5%" : billing === "annual" ? "-10%" : "";
-
    return (
       <>
          <div className="mt-7 flex justify-center">
@@ -64,6 +61,18 @@ export default function PricingPlanCards({
 
          <div className="mt-10 grid gap-7 sm:grid-cols-2 xl:grid-cols-4">
             {plans.map((plan) => {
+               const displayPrice = getPlanDisplayPrice(plan.name, billing);
+               const [billingLabel, ...priceParts] = displayPrice.split(" ");
+               const shouldStackPrice = billing !== "monthly" && priceParts.length > 0;
+               const discount =
+                  billing === "sixMonth"
+                     ? "-5%"
+                     : billing === "annual" && plan.name === "Enterprise"
+                       ? "-16.7%"
+                       : billing === "annual"
+                         ? "-10%"
+                         : "";
+
                return (
                   <div
                      key={plan.name}
@@ -119,7 +128,14 @@ export default function PricingPlanCards({
                         )}
                      >
                         <p className="text-3xl font-semibold">
-                           {getPlanDisplayPrice(plan.name, billing)}
+                           {shouldStackPrice ? (
+                              <>
+                                 <span className="block">{billingLabel}</span>
+                                 <span className="mt-1 block">{priceParts.join(" ")}</span>
+                              </>
+                           ) : (
+                              displayPrice
+                           )}
                         </p>
                         <p className="mt-1 text-sm font-medium text-zinc-500">
                            {plan.priceNote}
@@ -154,7 +170,7 @@ export default function PricingPlanCards({
                         includeHostingFee={planRequiresHostingFee(plan.name)}
                         compact={compact}
                         isLuxuryTone={isLuxuryTone}
-                        label="플랜 구독하기"
+                        label="이용권 결제하기"
                      />
 
                      {compact && (

@@ -1,13 +1,13 @@
 export const tossBillingLabels = {
-   monthly: "월 단위",
+   monthly: "1개월",
    sixMonth: "6개월",
    annual: "12개월",
 };
 
 export const tossBillingPaymentLabels = {
-   monthly: "월 구독",
-   sixMonth: "6개월 구독",
-   annual: "12개월 구독",
+   monthly: "1개월 이용권",
+   sixMonth: "6개월 이용권",
+   annual: "12개월 이용권",
 };
 
 export const tossBillingMonths = {
@@ -27,57 +27,57 @@ export const tossPlanBasePayments = {
    Boutique: {
       monthly: {
          amount: 550000,
-         orderName: "플로우머스 Boutique 월 구독권",
+         orderName: "플로우머스 Boutique 1개월 이용권",
       },
       sixMonth: {
          amount: 3130000,
-         orderName: "플로우머스 Boutique 6개월 구독권",
+         orderName: "플로우머스 Boutique 6개월 이용권",
       },
       annual: {
          amount: 5940000,
-         orderName: "플로우머스 Boutique 12개월 구독권",
+         orderName: "플로우머스 Boutique 12개월 이용권",
       },
    },
    Basic: {
       monthly: {
          amount: 190000,
-         orderName: "플로우머스 Basic 월 구독권",
+         orderName: "플로우머스 Basic 1개월 이용권",
       },
       sixMonth: {
          amount: 1080000,
-         orderName: "플로우머스 Basic 6개월 구독권",
+         orderName: "플로우머스 Basic 6개월 이용권",
       },
       annual: {
          amount: 2050000,
-         orderName: "플로우머스 Basic 12개월 구독권",
+         orderName: "플로우머스 Basic 12개월 이용권",
       },
    },
    Pro: {
       monthly: {
          amount: 490000,
-         orderName: "플로우머스 Pro 월 구독권",
+         orderName: "플로우머스 Pro 1개월 이용권",
       },
       sixMonth: {
          amount: 2790000,
-         orderName: "플로우머스 Pro 6개월 구독권",
+         orderName: "플로우머스 Pro 6개월 이용권",
       },
       annual: {
          amount: 5290000,
-         orderName: "플로우머스 Pro 12개월 구독권",
+         orderName: "플로우머스 Pro 12개월 이용권",
       },
    },
    Enterprise: {
       monthly: {
-         amount: 1100000,
-         orderName: "플로우머스 Enterprise 월 구독권",
+         amount: 990000,
+         orderName: "플로우머스 Enterprise 1개월 이용권",
       },
       sixMonth: {
-         amount: 6270000,
-         orderName: "플로우머스 Enterprise 6개월 구독권",
+         amount: 5643000,
+         orderName: "플로우머스 Enterprise 6개월 이용권",
       },
       annual: {
-         amount: 11880000,
-         orderName: "플로우머스 Enterprise 12개월 구독권",
+         amount: 9900000,
+         orderName: "플로우머스 Enterprise 12개월 이용권",
       },
    },
 };
@@ -124,7 +124,7 @@ export function getPlanDisplayPrice(planName, billing) {
       return "상담";
    }
 
-   const prefix = billing === "monthly" ? "월" : tossBillingLabels[billing];
+   const prefix = tossBillingLabels[billing];
    const suffix = normalizedPlanName === "Enterprise" ? " ~" : "";
    return `${prefix} ${formatKrw(amount)}${suffix}`;
 }

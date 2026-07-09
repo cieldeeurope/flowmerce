@@ -300,9 +300,16 @@ export async function fetchWorkspacePlatformTargets() {
 }
 
 export async function fetchWorkspacePlatformCategories(targetPlatform) {
-   const query = buildQuery({ targetPlatform });
+   const query = buildQuery({ targetPlatform, scope: "fashion" });
    const data = await fetchJson(`/platform/categories?${query}`);
    return normalizeListResponse(data, "categories");
+}
+
+export async function refetchWorkspacePlatformCategories(targetPlatform) {
+   const query = buildQuery({ targetPlatform, scope: "fashion" });
+   return fetchJson(`/platform/categories/fetch?${query}`, {
+      method: "POST",
+   });
 }
 
 export async function fetchWorkspacePlatformMappings(params) {
