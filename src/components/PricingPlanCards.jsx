@@ -64,6 +64,8 @@ export default function PricingPlanCards({
                const displayPrice = getPlanDisplayPrice(plan.name, billing);
                const [billingLabel, ...priceParts] = displayPrice.split(" ");
                const shouldStackPrice = billing !== "monthly" && priceParts.length > 0;
+               const shouldCompactEnterpriseMonthly =
+                  billing === "monthly" && plan.name === "Enterprise";
                const discount =
                   billing === "sixMonth"
                      ? "-5%"
@@ -127,7 +129,14 @@ export default function PricingPlanCards({
                               : "mt-2 flex min-h-[116px] flex-col justify-center",
                         )}
                      >
-                        <p className="text-3xl font-semibold">
+                        <p
+                           className={clsx(
+                              "font-semibold",
+                              shouldCompactEnterpriseMonthly
+                                 ? "text-[1.6rem] leading-tight"
+                                 : "text-3xl",
+                           )}
+                        >
                            {shouldStackPrice ? (
                               <>
                                  <span className="block">{billingLabel}</span>

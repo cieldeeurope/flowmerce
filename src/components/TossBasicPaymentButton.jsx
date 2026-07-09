@@ -50,6 +50,48 @@ function isValidTossCustomerKey(customerKey) {
    return /^[A-Za-z0-9\-_=.@]{2,50}$/.test(customerKey);
 }
 
+const paymentConsentItems = [
+   {
+      id: "terms",
+      title: "이용약관 및 이용권 결제 조건",
+      href: "/terms",
+      summary: "플로우머스 이용권은 정해진 기간에 대한 선불 결제 방식입니다.",
+      detail:
+         "1개월, 6개월, 12개월 이용권은 자동 정기결제가 아니며, 이용기간 만료 후 연장을 원하실 경우 직접 재결제 또는 별도 상담을 통해 진행됩니다. 플랜 제공 범위와 사이트 선택 기준은 이용약관과 요금 안내를 따릅니다.",
+   },
+   {
+      id: "refund",
+      title: "환불 및 해지정책",
+      href: "/refund-policy",
+      summary: "세팅 진행 여부에 따라 환불 가능 범위가 달라질 수 있습니다.",
+      detail:
+         "결제 후 사전 셋팅이 시작되기 전까지는 취소 또는 환불 요청을 검토할 수 있습니다. 계정 연동, 카테고리 매핑, 자동화 설정 등 세팅이 시작된 이후에는 이미 제공된 용역 범위에 따라 환불이 제한될 수 있습니다.",
+   },
+   {
+      id: "operation",
+      title: "구독 및 운영 동의서",
+      href: "/subscription-agreement",
+      summary: "결제 후 계정 승인, 사이트 확정, 온보딩 절차가 이어집니다.",
+      detail:
+         "플랜 결제와 사이트 선택 이후 쇼핑몰 관리자 정보 확인, 계정 승인, 세팅 온보딩이 순차적으로 진행됩니다. 실제 운영 시작일은 결제 완료 시점, 관리자 승인, 세팅 개시 시점에 따라 조정될 수 있습니다.",
+   },
+   {
+      id: "data",
+      title: "개인정보처리방침 및 계정정보 기준",
+      href: "/privacy",
+      summary: "서비스 제공을 위해 필요한 개인정보와 계정정보 처리 기준을 확인합니다.",
+      detail:
+         "플로우머스는 회원 식별, 결제 확인, 쇼핑몰 연동, 세팅 지원 및 운영 관리를 위해 필요한 정보를 처리합니다. 쇼핑몰 계정정보와 운영 데이터의 보관 및 삭제 기준은 개인정보처리방침과 계정정보 및 데이터 삭제 기준을 함께 따릅니다.",
+      secondaryHref: "/data-policy",
+      secondaryLabel: "계정정보 및 데이터 삭제 기준",
+   },
+];
+
+const initialPaymentConsents = paymentConsentItems.reduce(
+   (acc, item) => ({ ...acc, [item.id]: false }),
+   {},
+);
+
 export default function TossBasicPaymentButton({
    billing = "monthly",
    planName = "Basic",
@@ -70,6 +112,8 @@ export default function TossBasicPaymentButton({
    const [status, setStatus] = useState("");
    const [requesting, setRequesting] = useState(false);
    const [confirmOpen, setConfirmOpen] = useState(false);
+   const [consents, setConsents] = useState(initialPaymentConsents);
+   const [expandedPolicies, setExpandedPolicies] = useState({});
    const resolvedPaymentInfo = useMemo(() => {
       if (paymentInfo) {
          return paymentInfo;
@@ -98,6 +142,9 @@ export default function TossBasicPaymentButton({
       paymentInfo,
       planName,
    ]);
+   const allConsentsChecked = paymentConsentItems.every(
+      (item) => consents[item.id],
+   );
 
    const redirectToLogin = () => {
       const nextPath =
@@ -134,6 +181,11 @@ export default function TossBasicPaymentButton({
 
    const handlePayment = async () => {
       if (!resolvedPaymentInfo || requesting) {
+         return;
+      }
+
+      if (!allConsentsChecked) {
+         setStatus("필수 정책을 모두 확인하고 동의해주세요.");
          return;
       }
 
@@ -189,6 +241,30 @@ export default function TossBasicPaymentButton({
       }
    };
 
+   const toggleConsent = (id) => {
+      setConsents((current) => ({
+         ...current,
+         [id]: !current[id],
+      }));
+   };
+
+   const toggleAllConsents = () => {
+      const nextValue = !allConsentsChecked;
+      setConsents(
+         paymentConsentItems.reduce(
+            (acc, item) => ({ ...acc, [item.id]: nextValue }),
+            {},
+         ),
+      );
+   };
+
+   const togglePolicy = (id) => {
+      setExpandedPolicies((current) => ({
+         ...current,
+         [id]: !current[id],
+      }));
+   };
+
    return (
       <div className={containerClassName || clsx(compact ? "mt-auto" : "mt-7")}>
          <button
@@ -217,7 +293,7 @@ export default function TossBasicPaymentButton({
                      }
                   }}
                />
-               <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl">
+               <div className="relative max-h-[calc(100vh-4rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl">
                   <div>
                      <p className="text-sm font-semibold text-[#8c6333]">결제 안내</p>
                      <h3 className="mt-2 text-2xl font-semibold text-zinc-950">
@@ -248,6 +324,99 @@ export default function TossBasicPaymentButton({
                      </p>
                   ) : null}
 
+                  <div className="mt-5 rounded-xl border border-zinc-200 bg-white p-4">
+                     <label className="flex cursor-pointer items-start gap-3">
+                        <input
+                           type="checkbox"
+                           checked={allConsentsChecked}
+                           onChange={toggleAllConsents}
+                           className="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-950"
+                        />
+                        <span>
+                           <span className="block text-sm font-semibold text-zinc-950">
+                              필수 정책 전체 동의
+                           </span>
+                           <span className="mt-1 block text-xs leading-5 text-zinc-500">
+                              결제 전 이용권 조건, 환불 기준, 운영 절차, 개인정보 및 계정정보 처리 기준을 확인해주세요.
+                           </span>
+                        </span>
+                     </label>
+
+                     <div className="mt-4 space-y-3">
+                        {paymentConsentItems.map((item) => {
+                           const isExpanded = Boolean(expandedPolicies[item.id]);
+
+                           return (
+                              <div
+                                 key={item.id}
+                                 className="rounded-lg border border-zinc-200 bg-zinc-50 p-3"
+                              >
+                                 <div className="flex items-start gap-3">
+                                    <input
+                                       id={`payment-consent-${item.id}`}
+                                       type="checkbox"
+                                       checked={Boolean(consents[item.id])}
+                                       onChange={() => toggleConsent(item.id)}
+                                       className="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-950"
+                                    />
+                                    <div className="min-w-0 flex-1">
+                                       <label
+                                          htmlFor={`payment-consent-${item.id}`}
+                                          className="cursor-pointer text-sm font-semibold text-zinc-950"
+                                       >
+                                          {item.title}
+                                       </label>
+                                       <p className="mt-1 text-xs leading-5 text-zinc-500">
+                                          {item.summary}
+                                       </p>
+                                    </div>
+                                    <button
+                                       type="button"
+                                       onClick={() => togglePolicy(item.id)}
+                                       aria-expanded={isExpanded}
+                                       className="shrink-0 rounded-md px-2 py-1 text-xs font-semibold text-zinc-600 transition hover:bg-white hover:text-zinc-950"
+                                    >
+                                       {isExpanded ? "접기 ▲" : "보기 ▼"}
+                                    </button>
+                                 </div>
+
+                                 {isExpanded ? (
+                                    <div className="mt-3 rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs leading-6 text-zinc-600">
+                                       <p>{item.detail}</p>
+                                       <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                                          <a
+                                             href={item.href}
+                                             target="_blank"
+                                             rel="noopener noreferrer"
+                                             className="font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4 transition hover:decoration-zinc-950"
+                                          >
+                                             전문 보기
+                                          </a>
+                                          {item.secondaryHref ? (
+                                             <a
+                                                href={item.secondaryHref}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="font-semibold text-zinc-950 underline decoration-zinc-300 underline-offset-4 transition hover:decoration-zinc-950"
+                                             >
+                                                {item.secondaryLabel}
+                                             </a>
+                                          ) : null}
+                                       </div>
+                                    </div>
+                                 ) : null}
+                              </div>
+                           );
+                        })}
+                     </div>
+
+                     {!allConsentsChecked ? (
+                        <p className="mt-3 text-xs font-medium text-amber-700">
+                           필수 항목에 모두 동의하면 결제 버튼이 활성화됩니다.
+                        </p>
+                     ) : null}
+                  </div>
+
                   <div className="mt-6 grid grid-cols-2 gap-3">
                      <button
                         type="button"
@@ -260,7 +429,7 @@ export default function TossBasicPaymentButton({
                      <button
                         type="button"
                         onClick={handlePayment}
-                        disabled={requesting}
+                        disabled={requesting || !allConsentsChecked}
                         className={clsx(
                            isLuxuryTone
                               ? "bg-zinc-950 hover:bg-[#8c6333]"
