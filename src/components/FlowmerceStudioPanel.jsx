@@ -332,6 +332,40 @@ function normalizeCategoryName(value) {
    return String(value || "").trim();
 }
 
+const CATEGORY_SORT_COLLATOR = new Intl.Collator("ko-KR", {
+   numeric: true,
+   sensitivity: "base",
+});
+
+function getCategorySortValue(item) {
+   return normalizeCategoryName(
+      item?.categoryName ||
+         item?.categoryPath ||
+         item?.label ||
+         item?.godoMallCategoryName ||
+         item?.name ||
+         "",
+   );
+}
+
+function sortCategoryItems(items) {
+   return [...items].sort((a, b) => {
+      const primary = CATEGORY_SORT_COLLATOR.compare(
+         getCategorySortValue(a),
+         getCategorySortValue(b),
+      );
+
+      if (primary !== 0) {
+         return primary;
+      }
+
+      return CATEGORY_SORT_COLLATOR.compare(
+         String(a?.url || a?.siteUrl || a?.categoryCode || a?.key || ""),
+         String(b?.url || b?.siteUrl || b?.categoryCode || b?.key || ""),
+      );
+   });
+}
+
 function normalizeDesignerItem(item) {
    const name = String(item?.designerName || item?.designer_name || item?.name || "").trim();
    const code = String(item?.designerCode || item?.designer_code || name).trim();
@@ -348,13 +382,15 @@ function normalizeSourceItem(item) {
    const url = String(item?.url || item?.siteUrl || "").trim();
    const categoryNumbers = String(item?.categoryNumbers || item?.category_numbers || "").trim();
    const meta = String(item?.meta || "").trim();
+   const site = String(item?.site || "").trim();
 
    return {
-      key: categoryName || url,
+      key: url || categoryName,
       categoryName,
       url,
       categoryNumbers,
       meta,
+      site,
    };
 }
 
@@ -711,6 +747,19 @@ function HostingAccountRow({ account, selected, onClick }) {
 export default function FlowmerceStudioPanel() {
    const router = useRouter();
    const collectionWorkspaceRequestIdRef = useRef(0);
+   const collectionWorkspaceContextRef = useRef({
+      customId: "",
+      accountPlatform: "",
+      brand: "",
+   });
+   const platformSyncRequestIdRef = useRef(0);
+   const platformSyncContextRef = useRef({
+      customId: "",
+      accountPlatform: "",
+      brand: "",
+      targetPlatform: "",
+      targetAccountPlatform: "",
+   });
    const hostingCategoriesCacheRef = useRef(new Map());
    const collectionWorkspaceCacheRef = useRef(new Map());
 
@@ -1022,6 +1071,27 @@ export default function FlowmerceStudioPanel() {
    }, [selectedBrand]);
 
    useEffect(() => {
+      collectionWorkspaceContextRef.current = {
+         customId: session?.customId || "",
+         accountPlatform: selectedAccountPlatform || "",
+         brand: selectedBrand || "",
+      };
+      platformSyncContextRef.current = {
+         customId: session?.customId || "",
+         accountPlatform: selectedAccountPlatform || "",
+         brand: selectedBrand || "",
+         targetPlatform: selectedPlatformTarget || "",
+         targetAccountPlatform: resolvedTargetAccountPlatform || "",
+      };
+   }, [
+      resolvedTargetAccountPlatform,
+      selectedAccountPlatform,
+      selectedBrand,
+      selectedPlatformTarget,
+      session?.customId,
+   ]);
+
+   useEffect(() => {
       if (!selectedAccountPlatform || !session?.customId) {
          return;
       }
@@ -1063,7 +1133,9 @@ export default function FlowmerceStudioPanel() {
 
          setMallCategories(
             Array.isArray(detail.categories)
-               ? detail.categories.map(normalizeMallCategory).filter((item) => item.key)
+               ? sortCategoryItems(
+                    detail.categories.map(normalizeMallCategory).filter((item) => item.key),
+                 )
                : [],
          );
 
@@ -1102,6 +1174,15 @@ export default function FlowmerceStudioPanel() {
          const requestCustomId = session.customId;
          const requestAccountPlatform = selectedAccountPlatform;
          const requestBrand = selectedBrand;
+         const currentContext = collectionWorkspaceContextRef.current;
+         if (
+            currentContext.customId !== requestCustomId ||
+            currentContext.accountPlatform !== requestAccountPlatform ||
+            currentContext.brand !== requestBrand
+         ) {
+            return;
+         }
+
          const hostingCacheKey = getHostingCategoriesCacheKey(
             requestCustomId,
             requestAccountPlatform,
@@ -1170,12 +1251,20 @@ export default function FlowmerceStudioPanel() {
                nextDesignerItems,
             ] = await Promise.all(requests);
 
-            if (collectionWorkspaceRequestIdRef.current !== requestId) {
+            const latestContext = collectionWorkspaceContextRef.current;
+            if (
+               collectionWorkspaceRequestIdRef.current !== requestId ||
+               latestContext.customId !== requestCustomId ||
+               latestContext.accountPlatform !== requestAccountPlatform ||
+               latestContext.brand !== requestBrand
+            ) {
                return;
             }
 
             const normalizedSourceCategories = Array.isArray(nextSourceCategories)
-               ? nextSourceCategories.map(normalizeSourceItem).filter((item) => item.key)
+               ? nextSourceCategories
+                    .map(normalizeSourceItem)
+                    .filter((item) => item.key && (!item.site || item.site === requestBrand))
                : [];
             const normalizedMappedCategories = Array.isArray(nextMappedCategories)
                ? nextMappedCategories.map(normalizeMappedCategory).filter((item) => item.key)
@@ -1188,25 +1277,34 @@ export default function FlowmerceStudioPanel() {
             const normalizedDesignerItems = Array.isArray(nextDesignerItems)
                ? nextDesignerItems.map(normalizeDesignerItem).filter((item) => item.key)
                : [];
+            const sortedSourceCategories = sortCategoryItems(normalizedSourceCategories);
+            const sortedMappedCategories = sortCategoryItems(normalizedMappedCategories);
+            const sortedCollectionCategories = sortCategoryItems(normalizedCollectionCategories);
 
             collectionWorkspaceCacheRef.current.set(workspaceCacheKey, {
-               sourceCategories: normalizedSourceCategories,
-               mappedCategories: normalizedMappedCategories,
-               collectionCategories: normalizedCollectionCategories,
+               sourceCategories: sortedSourceCategories,
+               mappedCategories: sortedMappedCategories,
+               collectionCategories: sortedCollectionCategories,
                designerItems: normalizedDesignerItems,
             });
 
             syncHostingAccountDetail(hostingDetail);
-            setSourceCategories(normalizedSourceCategories);
-            setMappedCategories(normalizedMappedCategories);
-            setCollectionCategories(normalizedCollectionCategories);
+            setSourceCategories(sortedSourceCategories);
+            setMappedCategories(sortedMappedCategories);
+            setCollectionCategories(sortedCollectionCategories);
             setDesignerItems(normalizedDesignerItems);
 
             if (!keepCollection) {
                setSelectedCollectionKeys([]);
             }
          } catch (error) {
-            if (collectionWorkspaceRequestIdRef.current !== requestId) {
+            const latestContext = collectionWorkspaceContextRef.current;
+            if (
+               collectionWorkspaceRequestIdRef.current !== requestId ||
+               latestContext.customId !== requestCustomId ||
+               latestContext.accountPlatform !== requestAccountPlatform ||
+               latestContext.brand !== requestBrand
+            ) {
                return;
             }
 
@@ -1215,7 +1313,13 @@ export default function FlowmerceStudioPanel() {
                text: error.message || "상품수집 화면 데이터를 불러오지 못했습니다.",
             });
          } finally {
-            if (collectionWorkspaceRequestIdRef.current === requestId) {
+            const latestContext = collectionWorkspaceContextRef.current;
+            if (
+               collectionWorkspaceRequestIdRef.current === requestId &&
+               latestContext.customId === requestCustomId &&
+               latestContext.accountPlatform === requestAccountPlatform &&
+               latestContext.brand === requestBrand
+            ) {
                setLoadingCollection(false);
             }
          }
@@ -1233,23 +1337,54 @@ export default function FlowmerceStudioPanel() {
          return;
       }
 
+      const requestId = ++platformSyncRequestIdRef.current;
+      const requestCustomId = session.customId;
+      const requestAccountPlatform = selectedAccountPlatform;
+      const requestBrand = selectedBrand;
+      const requestTargetPlatform = selectedPlatformTarget;
+      const requestTargetAccountPlatform = resolvedTargetAccountPlatform;
+      const currentContext = platformSyncContextRef.current;
+      if (
+         currentContext.customId !== requestCustomId ||
+         currentContext.accountPlatform !== requestAccountPlatform ||
+         currentContext.brand !== requestBrand ||
+         currentContext.targetPlatform !== requestTargetPlatform ||
+         currentContext.targetAccountPlatform !== requestTargetAccountPlatform
+      ) {
+         return;
+      }
+
       setLoadingPlatformSync(true);
 
       try {
          const [nextCategories, nextMappings] = await Promise.all([
-            fetchWorkspacePlatformCategories(selectedPlatformTarget),
+            fetchWorkspacePlatformCategories(requestTargetPlatform),
             fetchWorkspacePlatformMappings({
-               customId: session.customId,
-               sourceAccountPlatform: selectedAccountPlatform,
-               targetPlatform: selectedPlatformTarget,
-               targetAccountPlatform: resolvedTargetAccountPlatform,
-               site: selectedBrand,
+               customId: requestCustomId,
+               sourceAccountPlatform: requestAccountPlatform,
+               targetPlatform: requestTargetPlatform,
+               targetAccountPlatform: requestTargetAccountPlatform,
+               site: requestBrand,
             }),
          ]);
 
+         const latestContext = platformSyncContextRef.current;
+         if (
+            platformSyncRequestIdRef.current !== requestId ||
+            latestContext.customId !== requestCustomId ||
+            latestContext.accountPlatform !== requestAccountPlatform ||
+            latestContext.brand !== requestBrand ||
+            latestContext.targetPlatform !== requestTargetPlatform ||
+            latestContext.targetAccountPlatform !== requestTargetAccountPlatform
+         ) {
+            return;
+         }
+
          setPlatformCategories(
             Array.isArray(nextCategories)
-               ? nextCategories.map(normalizePlatformCategory).filter((item) => item.key)
+               ? sortCategoryItems(
+                    nextCategories.map(normalizePlatformCategory).filter((item) => item.key),
+                 )
                : [],
          );
          setPlatformMappings(
@@ -1261,12 +1396,34 @@ export default function FlowmerceStudioPanel() {
          setSelectedPlatformMappingKeys([]);
          setSelectedPlatformWorkKeys([]);
       } catch (error) {
+         const latestContext = platformSyncContextRef.current;
+         if (
+            platformSyncRequestIdRef.current !== requestId ||
+            latestContext.customId !== requestCustomId ||
+            latestContext.accountPlatform !== requestAccountPlatform ||
+            latestContext.brand !== requestBrand ||
+            latestContext.targetPlatform !== requestTargetPlatform ||
+            latestContext.targetAccountPlatform !== requestTargetAccountPlatform
+         ) {
+            return;
+         }
+
          setPlatformMessage({
             tone: "error",
             text: error.message || "상품연동 정보를 불러오지 못했습니다.",
          });
       } finally {
-         setLoadingPlatformSync(false);
+         const latestContext = platformSyncContextRef.current;
+         if (
+            platformSyncRequestIdRef.current === requestId &&
+            latestContext.customId === requestCustomId &&
+            latestContext.accountPlatform === requestAccountPlatform &&
+            latestContext.brand === requestBrand &&
+            latestContext.targetPlatform === requestTargetPlatform &&
+            latestContext.targetAccountPlatform === requestTargetAccountPlatform
+         ) {
+            setLoadingPlatformSync(false);
+         }
       }
    }, [
       resolvedTargetAccountPlatform,
@@ -1275,6 +1432,59 @@ export default function FlowmerceStudioPanel() {
       selectedPlatformTarget,
       session?.customId,
    ]);
+
+   const clearBrandScopedState = useCallback(
+      (brand) => {
+         collectionWorkspaceRequestIdRef.current += 1;
+         platformSyncRequestIdRef.current += 1;
+         collectionWorkspaceContextRef.current = {
+            customId: session?.customId || "",
+            accountPlatform: selectedAccountPlatform || "",
+            brand: brand || "",
+         };
+         platformSyncContextRef.current = {
+            customId: session?.customId || "",
+            accountPlatform: selectedAccountPlatform || "",
+            brand: brand || "",
+            targetPlatform: selectedPlatformTarget || "",
+            targetAccountPlatform: resolvedTargetAccountPlatform || "",
+         };
+         setSelectedDesignerKeys([]);
+         setSelectedSourceKeys([]);
+         setSelectedMallKey("");
+         setSelectedMappedKeys([]);
+         setSelectedCollectionKeys([]);
+         setDesignerItems([]);
+         setSourceCategories([]);
+         setMappedCategories([]);
+         setCollectionCategories([]);
+         setSelectedPlatformSourceKey("");
+         setSelectedPlatformCategoryKey("");
+         setSelectedPlatformMappingKeys([]);
+         setSelectedPlatformWorkKeys([]);
+         setPlatformMappings([]);
+         setCollectionMessage({ tone: "neutral", text: "" });
+         setPlatformMessage({ tone: "neutral", text: "" });
+      },
+      [
+         resolvedTargetAccountPlatform,
+         selectedAccountPlatform,
+         selectedPlatformTarget,
+         session?.customId,
+      ],
+   );
+
+   const handleSelectBrand = useCallback(
+      (site) => {
+         if (!site || site === selectedBrand) {
+            return;
+         }
+
+         clearBrandScopedState(site);
+         setSelectedBrand(site);
+      },
+      [clearBrandScopedState, selectedBrand],
+   );
 
    useEffect(() => {
       if (!session?.customId || !selectedAccountPlatform || !selectedBrand) {
@@ -1287,11 +1497,16 @@ export default function FlowmerceStudioPanel() {
       setSelectedMallKey("");
       setSelectedMappedKeys([]);
       setSelectedCollectionKeys([]);
+      setSelectedPlatformSourceKey("");
+      setSelectedPlatformCategoryKey("");
+      setSelectedPlatformMappingKeys([]);
+      setSelectedPlatformWorkKeys([]);
       setDesignerItems([]);
       setSourceCategories([]);
       setMallCategories([]);
       setMappedCategories([]);
       setCollectionCategories([]);
+      setPlatformMappings([]);
       setCollectionMessage({ tone: "neutral", text: "" });
       void loadCollectionWorkspace();
    }, [loadCollectionWorkspace, selectedAccountPlatform, selectedBrand, session?.customId]);
@@ -1418,15 +1633,16 @@ export default function FlowmerceStudioPanel() {
          const normalizedCategories = nextCategories
             .map(normalizePlatformCategory)
             .filter((item) => item.key);
+         const sortedCategories = sortCategoryItems(normalizedCategories);
 
-         setPlatformCategories(normalizedCategories);
+         setPlatformCategories(sortedCategories);
          setSelectedPlatformCategoryKey("");
          const platformLabel =
             platformTargets.find((item) => item.id === selectedPlatformTarget)?.label ||
             selectedPlatformTarget;
          setPlatformMessage({
             tone: "success",
-            text: `${platformLabel} 카테고리 ${normalizedCategories.length}개를 가져왔습니다.`,
+            text: `${platformLabel} 카테고리 ${sortedCategories.length}개를 가져왔습니다.`,
          });
       } catch (error) {
          setPlatformMessage({
@@ -1793,21 +2009,43 @@ export default function FlowmerceStudioPanel() {
          return;
       }
 
+      const requestBrand = selectedBrand;
+      const requestCustomId = session?.customId || "";
+      const requestAccountPlatform = selectedAccountPlatform || "";
+
       try {
          collectionWorkspaceCacheRef.current.delete(
             getCollectionWorkspaceCacheKey(
-               session?.customId,
-               selectedAccountPlatform,
-               selectedBrand,
+               requestCustomId,
+               requestAccountPlatform,
+               requestBrand,
             ),
          );
-         await refreshWorkspaceSourceCategories(selectedBrand);
+         await refreshWorkspaceSourceCategories(requestBrand);
          await loadCollectionWorkspace({ keepCollection: true });
+         const latestContext = collectionWorkspaceContextRef.current;
+         if (
+            latestContext.customId !== requestCustomId ||
+            latestContext.accountPlatform !== requestAccountPlatform ||
+            latestContext.brand !== requestBrand
+         ) {
+            return;
+         }
+
          setCollectionMessage({
             tone: "success",
-            text: `${getSiteLabel(selectedBrand)} 카테고리를 새로 가져왔습니다.`,
+            text: `${getSiteLabel(requestBrand)} 카테고리를 새로 가져왔습니다.`,
          });
       } catch (error) {
+         const latestContext = collectionWorkspaceContextRef.current;
+         if (
+            latestContext.customId !== requestCustomId ||
+            latestContext.accountPlatform !== requestAccountPlatform ||
+            latestContext.brand !== requestBrand
+         ) {
+            return;
+         }
+
          setCollectionMessage({
             tone: "error",
             text: error.message || "브랜드 카테고리를 새로고침하지 못했습니다.",
@@ -1836,7 +2074,8 @@ export default function FlowmerceStudioPanel() {
          const normalizedCollectionCategories = Array.isArray(items)
             ? items.map(normalizeMappedCategory).filter((item) => item.key)
             : [];
-         setCollectionCategories(normalizedCollectionCategories);
+         const sortedCollectionCategories = sortCategoryItems(normalizedCollectionCategories);
+         setCollectionCategories(sortedCollectionCategories);
          const cacheKey = getCollectionWorkspaceCacheKey(
             session.customId,
             selectedAccountPlatform,
@@ -1846,7 +2085,7 @@ export default function FlowmerceStudioPanel() {
          if (cachedWorkspace) {
             collectionWorkspaceCacheRef.current.set(cacheKey, {
                ...cachedWorkspace,
-               collectionCategories: normalizedCollectionCategories,
+               collectionCategories: sortedCollectionCategories,
             });
          }
          setSelectedCollectionKeys([]);
@@ -2102,17 +2341,19 @@ export default function FlowmerceStudioPanel() {
                selectedAccountPlatform,
             ),
          ]);
-
-         setMappedCategories(
+         const nextMappedCategories = sortCategoryItems(
             Array.isArray(nextMapped)
                ? nextMapped.map(normalizeMappedCategory).filter((item) => item.key)
                : [],
          );
-         setCollectionCategories(
+         const nextCollectionCategories = sortCategoryItems(
             Array.isArray(nextCollection)
                ? nextCollection.map(normalizeMappedCategory).filter((item) => item.key)
                : [],
          );
+
+         setMappedCategories(nextMappedCategories);
+         setCollectionCategories(nextCollectionCategories);
          collectionWorkspaceCacheRef.current.set(
             getCollectionWorkspaceCacheKey(
                session.customId,
@@ -2121,12 +2362,8 @@ export default function FlowmerceStudioPanel() {
             ),
             {
                sourceCategories,
-               mappedCategories: Array.isArray(nextMapped)
-                  ? nextMapped.map(normalizeMappedCategory).filter((item) => item.key)
-                  : [],
-               collectionCategories: Array.isArray(nextCollection)
-                  ? nextCollection.map(normalizeMappedCategory).filter((item) => item.key)
-                  : [],
+               mappedCategories: nextMappedCategories,
+               collectionCategories: nextCollectionCategories,
                designerItems,
             },
          );
@@ -2182,17 +2419,19 @@ export default function FlowmerceStudioPanel() {
                selectedAccountPlatform,
             ),
          ]);
-
-         setMappedCategories(
+         const nextMappedCategories = sortCategoryItems(
             Array.isArray(nextMapped)
                ? nextMapped.map(normalizeMappedCategory).filter((item) => item.key)
                : [],
          );
-         setCollectionCategories(
+         const nextCollectionCategories = sortCategoryItems(
             Array.isArray(nextCollection)
                ? nextCollection.map(normalizeMappedCategory).filter((item) => item.key)
                : [],
          );
+
+         setMappedCategories(nextMappedCategories);
+         setCollectionCategories(nextCollectionCategories);
          collectionWorkspaceCacheRef.current.set(
             getCollectionWorkspaceCacheKey(
                session.customId,
@@ -2201,12 +2440,8 @@ export default function FlowmerceStudioPanel() {
             ),
             {
                sourceCategories,
-               mappedCategories: Array.isArray(nextMapped)
-                  ? nextMapped.map(normalizeMappedCategory).filter((item) => item.key)
-                  : [],
-               collectionCategories: Array.isArray(nextCollection)
-                  ? nextCollection.map(normalizeMappedCategory).filter((item) => item.key)
-                  : [],
+               mappedCategories: nextMappedCategories,
+               collectionCategories: nextCollectionCategories,
                designerItems,
             },
          );
@@ -2573,7 +2808,7 @@ export default function FlowmerceStudioPanel() {
                      {subscribedSites.map((site) => (
                         <SecondaryButton
                            key={site}
-                           onClick={() => setSelectedBrand(site)}
+                           onClick={() => handleSelectBrand(site)}
                            className={clsx(
                               "px-3 py-2 text-xs sm:text-sm",
                               selectedBrand === site &&
@@ -3044,13 +3279,7 @@ export default function FlowmerceStudioPanel() {
                      {subscribedSites.map((site) => (
                         <SecondaryButton
                            key={site}
-                           onClick={() => {
-                              setSelectedBrand(site);
-                              setSelectedPlatformSourceKey("");
-                              setSelectedPlatformCategoryKey("");
-                              setSelectedPlatformMappingKeys([]);
-                              setSelectedPlatformWorkKeys([]);
-                           }}
+                           onClick={() => handleSelectBrand(site)}
                            className={clsx(
                               "px-3 py-2 text-xs sm:text-sm",
                               selectedBrand === site &&

@@ -133,9 +133,6 @@ export default function MobileNav() {
                         <MobileNavLink href="/program" onNavigate={closeMenu}>
                            사용 메뉴얼
                         </MobileNavLink>
-                        <MobileNavLink href="/consulting" onNavigate={closeMenu}>
-                           컨설팅
-                        </MobileNavLink>
                         <MobileNavLink href="/pricing" onNavigate={closeMenu}>
                            요금
                         </MobileNavLink>

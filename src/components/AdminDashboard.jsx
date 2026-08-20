@@ -2513,6 +2513,42 @@ export default function AdminDashboard() {
          });
    };
 
+   const handleRunVisibleSchedules = () => {
+      const scheduleIds = schedules.map((item) => item.id);
+      if (scheduleIds.length === 0) {
+         return;
+      }
+
+      const accountPlatformLabel = selectedAccountPlatform;
+
+      setScheduleMessage({ tone: "neutral", text: "" });
+      setActiveRunRequestCount((current) => current + scheduleIds.length);
+      setScheduleMessage({
+         tone: "success",
+         text: `${accountPlatformLabel} 전체 예약 ${scheduleIds.length}개 실행 요청을 보냈습니다. 실제 수집은 서버에서 순차적으로 진행됩니다.`,
+      });
+      setSelectedScheduleIds([]);
+
+      void runSchedules(scheduleIds)
+         .then(() => {
+            setScheduleMessage({
+               tone: "success",
+               text: `${accountPlatformLabel} 전체 예약 ${scheduleIds.length}개 실행 요청이 정상 접수되었습니다.`,
+            });
+         })
+         .catch((error) => {
+            setActiveRunRequestCount((current) =>
+               Math.max(0, current - scheduleIds.length),
+            );
+            setScheduleMessage({
+               tone: "error",
+               text:
+                  error.message ||
+                  "전체 예약 실행 요청에 실패했습니다. 서버 상태를 확인해주세요.",
+            });
+         });
+   };
+
    const handleDeleteSchedules = async () => {
       setScheduleMessage({ tone: "neutral", text: "" });
       setDeletingSchedules(true);
@@ -3246,6 +3282,16 @@ export default function AdminDashboard() {
                         </p>
 
                         <div className="flex flex-wrap items-center gap-3">
+                           {activeScheduleSubtab === "active" && (
+                              <button
+                                 type="button"
+                                 onClick={handleRunVisibleSchedules}
+                                 disabled={schedules.length === 0}
+                                 className="inline-flex items-center justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-medium text-zinc-800 shadow-sm transition hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-70"
+                              >
+                                 전체실행
+                              </button>
+                           )}
                            {activeScheduleSubtab === "active" ? (
                               <button
                                  type="button"

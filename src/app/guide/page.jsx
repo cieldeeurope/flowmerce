@@ -170,10 +170,10 @@ export default function GuidePage() {
                            플랜별 구독하기
                         </Link>
                         <Link
-                           href="/consulting"
+                           href="/inquiry"
                            className="inline-flex justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 shadow-sm duration-150 hover:bg-zinc-50"
                         >
-                           일대일 컨설팅 신청
+                           문의 남기기
                         </Link>
                      </div>
                   </div>
@@ -432,10 +432,10 @@ export default function GuidePage() {
                            플랜 먼저 확인하기
                         </Link>
                         <Link
-                           href="/consulting"
+                           href="/inquiry"
                            className="inline-flex justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 shadow-sm duration-150 hover:bg-zinc-50"
                         >
-                           컨설팅 문의하기
+                           문의 남기기
                         </Link>
                      </div>
                   </div>
@@ -482,7 +482,7 @@ export default function GuidePage() {
                            <p>
                               중고 시장이나 비정상 유통 구조가 아니라, 정식 소싱처와
                               실제 운영 데이터를 기반으로 명품 구매대행의 강점을
-                              안내합니다. 궁금한 부분이 있다면 컨설팅에서 구조를 더
+                              안내합니다. 궁금한 부분이 있다면 문의를 통해 구조를 더
                               깊게 확인할 수 있습니다.
                            </p>
                         </div>
@@ -494,10 +494,10 @@ export default function GuidePage() {
                               플랜별 구독하기
                            </Link>
                            <Link
-                              href="/consulting"
+                              href="/inquiry"
                               className="inline-flex justify-center rounded-lg border border-white/30 px-5 py-3 text-sm font-semibold text-white duration-150 hover:bg-white/10"
                            >
-                              컨설팅 문의하기
+                              문의 남기기
                            </Link>
                         </div>
                      </div>

@@ -11,7 +11,6 @@ export default function Footer() {
       { href: "/", label: "\ud648" },
       { href: "/guide", label: "\ud575\uc2ec \uac00\uc774\ub4dc" },
       { href: "/program", label: "\uc0ac\uc6a9 \uba54\ub274\uc5bc" },
-      { href: "/consulting", label: "\ucee8\uc124\ud305" },
       { href: "/pricing", label: "\uc694\uae08" },
       { href: "/#faq", label: "FAQ" },
       { href: "/inquiry", label: "\ubb38\uc758" },

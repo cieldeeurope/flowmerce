@@ -29,11 +29,6 @@ const primaryPages = [
       description: "실제 운영 화면과 사용 흐름을 확인하는 프로그램 소개",
    },
    {
-      name: "컨설팅",
-      url: `${siteUrl}/consulting`,
-      description: "1:1 실전 컨설팅과 운영 확장 전략 안내",
-   },
-   {
       name: "가격",
       url: `${siteUrl}/pricing`,
       description: "플랜별 요금제와 운영 기준 안내",

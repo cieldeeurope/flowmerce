@@ -25,12 +25,6 @@ const feedItems = [
          "상품등록 및 재고관리 프로그램, 실시간 방문자 재고 업데이트, 마진 설정, 단어 치환 기능을 안내합니다.",
       path: "/program",
    },
-   {
-      title: "컨설팅",
-      description:
-         "명품 구매대행 구조, 현지 거래처 연결, 병행수입 대비 운영 전략을 일대일로 안내합니다.",
-      path: "/consulting",
-   },
 ];
 
 export async function GET() {

@@ -1404,10 +1404,10 @@ export default function ProgramPage() {
                            문의 남기기
                         </Link>
                         <Link
-                           href="/consulting"
+                           href="/inquiry"
                            className="inline-flex justify-center rounded-lg border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 shadow-sm duration-150 hover:bg-zinc-50"
                         >
-                           컨설팅 문의하기
+                           문의 남기기
                         </Link>
                      </div>
                   </div>

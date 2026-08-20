@@ -115,10 +115,10 @@ export default function SalesProof() {
                   <br />
                   제대로 된 구조 설계와 소싱 전략이 궁금하다면{" "}
                   <Link
-                     href="/consulting"
+                     href="/inquiry"
                      className="font-semibold text-zinc-900 underline decoration-zinc-300 underline-offset-4"
                   >
-                     컨설팅
+                     문의 페이지
                   </Link>
                   에서 더 깊게 안내받을 수 있습니다.
                   <br />

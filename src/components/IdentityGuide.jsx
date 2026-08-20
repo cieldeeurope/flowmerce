@@ -73,7 +73,7 @@ export default function IdentityGuide() {
                            운영 가이드 자세히 보기
                         </Link>
                         <Link
-                           href="/consulting"
+                           href="/inquiry"
                            className="inline-flex justify-center rounded-md border border-zinc-300 bg-white px-5 py-3 text-sm font-semibold text-zinc-800 transition hover:bg-zinc-50 sm:min-w-44"
                         >
                            상담 문의하기

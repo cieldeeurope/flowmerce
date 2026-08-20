@@ -1,5 +1,15 @@
-Browserslist: caniuse-lite is outdated. Please run:
-  npx update-browserslist-db@latest
-  Why you should do it regularly: https://github.com/browserslist/update-db#readme
-- [33mwarn[39m Fast Refresh had to perform a full reload due to a runtime error.
-- [33mwarn[39m Fast Refresh had to perform a full reload due to a runtime error.
+Error: spawn EPERM
+    at ChildProcess.spawn (node:internal/child_process:421:11)
+    at spawn (node:child_process:761:9)
+    at fork (node:child_process:172:10)
+    at ChildProcessWorker.initialize (C:\flowmerce\node_modules\next\dist\compiled\jest-worker\index.js:1:10927)
+    at new ChildProcessWorker (C:\flowmerce\node_modules\next\dist\compiled\jest-worker\index.js:1:10815)
+    at WorkerPool.createWorker (C:\flowmerce\node_modules\next\dist\compiled\jest-worker\index.js:1:6315)
+    at new BaseWorkerPool (C:\flowmerce\node_modules\next\dist\compiled\jest-worker\index.js:1:8183)
+    at new WorkerPool (C:\flowmerce\node_modules\next\dist\compiled\jest-worker\index.js:1:6111)
+    at new Worker (C:\flowmerce\node_modules\next\dist\compiled\jest-worker\index.js:1:23381)
+    at createRouterWorker (C:\flowmerce\node_modules\next\dist\cli\next-dev.js:136:20) {
+  errno: -4048,
+  code: 'EPERM',
+  syscall: 'spawn'
+}
