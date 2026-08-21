@@ -339,9 +339,9 @@ const CATEGORY_SORT_COLLATOR = new Intl.Collator("ko-KR", {
 
 function getCategorySortValue(item) {
    return normalizeCategoryName(
-      item?.categoryName ||
+      item?.label ||
+         item?.categoryName ||
          item?.categoryPath ||
-         item?.label ||
          item?.godoMallCategoryName ||
          item?.name ||
          "",
@@ -617,11 +617,13 @@ function ProgramListView({
    onToggleAll,
    allSelected = false,
 }) {
+   const sortedItems = useMemo(() => sortCategoryItems(items), [items]);
+
    return (
       <div className="border border-zinc-300 bg-white">
          <div className="flex items-center justify-between gap-3 border-b border-zinc-300 px-3 py-2">
             <p className="text-sm font-medium text-zinc-900">{title}</p>
-            {showCheckboxes && items.length > 0 && onToggleAll ? (
+            {showCheckboxes && sortedItems.length > 0 && onToggleAll ? (
                <button
                   type="button"
                   onClick={onToggleAll}
@@ -632,11 +634,11 @@ function ProgramListView({
             ) : null}
          </div>
          <div className="h-[360px] overflow-x-auto overflow-y-auto">
-            {items.length === 0 ? (
+            {sortedItems.length === 0 ? (
                <div className="px-3 py-6 text-sm text-zinc-500">{emptyText}</div>
             ) : (
                <ul className="divide-y divide-zinc-200">
-                  {items.map((item) => {
+                  {sortedItems.map((item) => {
                      const selected = selectedKeys.includes(item.key);
 
                      return (
@@ -1389,7 +1391,9 @@ export default function FlowmerceStudioPanel() {
          );
          setPlatformMappings(
             Array.isArray(nextMappings)
-               ? nextMappings.map(normalizePlatformMapping).filter((item) => item.key)
+               ? sortCategoryItems(
+                    nextMappings.map(normalizePlatformMapping).filter((item) => item.key),
+                 )
                : [],
          );
          setSelectedPlatformCategoryKey("");
