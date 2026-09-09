@@ -65,7 +65,7 @@ export default function PaymentSuccessPage() {
                tone: "success",
                title: "결제가 승인되었습니다",
                message:
-                  "테스트 결제 승인까지 완료되었습니다. 실제 구독 권한 반영은 운영 서버 저장 로직과 연결하면 됩니다.",
+                  "결제가 정상적으로 완료되었습니다. 플로우머스에서 결제 내역을 확인한 뒤 서비스 이용 절차를 안내해드립니다.",
             });
          } catch (error) {
             if (cancelled) {

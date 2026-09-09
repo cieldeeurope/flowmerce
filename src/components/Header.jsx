@@ -32,6 +32,7 @@ export default function Header() {
                      <NavLink href="/">홈</NavLink>
                      <NavLink href="/guide">핵심 가이드</NavLink>
                      <NavLink href="/program">사용 메뉴얼</NavLink>
+                     <NavLink href="/consulting">컨설팅</NavLink>
                      <NavLink href="/pricing">요금</NavLink>
                      <NavLink href="/#faq">FAQ</NavLink>
                      <NavLink href="/inquiry">문의</NavLink>
