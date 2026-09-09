@@ -2,7 +2,11 @@
 
 import clsx from "clsx";
 import { useMemo, useState } from "react";
-import { getSession } from "@/lib/auth";
+import {
+   getApiBaseUrl,
+   getSession,
+   getUserAuthHeaders,
+} from "@/lib/auth";
 import { formatKrw, getTossPlanPayment } from "@/lib/tossPlans";
 
 const TOSS_SDK_SRC = "https://js.tosspayments.com/v2/standard";
@@ -28,18 +32,6 @@ function loadTossPaymentsSdk() {
       script.onerror = reject;
       document.head.appendChild(script);
    });
-}
-
-function createOrderId(prefix = "PLAN") {
-   const safePrefix =
-      String(prefix)
-         .trim()
-         .toUpperCase()
-         .replace(/[^A-Z0-9]+/g, "-")
-         .replace(/^-|-$/g, "")
-         .slice(0, 24) || "PLAN";
-   const random = Math.random().toString(36).slice(2, 10).toUpperCase();
-   return `FLOWM-${safePrefix}-${Date.now()}-${random}`;
 }
 
 function createCustomerKey() {
@@ -98,7 +90,7 @@ export default function TossBasicPaymentButton({
    paymentInfo,
    amount,
    orderName,
-   orderIdPrefix,
+   paymentType = "NEW",
    includeHostingFee = false,
    extraAmount = 0,
    orderNameSuffix = "",
@@ -208,6 +200,23 @@ export default function TossBasicPaymentButton({
             );
          }
 
+         const orderResponse = await fetch(`${getApiBaseUrl()}/payments/orders`, {
+            method: "POST",
+            headers: getUserAuthHeaders({
+               "Content-Type": "application/json",
+            }),
+            body: JSON.stringify({
+               paymentType,
+               planName: resolvedPaymentInfo.planName || planName,
+               billing: resolvedPaymentInfo.billing || billing,
+            }),
+         });
+         const order = await orderResponse.json().catch(() => ({}));
+
+         if (!orderResponse.ok || !order.orderId || !order.amount) {
+            throw new Error(order.message || "결제 주문을 생성하지 못했습니다.");
+         }
+
          const TossPayments = await loadTossPaymentsSdk();
          const tossPayments = TossPayments(config.clientKey);
          let customerKey = window.localStorage.getItem("flowmerce_toss_customer_key");
@@ -218,22 +227,32 @@ export default function TossBasicPaymentButton({
 
          window.localStorage.setItem("flowmerce_toss_customer_key", customerKey);
 
-         const payment = tossPayments.payment({ customerKey });
+         const widgets = tossPayments.widgets({ customerKey });
          const origin = window.location.origin;
+         await widgets.setAmount({ currency: "KRW", value: order.amount });
+         const paymentWindow = await widgets.renderPaymentWindow();
 
-         await payment.requestPayment({
-            method: "CARD",
-            amount: {
-               currency: "KRW",
-               value: resolvedPaymentInfo.amount,
-            },
-            orderId: createOrderId(
-               orderIdPrefix || resolvedPaymentInfo.planName || planName || "PAY",
-            ),
-            orderName: resolvedPaymentInfo.orderName,
-            successUrl: `${origin}/payment/success`,
-            failUrl: `${origin}/payment/fail`,
+         paymentWindow.on("paymentRequest", async () => {
+            try {
+               await widgets.requestPayment({
+                  orderId: order.orderId,
+                  orderName: order.orderName,
+                  successUrl: `${origin}/payment/success`,
+                  failUrl: `${origin}/payment/fail`,
+                  metadata: {
+                     paymentType: order.paymentType,
+                     planName: order.planName || "",
+                     billing: order.billing || "",
+                  },
+               });
+            } catch (error) {
+               setStatus(error.message || "결제를 요청하는 중 오류가 발생했습니다.");
+            }
          });
+         paymentWindow.on("cancel", () => {
+            setStatus("결제를 취소했습니다.");
+         });
+         setConfirmOpen(false);
       } catch (error) {
          setStatus(error.message || "결제창을 여는 중 오류가 발생했습니다.");
       } finally {

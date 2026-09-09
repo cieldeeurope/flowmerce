@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Container from "@/components/Container";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getApiBaseUrl, getUserAuthHeaders } from "@/lib/auth";
 
 export default function PaymentSuccessPage() {
    const [status, setStatus] = useState({
@@ -40,11 +41,11 @@ export default function PaymentSuccessPage() {
          }
 
          try {
-            const response = await fetch("/api/payments/toss/confirm", {
+            const response = await fetch(`${getApiBaseUrl()}/payments/confirm`, {
                method: "POST",
-               headers: {
+               headers: getUserAuthHeaders({
                   "Content-Type": "application/json",
-               },
+               }),
                body: JSON.stringify({
                   paymentKey: params.paymentKey,
                   orderId: params.orderId,

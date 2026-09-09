@@ -180,6 +180,7 @@ export default function PricingPlanCards({
                         compact={compact}
                         isLuxuryTone={isLuxuryTone}
                         label="이용권 결제하기"
+                        paymentType="NEW"
                      />
 
                      {compact && (

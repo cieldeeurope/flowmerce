@@ -187,8 +187,8 @@ export default function ConsultingPage() {
                         </a>
                         <TossBasicPaymentButton
                            paymentInfo={getConsultingPayment()}
-                           orderIdPrefix="CONSULTING"
                            label="컨설팅 결제하기"
+                           paymentType="CONSULTING"
                            containerClassName="w-full sm:w-auto"
                            className="px-6 py-3"
                            isLuxuryTone
@@ -426,8 +426,8 @@ export default function ConsultingPage() {
                               </a>
                               <TossBasicPaymentButton
                                  paymentInfo={getConsultingPayment()}
-                                 orderIdPrefix="CONSULTING-BOTTOM"
                                  label="컨설팅 결제하기"
+                                 paymentType="CONSULTING"
                                  containerClassName="m-0"
                                  className="!border-[#f1deba] !bg-white !py-3 !text-zinc-950 hover:!bg-[#f1deba]"
                                  isLuxuryTone

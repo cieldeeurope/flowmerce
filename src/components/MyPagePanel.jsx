@@ -386,8 +386,8 @@ function ExtendPaymentPanel({ planName, billing, onBillingChange, onClose }) {
 
          <TossBasicPaymentButton
             paymentInfo={paymentInfo}
-            orderIdPrefix={`${planName}-RENEW`}
-            label="연장 결제하기"
+             label="연장 결제하기"
+             paymentType="RENEW"
             containerClassName="mt-4"
             isLuxuryTone
          />
@@ -523,8 +523,8 @@ function PlanModal({ mode, options, subscriptionEndAt, onClose }) {
 
                            <TossBasicPaymentButton
                               paymentInfo={paymentInfo}
-                              orderIdPrefix={`${plan.name}-${isUpgrade ? "UPGRADE" : "ADD"}`}
-                              label={isUpgrade ? "업그레이드 결제하기" : "플랜 결제하기"}
+                               label={isUpgrade ? "업그레이드 결제하기" : "플랜 결제하기"}
+                               paymentType={isUpgrade ? "UPGRADE" : "ADD"}
                               containerClassName="mt-7"
                               isLuxuryTone
                            />
@@ -1402,9 +1402,38 @@ export default function MyPagePanel() {
                      )}
                   </div>
 
-                  <p className="mt-3 text-sm leading-7 text-zinc-600">
-                     {currentPlanMeta.description}
-                  </p>
+                   <p className="mt-3 text-sm leading-7 text-zinc-600">
+                      {currentPlanMeta.description}
+                   </p>
+
+                   <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
+                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                            최근 결제 금액
+                         </p>
+                         <p className="mt-2 text-lg font-semibold text-zinc-950">
+                            {account.lastPaymentAmount
+                               ? formatKrw(account.lastPaymentAmount)
+                               : "결제 내역 없음"}
+                         </p>
+                      </div>
+                      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
+                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                            최근 결제일
+                         </p>
+                         <p className="mt-2 text-sm font-medium text-zinc-950">
+                            {formatDateTime(account.lastPaymentAt)}
+                         </p>
+                      </div>
+                      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3">
+                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-zinc-500">
+                            누적 승인 금액
+                         </p>
+                         <p className="mt-2 text-lg font-semibold text-zinc-950">
+                            {formatKrw(account.totalPaidAmount || 0)}
+                         </p>
+                      </div>
+                   </div>
 
                   {currentPlan !== "none" && activePlanPeriods.length > 0 && (
                      <div className="mt-6 grid gap-3">
