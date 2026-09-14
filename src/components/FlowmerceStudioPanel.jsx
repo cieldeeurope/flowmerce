@@ -366,6 +366,41 @@ function sortCategoryItems(items) {
    });
 }
 
+const HOSTING_CATEGORY_PRIORITY = new Map([
+   ["패션의류", 0],
+   ["패션잡화", 1],
+]);
+
+function getHostingCategoryPriority(item) {
+   const rootCategoryName = getCategorySortValue(item).split(">")[0].trim();
+   return HOSTING_CATEGORY_PRIORITY.get(rootCategoryName) ?? Number.MAX_SAFE_INTEGER;
+}
+
+function sortHostingCategoryItems(items) {
+   return [...items].sort((a, b) => {
+      const priorityDifference =
+         getHostingCategoryPriority(a) - getHostingCategoryPriority(b);
+
+      if (priorityDifference !== 0) {
+         return priorityDifference;
+      }
+
+      const primary = CATEGORY_SORT_COLLATOR.compare(
+         getCategorySortValue(a),
+         getCategorySortValue(b),
+      );
+
+      if (primary !== 0) {
+         return primary;
+      }
+
+      return CATEGORY_SORT_COLLATOR.compare(
+         String(a?.url || a?.siteUrl || a?.categoryCode || a?.key || ""),
+         String(b?.url || b?.siteUrl || b?.categoryCode || b?.key || ""),
+      );
+   });
+}
+
 function normalizeDesignerItem(item) {
    const name = String(item?.designerName || item?.designer_name || item?.name || "").trim();
    const code = String(item?.designerCode || item?.designer_code || name).trim();
@@ -1135,7 +1170,7 @@ export default function FlowmerceStudioPanel() {
 
          setMallCategories(
             Array.isArray(detail.categories)
-               ? sortCategoryItems(
+               ? sortHostingCategoryItems(
                     detail.categories.map(normalizeMallCategory).filter((item) => item.key),
                  )
                : [],
