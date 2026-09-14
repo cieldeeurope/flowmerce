@@ -651,8 +651,9 @@ function ProgramListView({
    showCheckboxes = false,
    onToggleAll,
    allSelected = false,
+   sortItems = sortCategoryItems,
 }) {
-   const sortedItems = useMemo(() => sortCategoryItems(items), [items]);
+   const sortedItems = useMemo(() => sortItems(items), [items, sortItems]);
 
    return (
       <div className="border border-zinc-300 bg-white">
@@ -3158,6 +3159,7 @@ export default function FlowmerceStudioPanel() {
 
                         <ProgramListView
                            title="쇼핑몰 카테고리"
+                           sortItems={sortHostingCategoryItems}
                            items={mallCategories.map((item) => ({
                               key: item.key,
                               label: item.categoryName,
