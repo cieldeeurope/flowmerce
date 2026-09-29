@@ -98,7 +98,7 @@ export default function Hero() {
                   </span>
 
                   <h1
-                     className={`mt-5 max-w-4xl text-[2.15rem] font-semibold leading-[1.08] transition-all duration-700 ease-out sm:text-5xl md:text-6xl ${getRevealClass(
+                     className={`mt-5 max-w-4xl text-4xl font-semibold leading-[1.12] transition-all duration-700 ease-out sm:text-5xl md:text-6xl ${getRevealClass(
                         isVisible,
                      )}`}
                      style={{ transitionDelay: "100ms" }}
@@ -107,10 +107,6 @@ export default function Hero() {
                      <br />
                      상품등록 &amp; 재고관리 자동화 서비스
                   </h1>
-
-                  <p className="mt-4 text-sm font-semibold text-[#f1deba] sm:text-base">
-                     카페24 · 고도몰 · 스마트스토어 · 메이크샵 기본 연동
-                  </p>
 
                   <p
                      className={`mt-6 max-w-3xl text-base leading-8 text-white/82 transition-all duration-700 ease-out sm:text-lg sm:leading-9 ${getRevealClass(
@@ -130,22 +126,18 @@ export default function Hero() {
                      style={{ transitionDelay: "280ms" }}
                   >
                      <Link
-                        href="/inquiry?type=플랜 문의"
+                        href="/pricing"
                         className="inline-flex h-12 items-center justify-center rounded-md bg-zinc-950 px-6 text-sm font-semibold text-white transition hover:bg-zinc-800"
                      >
-                        내 쇼핑몰 적용 가능 여부 확인
+                        요금제와 운영 기준 보기
                      </Link>
                      <Link
                         href="/program"
                         className="inline-flex h-12 items-center justify-center rounded-md border border-white/20 bg-white/8 px-6 text-sm font-semibold text-white transition hover:bg-white/14"
                      >
-                        실제 운영 화면 보기
+                        플로우머스 스튜디오 보기
                      </Link>
                   </div>
-
-                  <p className="mt-3 text-xs leading-6 text-white/65 sm:text-sm">
-                     결제 전 지원 사이트와 연동 범위를 먼저 확인할 수 있습니다.
-                  </p>
 
                   <div
                      className={`mt-7 flex flex-wrap gap-2 transition-all duration-700 ease-out ${getRevealClass(
@@ -193,3 +185,5 @@ export default function Hero() {
       </section>
    );
 }
+
+

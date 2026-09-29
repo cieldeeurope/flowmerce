@@ -1805,7 +1805,7 @@ export default function MyPagePanel() {
                         1. 쇼핑몰 관리자 정보 전달
                      </p>
                      <p className="mt-2 text-sm leading-6 text-zinc-600">
-                        카카오톡에서는 필요한 연동 항목과 발급 방법을 안내합니다. 관리자 비밀번호는 채팅에 적지 마세요.
+                        카카오톡으로 쇼핑몰 관리자 URL, 로그인 아이디, 비밀번호를 보내주시면 됩니다.
                      </p>
                   </div>
                   <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
@@ -1813,7 +1813,7 @@ export default function MyPagePanel() {
                         2. 개발자센터 API 키를 모르셔도 괜찮습니다.
                      </p>
                      <p className="mt-2 text-sm leading-6 text-zinc-600">
-                        직접 찾기 어려운 경우 partnerKey와 apiKey 발급 위치부터 안전한 전달 절차까지 안내드립니다.
+                        대부분 직접 찾기 어려우시니, 로그인 가능한 정보만 전달해주시면 필요한 키 확인 방법까지 안내드립니다.
                      </p>
                   </div>
                   <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
@@ -1833,7 +1833,7 @@ export default function MyPagePanel() {
                      rel="noopener noreferrer"
                      className="inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
                   >
-                     카카오톡으로 연동 방법 문의하기
+                     카카오톡으로 계정 전달하기
                   </a>
                   <Link
                      href="/inquiry?type=사이트 문의"
@@ -2258,3 +2258,5 @@ export default function MyPagePanel() {
       </>
    );
 }
+
+

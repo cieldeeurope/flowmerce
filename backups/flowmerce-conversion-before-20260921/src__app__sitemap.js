@@ -29,12 +29,6 @@ export default function sitemap() {
          priority: 0.8,
       },
       {
-         url: `${siteUrl}/consulting`,
-         lastModified,
-         changeFrequency: "monthly",
-         priority: 0.8,
-      },
-      {
          url: `${siteUrl}/inquiry`,
          lastModified,
          changeFrequency: "weekly",
@@ -59,12 +53,6 @@ export default function sitemap() {
          priority: 0.35,
       },
       {
-         url: `${siteUrl}/subscription-agreement`,
-         lastModified,
-         changeFrequency: "yearly",
-         priority: 0.35,
-      },
-      {
          url: `${siteUrl}/data-policy`,
          lastModified,
          changeFrequency: "yearly",
@@ -72,3 +60,5 @@ export default function sitemap() {
       },
    ];
 }
+
+

@@ -4,8 +4,6 @@ import clsx from "clsx";
 import { useState } from "react";
 import { plans } from "@/lib/pricingData";
 import {
-   formatKrw,
-   getPlanBaseAmount,
    getPlanDisplayPrice,
    planRequiresHostingFee,
    tossBillingOptions,
@@ -28,25 +26,12 @@ function renderPlanFeature(feature) {
    return feature;
 }
 
-const firstPaymentFees = {
-   Boutique: { setup: 1100000, hosting: 110000 },
-   Basic: { setup: 110000, hosting: 110000 },
-};
-
 export default function PricingPlanCards({
    compact = false,
    tone = "default",
 }) {
    const [billing, setBilling] = useState("monthly");
-   const [priceGuidePlan, setPriceGuidePlan] = useState(null);
    const isLuxuryTone = tone === "luxury";
-   const priceGuideFees = priceGuidePlan ? firstPaymentFees[priceGuidePlan] : null;
-   const priceGuideBaseAmount = priceGuidePlan
-      ? getPlanBaseAmount(priceGuidePlan, billing) || 0
-      : 0;
-   const priceGuideTotal = priceGuideFees
-      ? priceGuideBaseAmount + priceGuideFees.setup + priceGuideFees.hosting
-      : 0;
 
    return (
       <>
@@ -188,16 +173,6 @@ export default function PricingPlanCards({
                          ))}
                      </ul>
 
-                     {firstPaymentFees[plan.name] && (
-                        <button
-                           type="button"
-                           onClick={() => setPriceGuidePlan(plan.name)}
-                           className="mb-3 inline-flex w-full items-center justify-center rounded-lg border border-amber-200 bg-[#fbf7ef] px-4 py-2.5 text-sm font-semibold text-amber-900 transition hover:bg-amber-50"
-                        >
-                           최초 결제금액 보기
-                        </button>
-                     )}
-
                      <TossBasicPaymentButton
                         billing={billing}
                         planName={plan.name}
@@ -224,62 +199,8 @@ export default function PricingPlanCards({
                );
             })}
          </div>
-
-         {priceGuidePlan && priceGuideFees && (
-            <div
-               className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
-               role="dialog"
-               aria-modal="true"
-               aria-labelledby="first-payment-guide-title"
-               onMouseDown={(event) => {
-                  if (event.target === event.currentTarget) {
-                     setPriceGuidePlan(null);
-                  }
-               }}
-            >
-               <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl sm:p-7">
-                  <div className="flex items-start justify-between gap-4">
-                     <div>
-                        <p className="text-sm font-semibold text-[#8c6333]">최초 도입 비용 안내</p>
-                        <h3 id="first-payment-guide-title" className="mt-1 text-2xl font-semibold text-zinc-950">
-                           {priceGuidePlan} {tossBillingOptions.find((item) => item.id === billing)?.label}
-                        </h3>
-                     </div>
-                     <button
-                        type="button"
-                        onClick={() => setPriceGuidePlan(null)}
-                        className="rounded-full border border-zinc-200 px-3 py-1.5 text-sm font-semibold text-zinc-600 hover:bg-zinc-50"
-                        aria-label="결제금액 안내 닫기"
-                     >
-                        닫기
-                     </button>
-                  </div>
-
-                  <dl className="mt-6 space-y-3 rounded-xl border border-zinc-200 bg-zinc-50 p-5 text-sm">
-                     <div className="flex items-center justify-between gap-4">
-                        <dt className="text-zinc-600">이용권</dt>
-                        <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideBaseAmount)}</dd>
-                     </div>
-                     <div className="flex items-center justify-between gap-4">
-                        <dt className="text-zinc-600">초기 세팅비</dt>
-                        <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideFees.setup)}</dd>
-                     </div>
-                     <div className="flex items-center justify-between gap-4">
-                        <dt className="text-zinc-600">호스팅 연동비</dt>
-                        <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideFees.hosting)}</dd>
-                     </div>
-                     <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-4">
-                        <dt className="font-semibold text-zinc-950">최초 도입 총비용</dt>
-                        <dd className="text-xl font-semibold text-zinc-950">{formatKrw(priceGuideTotal)}</dd>
-                     </div>
-                  </dl>
-
-                  <p className="mt-4 text-sm leading-6 text-zinc-600">
-                     이용권 결제창에는 이용권과 호스팅 연동비가 포함됩니다. 초기 세팅비는 운영 범위 확인 후 별도로 안내되며, 이후 갱신 시에는 최초 1회 비용이 다시 부과되지 않습니다.
-                  </p>
-               </div>
-            </div>
-         )}
       </>
    );
 }
+
+

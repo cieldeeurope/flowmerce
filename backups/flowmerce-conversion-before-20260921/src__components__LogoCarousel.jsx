@@ -62,10 +62,12 @@ export default function LogoCarousel() {
             </div>
             <div className="relative flex justify-center">
                <div className="rounded-full border border-black/5 bg-white px-4 py-2 text-xs font-medium text-zinc-600 shadow-sm sm:text-sm">
-                  카페24 · 고도몰 · 스마트스토어 · 메이크샵 기본 연동 / 그 외 채널은 상담 후 검토
+                  운영 중인 플랫폼과 준비 중인 채널은 계속 확장됩니다
                </div>
             </div>
          </div>
       </section>
    );
 }
+
+

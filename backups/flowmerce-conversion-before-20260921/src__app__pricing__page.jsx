@@ -1,4 +1,4 @@
-﻿import clsx from "clsx";
+import clsx from "clsx";
 import Container from "@/components/Container";
 import Link from "next/link";
 import Footer from "@/components/Footer";
@@ -10,7 +10,6 @@ import {
    highEndSites,
 } from "@/lib/pricingData";
 import { createMetadata } from "@/lib/seo";
-import { tossPlanBasePayments } from "@/lib/tossPlans";
 
 export const metadata = createMetadata({
    title: "가격",
@@ -19,36 +18,11 @@ export const metadata = createMetadata({
    path: "/pricing",
 });
 
-const pricingStructuredData = {
-   "@context": "https://schema.org",
-   "@type": "Service",
-   name: "플로우머스 쇼핑몰 자동화 서비스",
-   description:
-      "명품 구매대행 쇼핑몰을 위한 상품 수집, 자동 등록, 가격 및 재고관리 서비스",
-   provider: {
-      "@type": "Organization",
-      name: "플로우머스",
-      url: "https://flowmerce.co.kr",
-   },
-   offers: Object.entries(tossPlanBasePayments).map(([planName, payments]) => ({
-      "@type": "Offer",
-      name: `${planName} 1개월 이용권`,
-      priceCurrency: "KRW",
-      price: payments.monthly.amount,
-      url: `https://flowmerce.co.kr/pricing#${planName.toLowerCase()}`,
-      availability: "https://schema.org/InStock",
-   })),
-};
-
 export default function PricingPage() {
    return (
       <>
          <Header />
          <main className="bg-[#f7f4ef] text-zinc-950">
-            <script
-               type="application/ld+json"
-               dangerouslySetInnerHTML={{ __html: JSON.stringify(pricingStructuredData) }}
-            />
             <section className="py-16 md:py-24">
                <Container>
                   <div className="mx-auto max-w-3xl text-center">
@@ -117,7 +91,7 @@ export default function PricingPage() {
                            결제 후에는 연동할 쇼핑몰 계정 정보가 필요합니다
                         </h2>
                         <p className="mt-4 text-base leading-8 text-zinc-600">
-                           플랜 결제와 사이트 선택이 끝나면 연동할 쇼핑몰의 API 정보가 필요합니다. 카카오톡에서는 필요한 항목과 발급 방법만 안내하며, 실제 키와 계정 정보는 담당자가 안내하는 전용 전달 절차를 통해 접수합니다.
+                           플랜 결제와 사이트 선택이 끝나면 연동할 쇼핑몰 관리자 정보를 플로우머스로 전달해주셔야 세팅이 진행됩니다. partnerKey와 apiKey를 직접 찾기 어려운 경우가 많기 때문에, 대부분은 카카오톡 상담으로 관리자 URL과 로그인 정보만 먼저 전달해주시면 됩니다.
                         </p>
                      </div>
 
@@ -132,10 +106,10 @@ export default function PricingPage() {
                         </div>
                         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
                            <p className="text-sm font-semibold text-zinc-950">
-                              2. API 연동 정보 준비
+                              2. 쇼핑몰 관리자 정보 전달
                            </p>
                            <p className="mt-2 text-sm leading-7 text-zinc-600">
-                              플랫폼별 partnerKey, apiKey 또는 제한 권한 계정을 준비합니다. 관리자 비밀번호는 카카오톡 문의 내용에 적지 마세요.
+                              카카오톡으로 쇼핑몰 관리자 URL, 아이디, 비밀번호를 보내주시면 됩니다. 계정이 여러 개면 함께 알려주시면 더 빠르게 세팅할 수 있습니다.
                            </p>
                         </div>
                         <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
@@ -143,7 +117,7 @@ export default function PricingPage() {
                               3. 키 확인과 세팅 진행
                            </p>
                            <p className="mt-2 text-sm leading-7 text-zinc-600">
-                              필요한 partnerKey, apiKey 발급 방법과 안전한 전달 절차를 안내한 뒤 세팅을 이어갑니다.
+                              필요한 partnerKey, apiKey 확인 방법까지 플로우머스가 안내하고 세팅을 이어갑니다.
                            </p>
                         </div>
                      </div>
@@ -288,16 +262,10 @@ export default function PricingPage() {
                         </h2>
                         <p className="mt-3 text-sm leading-7 text-zinc-600">
                            운영 가능한 소싱처는 계속 확장되고 있지만, 공개 페이지에서는
-                           세부 사이트명을 비공개로 유지합니다. 결제 전 문의를 남기면 원하는
-                           소싱처의 지원 가능 여부를 먼저 확인해드리며, 확정된 상세 목록은
-                           플랜 구독자 전용 화면에서 확인할 수 있습니다.
+                           세부 사이트명을 비공개로 유지합니다. 상세 목록은 플랜 구독자
+                           전용 화면에서 확인하실 수 있으며, 아래에는 현재 운영 범위를
+                           비식별 처리한 형태로만 안내합니다.
                         </p>
-                        <Link
-                           href="/inquiry?type=사이트 문의"
-                           className="mt-5 inline-flex items-center justify-center rounded-lg border border-zinc-950 bg-zinc-950 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#8c6333]"
-                        >
-                           결제 전 지원 사이트 무료 확인
-                        </Link>
                      </div>
 
                      <div className="mt-8 grid gap-7 lg:grid-cols-[0.75fr_1.25fr]">
@@ -381,4 +349,6 @@ function PolicyCard({ href, title, description }) {
       </Link>
    );
 }
+
+
 

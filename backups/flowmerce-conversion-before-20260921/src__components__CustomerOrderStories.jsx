@@ -97,8 +97,7 @@ export default function CustomerOrderStories() {
 
                         <p className="mt-4 text-xs leading-6 text-zinc-500">
                            실제 주문 화면 기준이며, 개인정보 및 민감 정보는 비식별 처리되어
-                           있습니다. 주문 시점과 성과는 상품 구성과 운영 환경에 따라 달라질 수
-                           있으며 동일한 결과를 보장하지 않습니다.
+                           있습니다.
                         </p>
                      </article>
                   ))}
@@ -108,3 +107,5 @@ export default function CustomerOrderStories() {
       </section>
    );
 }
+
+

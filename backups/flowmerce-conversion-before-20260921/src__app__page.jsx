@@ -1,6 +1,6 @@
 import Contacts from "@/components/Contacts";
 import CustomerOrderStories from "@/components/CustomerOrderStories";
-import Faqs, { faqItems } from "@/components/Faqs";
+import Faqs from "@/components/Faqs";
 import Features from "@/components/Features";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
@@ -124,18 +124,6 @@ export default function Home() {
             url: page.url,
          })),
       },
-      {
-         "@context": "https://schema.org",
-         "@type": "FAQPage",
-         mainEntity: faqItems.map((item) => ({
-            "@type": "Question",
-            name: item.question,
-            acceptedAnswer: {
-               "@type": "Answer",
-               text: item.answer,
-            },
-         })),
-      },
    ];
 
    return (
@@ -151,10 +139,10 @@ export default function Home() {
             <Hero />
             <LogoCarousel />
             <Features />
-            <SalesProof />
-            <CustomerOrderStories />
-            <IdentityGuide />
             <Platforms />
+            <SalesProof />
+            <IdentityGuide />
+            <CustomerOrderStories />
             <Testimonials />
             <Pricing />
             <Faqs />
@@ -164,3 +152,5 @@ export default function Home() {
       </>
    );
 }
+
+

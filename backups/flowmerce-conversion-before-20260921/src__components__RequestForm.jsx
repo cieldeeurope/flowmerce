@@ -101,7 +101,7 @@ export default function RequestForm() {
             <h2 className="text-2xl font-semibold">문의하기</h2>
             <p className="mt-3 text-sm leading-7 text-zinc-600">
                문의는 대부분 담당자 유선 상담으로 진행됩니다. 연락 가능한 연락처를
-               정확하게 기재해주시면 접수 순서대로 안내드립니다.
+               정확하게 기재해주시면 순차적으로 안내드리고 있습니다.
             </p>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                <a
@@ -211,26 +211,6 @@ export default function RequestForm() {
                />
             </div>
 
-            <label className="mt-5 flex items-start gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm leading-6 text-zinc-600">
-               <input
-                  type="checkbox"
-                  name="privacyConsent"
-                  value="동의"
-                  required
-                  className="mt-1 h-4 w-4 rounded border-zinc-300 text-zinc-950 focus:ring-zinc-950"
-               />
-               <span>
-                  문의 답변을 위한 이름·연락처 수집 및 이용에 동의합니다. 자세한 내용은{" "}
-                  <Link
-                     href="/privacy"
-                     className="font-semibold text-zinc-900 underline decoration-zinc-300 underline-offset-4"
-                  >
-                     개인정보처리방침
-                  </Link>
-                  에서 확인할 수 있습니다.
-               </span>
-            </label>
-
             {message && (
                <p
                   className={`mt-5 rounded-lg px-4 py-3 text-sm font-medium ${
@@ -254,3 +234,5 @@ export default function RequestForm() {
       </div>
    );
 }
+
+

@@ -22,7 +22,7 @@ const reactions = [
          detail: "연간 구독 전환",
          avatar: {
             type: "cover",
-            text: "카",
+            text: "SEO",
             className:
                "bg-gradient-to-br from-[#8c6333] via-[#b78949] to-[#dec08e] text-white ring-amber-200",
          },
@@ -49,7 +49,7 @@ const reactions = [
          detail: "초기 셋팅 완료",
          avatar: {
             type: "cover",
-            text: "고",
+            text: "운영",
             className:
                "bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-600 text-white ring-zinc-300",
          },
@@ -76,7 +76,7 @@ const reactions = [
          detail: "프로 플랜 상담",
          avatar: {
             type: "cover",
-            text: "P",
+            text: "PRO",
             className:
                "bg-gradient-to-br from-[#3f3527] via-[#6b5736] to-[#b78949] text-white ring-amber-200",
          },
@@ -103,7 +103,7 @@ const reactions = [
          detail: "실시간 응대 만족",
          avatar: {
             type: "cover",
-            text: "M",
+            text: "SHOP",
             className:
                "bg-gradient-to-br from-[#1a1917] via-[#4f4538] to-[#8c6333] text-white ring-stone-300",
          },
@@ -168,10 +168,11 @@ export default function Testimonials() {
                      이런 이야기를 가장 많이 듣습니다
                   </h2>
                   <p className="mt-5 text-base leading-8 text-zinc-600">
-                     실제 상담과 운영 과정에서 전달받은 반응을 정리했습니다.
+                     플로우머스를 경험해본 사람들의 반응은 생각보다 더 만족도가
+                     높습니다.
                      <br />
-                     개인정보 보호를 위해 이름 대신 이용 플랫폼과 진행 단계만 표시하고,
-                     읽기 쉽도록 일부 표현을 다듬었습니다.
+                     운영 부담, 컨설팅 만족도, 전업 가능성, 명품 판매의 재미까지
+                     가장 자주 나오는 반응들입니다.
                   </p>
                </div>
 
@@ -207,3 +208,5 @@ export default function Testimonials() {
       </section>
    );
 }
+
+

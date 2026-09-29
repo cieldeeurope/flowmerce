@@ -1,7 +1,8 @@
-﻿import Container from "./Container";
+import Container from "./Container";
 import Accordion from "./Accordion";
 
-export const faqItems = [
+export default function Faqs() {
+   const faqs = [
       {
          id: "01",
          question: "결제하면 바로 모든 기능을 사용할 수 있나요?",
@@ -22,9 +23,9 @@ export const faqItems = [
       },
       {
          id: "04",
-         question: "쇼핑몰 연동 정보는 어떻게 전달하나요?",
+         question: "카카오톡으로 계정 정보를 전달하는 이유가 있나요?",
          answer:
-            "카카오톡에서는 호스팅사별로 필요한 항목과 partnerKey, apiKey 발급 방법을 안내합니다. 관리자 비밀번호는 채팅에 적지 않으며, 실제 연동 키와 계정 정보는 담당자가 안내하는 별도 전달 절차를 통해 접수합니다.",
+            "호스팅사마다 확인해야 하는 값과 세팅 포인트가 달라서, 처음부터 폼 하나로 받는 방식보다 카카오톡으로 필요한 항목을 바로 안내하며 받는 편이 훨씬 정확한 경우가 많습니다. 특히 partnerKey, apiKey처럼 처음 접하면 헷갈리기 쉬운 값은 진행 중에 같이 확인하는 방식이 실제 세팅 속도와 정확도 면에서 더 유리합니다.",
       },
       {
          id: "05",
@@ -62,9 +63,7 @@ export const faqItems = [
          answer:
             "브랜드 공식 홈페이지와 부티크 사이트를 여러 곳 보면서 수동 등록, 번역 정리, 가격 반영, 재고 체크에 시간을 많이 쓰고 계신 분들께 특히 잘 맞습니다. 단순 등록툴보다 운영 흐름 전체를 줄이고 싶은 분일수록 체감이 큰 편입니다.",
       },
-];
-
-export default function Faqs() {
+   ];
 
    return (
       <section className="pt-16 md:pt-28" id="faq">
@@ -85,7 +84,7 @@ export default function Faqs() {
             </div>
 
             <div className="mt-10 space-y-3.5 md:mt-14">
-               {faqItems.map(({ id, question, answer }) => (
+               {faqs.map(({ id, question, answer }) => (
                   <Accordion key={id} title={question}>
                      <p className="max-w-3xl leading-7 text-zinc-600">{answer}</p>
                   </Accordion>
@@ -95,3 +94,5 @@ export default function Faqs() {
       </section>
    );
 }
+
+

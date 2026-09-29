@@ -12,11 +12,6 @@ export default function Platforms() {
       statusTone: "text-rose-700",
       statusType: "pending",
    };
-   const consultStatus = {
-      status: "연동 상담 가능",
-      statusTone: "text-amber-800",
-      statusType: "consult",
-   };
    const platforms = [
       {
          name: "카페24",
@@ -52,47 +47,47 @@ export default function Platforms() {
       },
       {
          name: "롯데ON",
-         ...consultStatus,
+         ...activeStatus,
          description:
-            "현재 기본 연동 대상은 아니며, 운영 범위와 연동 가능 여부를 상담 후 확인합니다.",
+            "종합몰 기반의 넓은 고객층까지 상품을 확장하기 위해 우선 준비 중입니다.",
       },
       {
          name: "쿠팡",
          logo: "/platforms/coupang.png",
          logoClassName: "max-h-7 w-16",
-         ...consultStatus,
+         ...activeStatus,
          description:
-            "현재 기본 연동 대상은 아니며, 필요한 상품 범위와 운영 방식에 따라 별도 상담합니다.",
+            "빠른 판매 반응과 재고 관리가 중요한 채널 확장에 활용할 수 있습니다.",
       },
       {
          name: "11번가",
          logo: "/platforms/11st-card.png",
          logoClassName: "max-h-10 w-20",
-         ...consultStatus,
+         ...activeStatus,
          description:
-            "현재 기본 연동 대상은 아니며, 오픈마켓 확장 계획에 맞춰 연동 가능 여부를 확인합니다.",
+            "오픈마켓 확장과 가격 운영을 함께 관리해야 할 때 쓰기 좋습니다.",
       },
       {
          name: "옥션",
          logo: "/platforms/auction-card.png",
          logoClassName: "max-h-12 w-24",
-         ...consultStatus,
+         ...activeStatus,
          description:
-            "현재 기본 연동 대상은 아니며, 상품 노출 범위와 계정 정책을 확인한 뒤 상담합니다.",
+            "대중 판매 채널까지 상품 노출 범위를 넓히는 운영에 잘 맞습니다.",
       },
       {
          name: "G마켓",
          logo: "/platforms/gmarket-card.png",
          logoClassName: "max-h-14 w-24",
-         ...consultStatus,
+         ...activeStatus,
          description:
-            "현재 기본 연동 대상은 아니며, 오픈마켓 운영 범위에 따라 별도 연동을 검토합니다.",
+            "오픈마켓 비중을 키우는 운영자에게 맞춰 상품 연동을 지원합니다.",
       },
       {
          name: "카카오쇼핑",
-         ...consultStatus,
+         ...activeStatus,
          description:
-            "현재 기본 연동 대상은 아니며, 톡스토어 운영 계획에 맞춰 연동 가능 여부를 상담합니다.",
+            "톡스토어와 카카오 쇼핑 흐름에 맞춰 판매 채널 확장을 검토합니다.",
       },
       {
          name: "SSG닷컴",
@@ -197,8 +192,9 @@ export default function Platforms() {
                   확장 예정인 판매 채널
                </h2>
                <p className="mx-auto max-w-2xl text-zinc-600">
-                  현재 기본 연동은 카페24, 고도몰, 스마트스토어, 메이크샵을 지원합니다.
-                  그 외 판매 채널은 요청 범위와 기술 검토 결과에 따라 별도로 안내합니다.
+                  자사몰과 스마트스토어, 주요 오픈마켓을 함께 운영하며
+                  추가 판매 채널은 요청과 운영 범위에 맞춰 계속 확장하고
+                  있습니다.
                </p>
             </div>
 
@@ -235,16 +231,10 @@ export default function Platforms() {
                                  className={`inline-flex h-4 w-4 items-center justify-center rounded-full text-[11px] ${
                                     platform.statusType === "active"
                                        ? "bg-emerald-100 text-emerald-700"
-                                       : platform.statusType === "consult"
-                                         ? "bg-amber-100 text-amber-800"
-                                         : "bg-rose-100 text-rose-700"
+                                       : "bg-rose-100 text-rose-700"
                                  }`}
                               >
-                                 {platform.statusType === "active"
-                                    ? "✓"
-                                    : platform.statusType === "consult"
-                                      ? "?"
-                                      : "!"}
+                                 {platform.statusType === "active" ? "✓" : "!"}
                               </span>
                               <span>{platform.status}</span>
                            </div>
@@ -260,3 +250,5 @@ export default function Platforms() {
       </section>
    );
 }
+
+

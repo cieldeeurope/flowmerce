@@ -28,7 +28,7 @@ export default function SalesProof() {
                   <h2 className="mt-4 text-3xl font-semibold leading-tight text-zinc-950 md:text-4xl md:leading-tight">
                      스마트스토어 하나만으로도
                      <br />
-                     실제 운영 사례를 확인해보세요
+                     숫자는 충분히 증명됩니다
                   </h2>
                   <p className="mt-5 text-base leading-8 text-zinc-600">
                      말보다 결과가 먼저 보이도록, 실제 운영 화면을 크게
@@ -52,7 +52,7 @@ export default function SalesProof() {
                   </div>
                   <p className="mt-4 px-1 text-xs leading-6 text-zinc-500">
                      실제 운영 화면 기준 사례이며, 매출과 마진은 상품 구성, 환율,
-                     소싱처, 판매 채널에 따라 달라질 수 있으며 동일한 성과를 보장하지 않습니다.
+                     소싱처, 판매 채널에 따라 달라질 수 있습니다.
                   </p>
                </div>
 
@@ -64,9 +64,9 @@ export default function SalesProof() {
                         25,356,503원까지 확인되었습니다.
                      </p>
                      <p>
-                        주문금액의 10%를 단순 마진으로 가정하면 약 310만원입니다.
-                        이는 해당 사례를 이해하기 위한 환산값이며, 실제 수익은 원가,
-                        환율, 세금, 수수료와 상품 구성에 따라 달라집니다.
+                        주문금액의 10%만 마진으로 잡아도 약 310만원입니다. 한 달
+                        기준으로 보면 최소 100만원 이상의 흐름이 만들어진 셈이고,
+                        여기에 스토어와 노출 채널이 늘어나면 가능성은 더 커집니다.
                      </p>
                      <p>
                         명품은 구조가 단단할수록 유리합니다. 플로우머스는 한국
@@ -130,3 +130,5 @@ export default function SalesProof() {
       </section>
    );
 }
+
+
