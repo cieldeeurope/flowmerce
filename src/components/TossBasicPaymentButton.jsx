@@ -93,7 +93,6 @@ export default function TossBasicPaymentButton({
    paymentType = "NEW",
    includeHostingFee = false,
    extraAmount = 0,
-   setupFee = 0,
    orderNameSuffix = "",
    label = "플랜 구독하기",
    loadingLabel = "결제창 여는 중...",
@@ -121,6 +120,7 @@ export default function TossBasicPaymentButton({
 
       return getTossPlanPayment(planName, billing, {
          includeHostingFee,
+         includeSetupFee: paymentType === "NEW",
          extraAmount,
          orderName,
          orderNameSuffix,
@@ -133,6 +133,7 @@ export default function TossBasicPaymentButton({
       orderName,
       orderNameSuffix,
       paymentInfo,
+      paymentType,
       planName,
    ]);
    const allConsentsChecked = paymentConsentItems.every(
@@ -216,6 +217,9 @@ export default function TossBasicPaymentButton({
 
          if (!orderResponse.ok || !order.orderId || !order.amount) {
             throw new Error(order.message || "결제 주문을 생성하지 못했습니다.");
+         }
+         if (paymentType === "NEW" && Number(order.amount) !== resolvedPaymentInfo.amount) {
+            throw new Error("안내 금액과 서버 결제금액이 다릅니다. 결제를 중단했습니다. 관리자에게 문의해주세요.");
          }
 
          const TossPayments = await loadTossPaymentsSdk();
@@ -337,11 +341,10 @@ export default function TossBasicPaymentButton({
                      </div>
                   </div>
 
-                  {paymentType === "NEW" && setupFee > 0 ? (
+                  {paymentType === "NEW" && resolvedPaymentInfo.setupAmount > 0 ? (
                      <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-                        초기 세팅비 {formatKrw(setupFee)}은 위 결제금액에 포함되지 않으며,
-                        상담 후 별도로 결제합니다. 최초 도입 총비용은{" "}
-                        <strong>{formatKrw(resolvedPaymentInfo.amount + setupFee)}</strong>입니다 (VAT 포함).
+                        초기 세팅비 {formatKrw(resolvedPaymentInfo.setupAmount)}이 위 결제금액에
+                        최초 1회 포함됩니다. 연장 시에는 이용권 비용만 결제합니다 (VAT 포함).
                      </p>
                   ) : null}
 

@@ -206,7 +206,6 @@ export default function PricingPlanCards({
                         isLuxuryTone={isLuxuryTone}
                         label="이용권 결제하기"
                         paymentType="NEW"
-                        setupFee={firstPaymentFees[plan.name]?.setup || 0}
                      />
 
                      {compact && (
@@ -262,7 +261,7 @@ export default function PricingPlanCards({
                         <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideBaseAmount)}</dd>
                      </div>
                      <div className="flex items-center justify-between gap-4">
-                        <dt className="text-zinc-600">추후 별도 결제 — 초기 세팅비</dt>
+                        <dt className="text-zinc-600">초기 세팅비</dt>
                         <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideFees.setup)}</dd>
                      </div>
                      <div className="flex items-center justify-between gap-4">
@@ -270,17 +269,13 @@ export default function PricingPlanCards({
                         <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideFees.hosting)}</dd>
                      </div>
                      <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-4">
-                        <dt className="font-semibold text-zinc-950">지금 결제 (이용권 + 연동비)</dt>
-                        <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideBaseAmount + priceGuideFees.hosting)}</dd>
-                     </div>
-                     <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-4">
-                        <dt className="font-semibold text-zinc-950">최초 도입 총비용</dt>
+                        <dt className="font-semibold text-zinc-950">총 결제금액</dt>
                         <dd className="text-xl font-semibold text-zinc-950">{formatKrw(priceGuideTotal)}</dd>
                      </div>
                   </dl>
 
                   <p className="mt-4 text-sm leading-6 text-zinc-600">
-                     모든 금액은 VAT 포함입니다. 최초 도입 총비용은 선택한 이용기간의 이용권, 호스팅 연동비, 초기 세팅비를 합한 금액입니다. 초기 세팅비는 위 결제금액에 포함되지 않으며 상담 후 별도 결제 안내를 드립니다. 이후 동일 플랜 갱신 시에는 최초 1회 비용이 다시 부과되지 않습니다.
+                     모든 금액은 VAT 포함입니다. 신규 결제 시 선택한 이용기간의 이용권, 초기 세팅비, 호스팅 연동비를 한 번에 결제합니다. 이후 마이페이지에서 연장할 때는 이용권 비용만 결제합니다.
                   </p>
                </div>
             </div>

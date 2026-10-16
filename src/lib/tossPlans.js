@@ -17,6 +17,7 @@ export const tossBillingMonths = {
 };
 
 export const HOSTING_SETUP_FEE = 110000;
+export const INITIAL_SETUP_FEES = { Boutique: 1100000, Basic: 110000 };
 
 export const CONSULTING_PAYMENT = {
    amount: 1540000,
@@ -134,6 +135,7 @@ export function getTossPlanPayment(
    billing,
    {
       includeHostingFee = false,
+      includeSetupFee = false,
       extraAmount = 0,
       orderName,
       orderNameSuffix = "",
@@ -151,11 +153,13 @@ export function getTossPlanPayment(
          ? HOSTING_SETUP_FEE
          : 0;
    const normalizedExtraAmount = Math.max(0, Math.round(Number(extraAmount) || 0));
+   const setupAmount = includeSetupFee ? INITIAL_SETUP_FEES[normalizedPlanName] || 0 : 0;
    const orderNameParts = [];
 
    if (hostingAmount > 0) {
       orderNameParts.push("호스팅 연동");
    }
+   if (setupAmount > 0) orderNameParts.push("초기 세팅");
 
    if (orderNameSuffix) {
       orderNameParts.push(orderNameSuffix);
@@ -163,7 +167,8 @@ export function getTossPlanPayment(
 
    return {
       ...basePayment,
-      amount: basePayment.amount + hostingAmount + normalizedExtraAmount,
+      amount: basePayment.amount + hostingAmount + setupAmount + normalizedExtraAmount,
+      setupAmount,
       baseAmount: basePayment.amount,
       extraAmount: normalizedExtraAmount,
       hostingAmount,
