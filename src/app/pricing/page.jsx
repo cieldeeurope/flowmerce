@@ -63,7 +63,7 @@ export default function PricingPage() {
                      </p>
                   </div>
 
-                  <PricingPlanCards tone="luxury" />
+                  <PricingPlanCards compact tone="luxury" />
                </Container>
             </section>
 
