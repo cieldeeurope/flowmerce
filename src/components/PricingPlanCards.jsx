@@ -194,7 +194,7 @@ export default function PricingPlanCards({
                            onClick={() => setPriceGuidePlan(plan.name)}
                            className="mb-3 inline-flex w-full items-center justify-center rounded-lg border border-amber-200 bg-[#fbf7ef] px-4 py-2.5 text-sm font-semibold text-amber-900 transition hover:bg-amber-50"
                         >
-                           최초 결제금액 보기
+                           결제금액·총비용 보기
                         </button>
                      )}
 
@@ -206,6 +206,7 @@ export default function PricingPlanCards({
                         isLuxuryTone={isLuxuryTone}
                         label="이용권 결제하기"
                         paymentType="NEW"
+                        setupFee={firstPaymentFees[plan.name]?.setup || 0}
                      />
 
                      {compact && (
@@ -237,7 +238,7 @@ export default function PricingPlanCards({
                   }
                }}
             >
-               <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl sm:p-7">
+               <div className="max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl sm:p-7">
                   <div className="flex items-start justify-between gap-4">
                      <div>
                         <p className="text-sm font-semibold text-[#8c6333]">최초 도입 비용 안내</p>
@@ -261,12 +262,16 @@ export default function PricingPlanCards({
                         <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideBaseAmount)}</dd>
                      </div>
                      <div className="flex items-center justify-between gap-4">
-                        <dt className="text-zinc-600">초기 세팅비</dt>
+                        <dt className="text-zinc-600">추후 별도 결제 — 초기 세팅비</dt>
                         <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideFees.setup)}</dd>
                      </div>
                      <div className="flex items-center justify-between gap-4">
                         <dt className="text-zinc-600">호스팅 연동비</dt>
                         <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideFees.hosting)}</dd>
+                     </div>
+                     <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-4">
+                        <dt className="font-semibold text-zinc-950">지금 결제 (이용권 + 연동비)</dt>
+                        <dd className="font-semibold text-zinc-950">{formatKrw(priceGuideBaseAmount + priceGuideFees.hosting)}</dd>
                      </div>
                      <div className="flex items-center justify-between gap-4 border-t border-zinc-300 pt-4">
                         <dt className="font-semibold text-zinc-950">최초 도입 총비용</dt>
@@ -275,7 +280,7 @@ export default function PricingPlanCards({
                   </dl>
 
                   <p className="mt-4 text-sm leading-6 text-zinc-600">
-                     이용권 결제창에는 이용권과 호스팅 연동비가 포함됩니다. 초기 세팅비는 운영 범위 확인 후 별도로 안내되며, 이후 갱신 시에는 최초 1회 비용이 다시 부과되지 않습니다.
+                     모든 금액은 VAT 포함입니다. 최초 도입 총비용은 선택한 이용기간의 이용권, 호스팅 연동비, 초기 세팅비를 합한 금액입니다. 초기 세팅비는 위 결제금액에 포함되지 않으며 상담 후 별도 결제 안내를 드립니다. 이후 동일 플랜 갱신 시에는 최초 1회 비용이 다시 부과되지 않습니다.
                   </p>
                </div>
             </div>

@@ -93,6 +93,7 @@ export default function TossBasicPaymentButton({
    paymentType = "NEW",
    includeHostingFee = false,
    extraAmount = 0,
+   setupFee = 0,
    orderNameSuffix = "",
    label = "플랜 구독하기",
    loadingLabel = "결제창 여는 중...",
@@ -329,12 +330,20 @@ export default function TossBasicPaymentButton({
                         {resolvedPaymentInfo.orderName}
                      </p>
                      <div className="mt-4 flex items-end justify-between gap-4">
-                        <span className="text-sm font-medium text-zinc-500">결제 금액</span>
+                        <span className="text-sm font-medium text-zinc-500">지금 결제금액</span>
                         <span className="text-2xl font-semibold text-zinc-950">
                            {formatKrw(resolvedPaymentInfo.amount)}
                         </span>
                      </div>
                   </div>
+
+                  {paymentType === "NEW" && setupFee > 0 ? (
+                     <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
+                        초기 세팅비 {formatKrw(setupFee)}은 위 결제금액에 포함되지 않으며,
+                        상담 후 별도로 결제합니다. 최초 도입 총비용은{" "}
+                        <strong>{formatKrw(resolvedPaymentInfo.amount + setupFee)}</strong>입니다 (VAT 포함).
+                     </p>
+                  ) : null}
 
                   {resolvedPaymentInfo.hostingAmount > 0 ? (
                      <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
