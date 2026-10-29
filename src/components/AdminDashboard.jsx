@@ -2082,6 +2082,7 @@ export default function AdminDashboard() {
    });
 
    const scheduleStatus = activeScheduleSubtab === "completed" ? "done" : "active";
+   const selectedScheduleSiteIndex = availableScheduleSites.indexOf(selectedScheduleSite);
    const cafe24RefreshWatchAccounts = useMemo(() => {
       return hostingAccounts
          .map((account) => ({
@@ -3150,11 +3151,51 @@ export default function AdminDashboard() {
                         </select>
                      </label>
 
-                     <label className="block">
-                        <span className="text-sm font-medium text-zinc-600">
-                           사이트
-                        </span>
+                     <div className="block">
+                        <div className="flex h-5 items-center gap-2">
+                           <label
+                              htmlFor="schedule-site"
+                              className="text-sm font-medium text-zinc-600"
+                           >
+                              사이트
+                           </label>
+                           <div className="flex gap-1">
+                              <button
+                                 type="button"
+                                 aria-label="이전 사이트"
+                                 title="이전 사이트"
+                                 disabled={loadingScheduleSites || selectedScheduleSiteIndex < 0}
+                                 onClick={() =>
+                                    setSelectedScheduleSite(
+                                       availableScheduleSites[selectedScheduleSiteIndex - 1] || "",
+                                    )
+                                 }
+                                 className="inline-flex h-5 w-6 items-center justify-center rounded border border-zinc-300 bg-white text-sm text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                 <span aria-hidden="true">↑</span>
+                              </button>
+                              <button
+                                 type="button"
+                                 aria-label="다음 사이트"
+                                 title="다음 사이트"
+                                 disabled={
+                                    loadingScheduleSites ||
+                                    availableScheduleSites.length === 0 ||
+                                    selectedScheduleSiteIndex >= availableScheduleSites.length - 1
+                                 }
+                                 onClick={() =>
+                                    setSelectedScheduleSite(
+                                       availableScheduleSites[selectedScheduleSiteIndex + 1] || "",
+                                    )
+                                 }
+                                 className="inline-flex h-5 w-6 items-center justify-center rounded border border-zinc-300 bg-white text-sm text-zinc-600 transition hover:bg-zinc-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-600 disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                 <span aria-hidden="true">↓</span>
+                              </button>
+                           </div>
+                        </div>
                         <select
+                           id="schedule-site"
                            value={selectedScheduleSite}
                            onChange={(event) => setSelectedScheduleSite(event.target.value)}
                            className="mt-1.5 block w-full rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm text-zinc-900 shadow-sm focus:border-emerald-600 focus:outline-none"
@@ -3173,7 +3214,7 @@ export default function AdminDashboard() {
                               </option>
                            ))}
                         </select>
-                     </label>
+                     </div>
 
                   </div>
 
